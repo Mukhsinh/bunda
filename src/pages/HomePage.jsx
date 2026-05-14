@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Clock, Phone, Shield, Star, MessageSquare, Send, ChevronDown, HelpCircle, FileText, Truck, CheckCircle, Zap } from 'lucide-react';
+import { Search, Clock, Phone, Shield, Star, MessageSquare, Send, ChevronDown, HelpCircle, FileText, Truck, CheckCircle, Zap, Heart, Calculator, Syringe } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 /* ════════════════ FAQ SECTION ════════════════ */
@@ -325,7 +325,7 @@ export default function HomePage() {
                     <div className="hero-pattern-1"></div>
                     <div className="hero-pattern-2"></div>
                     <div style={{ position: 'relative', zIndex: 2 }}>
-                        <h2>Selamat Datang!</h2>
+                        <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: '2.2rem', fontWeight: 800, letterSpacing: '-0.5px' }}>Sahabat Bunda</h2>
                         <p style={{
                             fontFamily: "'Outfit', sans-serif",
                             fontSize: '0.88rem',
@@ -335,7 +335,7 @@ export default function HomePage() {
                             fontWeight: 500,
                             letterSpacing: '0.2px',
                         }}>
-                            Layanan <span style={{ fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '0.82rem', background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '6px' }}>Sakpore</span> khusus pasien yang melahirkan di{' '}
+                            Layanan inovatif untuk pasien melahirkan di{' '}
                             <span style={{ fontWeight: 800 }}>RSUD Bendan Kota Pekalongan</span>
                         </p>
                     </div>
@@ -344,50 +344,55 @@ export default function HomePage() {
                 {/* Service Cards */}
                 <div className="service-cards-grid">
                     <Link to="/ramah/submit" className="modern-service-card grid-card">
-                        <div className="floating-icon-wrapper">
-                            <img src="/ramah-3d-transparent.png" alt="RAMAH 3D Icon" className="icon-image-3d-clean" />
+                        <div className="floating-icon-wrapper" style={{ transform: 'scale(0.85)', marginBottom: '-10px' }}>
+                            <img src="/ramah-3d-transparent.png" alt="RAMAH 3D Icon" className="icon-image-3d-clean" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
                         </div>
                         <div className="card-body">
-                            <h3>RAMAH</h3>
-                            <p style={{ fontFamily: "'Outfit', sans-serif", fontSize: '0.85rem', lineHeight: '1.5', fontWeight: 600, color: '#475569', letterSpacing: '0.2px' }}>
+                            <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e293b', margin: 0, marginBottom: '8px' }}>RAMAH</h3>
+                            <p style={{ fontFamily: "'Outfit', sans-serif", fontSize: '0.85rem', lineHeight: '1.5', fontWeight: 600, color: '#475569', letterSpacing: '0.2px', marginBottom: '8px' }}>
                                 Registrasi Akta Mudah <span style={{ background: 'linear-gradient(90deg, #0284c7, #38bdf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 800 }}>Antar Sampai Rumah</span>.
                             </p>
-                            <span className="action-link ramah-link">Ajukan Sekarang &rarr;</span>
                         </div>
                     </Link>
 
                     <Link to="/santun/submit" className="modern-service-card grid-card">
-                        <div className="floating-icon-wrapper">
-                            <img src="/santun-3d-transparent.png" alt="SANTUN 3D Icon" className="icon-image-3d-clean" />
+                        <div className="floating-icon-wrapper" style={{ transform: 'scale(0.85)', marginBottom: '-10px' }}>
+                            <img src="/fluent-automobile.png" alt="SANTUN Automobile Icon" className="icon-image-3d-clean" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
                         </div>
                         <div className="card-body">
-                            <h3>SANTUN</h3>
-                            <p style={{ fontFamily: "'Outfit', sans-serif", fontSize: '0.85rem', lineHeight: '1.5', fontWeight: 600, color: '#475569', letterSpacing: '0.2px' }}>
+                            <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e293b', margin: 0, marginBottom: '8px' }}>SANTUN</h3>
+                            <p style={{ fontFamily: "'Outfit', sans-serif", fontSize: '0.85rem', lineHeight: '1.5', fontWeight: 600, color: '#475569', letterSpacing: '0.2px', marginBottom: '8px' }}>
                                 Saya <span style={{ background: 'linear-gradient(90deg, #16a34a, #4ade80)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 800 }}>Antar Sampai Tujuan</span>.
                             </p>
-                            <span className="action-link santun-link">Ajukan Sekarang &rarr;</span>
                         </div>
                     </Link>
                 </div>
 
-                {/* Quick Actions */}
-                <h3 style={{ fontSize: '1.05rem', marginBottom: '16px', color: 'var(--text-main)', fontWeight: '700' }}>
-                    Lacak Pengajuan
+                {/* Health & Education Section */}
+                <h3 style={{ fontSize: '1.05rem', margin: '24px 0 16px', color: 'var(--text-main)', fontWeight: '700' }}>
+                    Kesehatan & Edukasi
                 </h3>
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
-                    <Link to="/ramah/track" className="modern-track-card ramah-track">
-                        <div className="track-icon-wrapper">
-                            <Search size={18} strokeWidth={2.5} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '32px' }}>
+                    <Link to="/empati" className="modern-service-card" style={{ padding: '20px 12px', textAlign: 'center', background: 'white', borderRadius: '20px', border: '1px solid #f1f5f9', textDecoration: 'none' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#e0f2fe', color: '#0ea5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+                            <Heart size={20} />
                         </div>
-                        <span>Lacak RAMAH</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e293b', display: 'block' }}>EMPATI</span>
                     </Link>
-                    <Link to="/santun/track" className="modern-track-card santun-track">
-                        <div className="track-icon-wrapper">
-                            <Search size={18} strokeWidth={2.5} />
+                    <Link to="/sehati" className="modern-service-card" style={{ padding: '20px 12px', textAlign: 'center', background: 'white', borderRadius: '20px', border: '1px solid #f1f5f9', textDecoration: 'none' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fef3c7', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+                            <Calculator size={20} />
                         </div>
-                        <span>Lacak SANTUN</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e293b', display: 'block' }}>SEHATI</span>
+                    </Link>
+                    <Link to="/vaksinasi" className="modern-service-card" style={{ padding: '20px 12px', textAlign: 'center', background: 'white', borderRadius: '20px', border: '1px solid #f1f5f9', textDecoration: 'none' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+                            <Syringe size={20} />
+                        </div>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e293b', display: 'block' }}>VAKSIN</span>
                     </Link>
                 </div>
+
 
                 {/* Info Section */}
                 <div className="modern-info-card">

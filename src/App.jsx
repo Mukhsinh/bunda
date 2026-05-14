@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Home, FileText, Truck, LogIn, Hospital } from 'lucide-react';
+import { Home, FileText, Truck, LogIn, Hospital, Search } from 'lucide-react';
 import { useAuthStore } from './store/useAuthStore';
 
 import HomePage from './pages/HomePage';
@@ -11,6 +11,12 @@ import TrackDokumen from './pages/ramah/TrackDokumen';
 
 import RequestTransport from './pages/santun/RequestTransport';
 import TrackRide from './pages/santun/TrackRide';
+
+import Empati from './pages/empati/Empati';
+import Sehati from './pages/sehati/Sehati';
+import Vaksinasi from './pages/vaksinasi/Vaksinasi';
+
+import LacakSelection from './pages/LacakSelection';
 
 import AdminPanel from './pages/admin/AdminPanel';
 
@@ -71,6 +77,12 @@ function App() {
           <Route path="/santun/submit" element={<RequestTransport />} />
           <Route path="/santun/track" element={<TrackRide />} />
 
+          <Route path="/empati" element={<Empati />} />
+          <Route path="/sehati" element={<Sehati />} />
+          <Route path="/vaksinasi" element={<Vaksinasi />} />
+
+          <Route path="/lacak" element={<LacakSelection />} />
+
           {/* Admin Routes */}
           <Route path="/admin/login" element={<Login />} />
           <Route path="/admin/dashboard" element={
@@ -114,10 +126,9 @@ function App() {
             <Truck size={22} />
             <span>SANTUN</span>
           </Link>
-          {/* Admin Login at Right side of Bottom Nav */}
-          <Link to="/admin/login" className={`nav-item ${location.pathname === '/admin/login' ? 'active' : ''}`}>
-            <LogIn size={22} />
-            <span>Admin</span>
+          <Link to="/lacak" className={`nav-item ${location.pathname === '/lacak' ? 'active' : ''}`}>
+            <Search size={22} />
+            <span>Lacak</span>
           </Link>
         </nav>
       )}
