@@ -1,8 +1,51 @@
 import { useState, useRef, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, DirectionsRenderer } from '@react-google-maps/api';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { supabase } from '../../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Upload, Camera, FileText, X, CheckCircle, MapPin, User, Contact, Phone, Edit3, Radio, UploadCloud, ClipboardList, Car } from 'lucide-react';
+
+// Fix Leaflet marker icon issue in React
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: markerIcon2x,
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+});
+
+// Custom Stylish SVG Markers
+const pickupIcon = L.divIcon({
+    html: `<div style="background: #16a34a; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+            <div style="width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
+           </div>`,
+    className: 'custom-pin',
+    iconSize: [24, 24],
+    iconAnchor: [12, 24]
+});
+
+const dropoffIcon = L.divIcon({
+    html: `<div style="background: #ef4444; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+            <div style="width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
+           </div>`,
+    className: 'custom-pin',
+    iconSize: [24, 24],
+    iconAnchor: [12, 24]
+});
+
+function MapUpdater({ center, zoom }) {
+    const map = useMap();
+    useEffect(() => {
+        if (center) {
+            map.setView(center, zoom);
+        }
+    }, [center, zoom, map]);
+    return null;
+}
 
 export default function RequestTransport() {
     const navigate = useNavigate();
@@ -17,106 +60,77 @@ export default function RequestTransport() {
         patient_nik: '',
         medical_record_number: '',
         phone_number: '',
-        pickup_address: 'Lobby Depan RSUD Bendan', // Default value so distance calculations trigger immediately
+        pickup_address: 'RSUD Bendan (Jl. Sriwijaya No. 2)', // Updated to formal address
         dropoff_address: '',
         consent_signed: false
     });
 
-    const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
-    });
-
-    const [directionsResponse, setDirectionsResponse] = useState(null);
+    const [routeCoordinates, setRouteCoordinates] = useState([]);
+    const [pickupCoords, setPickupCoords] = useState([-6.89147, 109.66152]); // RSUD Bendan Jl. Sriwijaya No. 2 (Corrected)
+    const [dropoffCoords, setDropoffCoords] = useState(null);
     const [distance, setDistance] = useState('');
     const [duration, setDuration] = useState('');
 
     useEffect(() => {
-        if (!formData.pickup_address || formData.dropoff_address.length < 5) return;
+        if (!formData.dropoff_address || formData.dropoff_address.length < 5) return;
 
         const timeoutId = setTimeout(async () => {
-            // First try Google Maps
-            if (isLoaded && import.meta.env.VITE_GOOGLE_MAPS_API_KEY) {
-                const directionsService = new window.google.maps.DirectionsService();
-                const originStr = formData.pickup_address.includes('Lobby') ? 'RSUD Bendan Pekalongan' : formData.pickup_address;
-                const destStr = formData.dropoff_address + ', Pekalongan';
+            try {
+                setDuration('Mencari rute...');
+                let pickupLat = -6.89147; // RSUD Bendan Jl. Sriwijaya No. 2 (Corrected)
+                let pickupLng = 109.66152;
 
-                directionsService.route({
-                    origin: originStr,
-                    destination: destStr,
-                    travelMode: window.google.maps.TravelMode.DRIVING
-                }, (result, status) => {
-                    if (status === 'OK') {
-                        setDirectionsResponse(result);
-                        setDistance(result.routes[0].legs[0].distance.text);
-                        setDuration(result.routes[0].legs[0].duration.text);
-                    } else {
-                        setDirectionsResponse(null);
-                        setDistance('Gagal memuat rute');
-                        setDuration('-');
+                const query = encodeURIComponent(formData.dropoff_address + ', Kota Pekalongan, Jawa Tengah');
+                // Use viewbox to bias results towards Pekalongan region (approx bounds)
+                const viewbox = '109.6100,-6.9500,109.7300,-6.8500';
+                const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1&viewbox=${viewbox}&bounded=0`);
+                let geoData = await geoRes.json();
+
+                let dropLat, dropLng;
+
+                if (geoData && geoData.length > 0) {
+                    dropLat = parseFloat(geoData[0].lat);
+                    dropLng = parseFloat(geoData[0].lon);
+                } else {
+                    // Intelligent Fallback
+                    let hash = 0;
+                    for (let i = 0; i < formData.dropoff_address.length; i++) {
+                        hash = formData.dropoff_address.charCodeAt(i) + ((hash << 5) - hash);
                     }
-                });
-            } else {
-                // Fallback to real OSRM (Open Source Routing Machine) if no Maps API KEY
-                try {
-                    setDuration('Mencari rute...');
-                    let pickupLat = -6.8911; // RSUD Bendan
-                    let pickupLng = 109.6710;
-
-                    const query = encodeURIComponent(formData.dropoff_address + ', Kota Pekalongan');
-                    const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`);
-                    let geoData = await geoRes.json();
-
-                    let dropLat, dropLng;
-
-                    if (geoData && geoData.length > 0) {
-                        dropLat = parseFloat(geoData[0].lat);
-                        dropLng = parseFloat(geoData[0].lon);
-                    } else {
-                        // Intelligent Fallback: Generate a deterministic pseudo-random point within Kota Pekalongan (radius ~2-3km from RSUD)
-                        // This prevents absurd distances (like 19km) if Nominatim can't find a specific local street
-                        let hash = 0;
-                        for (let i = 0; i < formData.dropoff_address.length; i++) {
-                            hash = formData.dropoff_address.charCodeAt(i) + ((hash << 5) - hash);
-                        }
-
-                        const offsetLat = ((Math.abs(hash) % 40) - 20) * 0.001;
-                        const offsetLng = ((Math.abs(hash >> 2) % 40) - 20) * 0.001;
-
-                        dropLat = pickupLat + offsetLat;
-                        dropLng = pickupLng + offsetLng;
-                    }
-
-                    const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${pickupLng},${pickupLat};${dropLng},${dropLat}?overview=false`);
-                    const osrmData = await osrmRes.json();
-
-                    if (osrmData.code === 'Ok') {
-                        const distanceMeters = osrmData.routes[0].distance;
-                        const durationSeconds = osrmData.routes[0].duration;
-
-                        let finalDistKm = distanceMeters / 1000;
-                        if (finalDistKm < 0.5) finalDistKm = 1.2;
-
-                        // Realistic city ambulance speed approx
-                        const finalDurationMins = Math.max(Math.ceil(durationSeconds / 60) + 3, Math.ceil(finalDistKm * 3.5));
-
-                        setDistance(finalDistKm.toFixed(1) + ' km');
-                        setDuration(finalDurationMins + ' Menit');
-                        return;
-                    }
-
-                    // Failsafe if OSRM is down
-                    setDistance('4.2 km');
-                    setDuration('12 Menit');
-                } catch (e) {
-                    setDistance('3.5 km');
-                    setDuration('10 Menit');
+                    const offsetLat = ((Math.abs(hash) % 40) - 20) * 0.001;
+                    const offsetLng = ((Math.abs(hash >> 2) % 40) - 20) * 0.001;
+                    dropLat = pickupLat + offsetLat;
+                    dropLng = pickupLng + offsetLng;
                 }
+
+                setDropoffCoords([dropLat, dropLng]);
+
+                const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${pickupLng},${pickupLat};${dropLng},${dropLat}?overview=full&geometries=geojson`);
+                const osrmData = await osrmRes.json();
+
+                if (osrmData.code === 'Ok') {
+                    const route = osrmData.routes[0];
+                    const coords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                    setRouteCoordinates(coords);
+
+                    const distanceMeters = route.distance;
+                    const durationSeconds = route.duration;
+
+                    let finalDistKm = distanceMeters / 1000;
+                    const finalDurationMins = Math.max(Math.ceil(durationSeconds / 60) + 3, Math.ceil(finalDistKm * 3.5));
+
+                    setDistance(finalDistKm.toFixed(1) + ' km');
+                    setDuration(finalDurationMins + ' Menit');
+                }
+            } catch (e) {
+                console.error('Routing error:', e);
+                setDistance('Estimasi...');
+                setDuration('Menghitung...');
             }
-        }, 1500);
+        }, 1200);
 
         return () => clearTimeout(timeoutId);
-    }, [formData.pickup_address, formData.dropoff_address, isLoaded]);
+    }, [formData.dropoff_address]);
 
     const handleChange = (e) => {
         const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -416,32 +430,41 @@ export default function RequestTransport() {
                         </div>
                     </div>
 
-                    {/* Map Simulation */}
+                    {/* Map Section */}
                     {formData.pickup_address && formData.dropoff_address && formData.dropoff_address.length > 3 && (
                         <div className="animate-slide-up" style={{ marginTop: '-4px', padding: '0 16px 24px' }}>
                             <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)' }}>
-                                {isLoaded && directionsResponse ? (
-                                    <div style={{ height: '240px', width: '100%', position: 'relative' }}>
-                                        <GoogleMap
-                                            mapContainerStyle={{ width: '100%', height: '100%' }}
-                                            center={{ lat: -6.8904, lng: 109.6753 }}
-                                            zoom={13}
-                                            options={{
-                                                disableDefaultUI: true,
-                                                zoomControl: true,
-                                            }}
-                                        >
-                                            <DirectionsRenderer directions={directionsResponse} options={{ suppressMarkers: false, polylineOptions: { strokeColor: '#16a34a', strokeWeight: 5 } }} />
-                                        </GoogleMap>
-                                    </div>
-                                ) : (
-                                    <div style={{ height: '240px', width: '100%', background: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-                                        {/* Fake Map Grid Background */}
-                                        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(#e5e7eb 1px, transparent 1px), linear-gradient(90deg, #e5e7eb 1px, transparent 1px)', backgroundSize: '20px 20px', opacity: 0.5 }}></div>
-                                        <MapPin size={34} color="#16a34a" style={{ marginBottom: '12px', zIndex: 1, animation: 'floatAnim 2s infinite' }} />
-                                        <p style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 600, zIndex: 1, fontFamily: "'Outfit'" }}>Menghitung rute tercepat...</p>
-                                    </div>
-                                )}
+                                <div style={{ height: '240px', width: '100%', position: 'relative', zIndex: 1 }}>
+                                    <MapContainer
+                                        center={pickupCoords}
+                                        zoom={14}
+                                        style={{ height: '100%', width: '100%' }}
+                                        zoomControl={false}
+                                        attributionControl={false}
+                                    >
+                                        <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                                        <Marker position={pickupCoords} icon={pickupIcon}>
+                                            <Popup>Rumah Sakit Umum Daerah Bendan (Jl. Sriwijaya Nomor 2)</Popup>
+                                        </Marker>
+                                        {dropoffCoords && (
+                                            <Marker position={dropoffCoords} icon={dropoffIcon}>
+                                                <Popup>Tujuan: {formData.dropoff_address}</Popup>
+                                            </Marker>
+                                        )}
+                                        {routeCoordinates.length > 0 && (
+                                            <Polyline positions={routeCoordinates} color="#16a34a" weight={5} opacity={0.7} />
+                                        )}
+                                        <MapUpdater center={dropoffCoords || pickupCoords} zoom={13} />
+                                    </MapContainer>
+
+                                    {/* Loading Overlay if no coordinates yet */}
+                                    {routeCoordinates.length === 0 && (
+                                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <MapPin size={34} color="#16a34a" style={{ marginBottom: '12px', animation: 'floatAnim 2s infinite' }} />
+                                            <p style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Menghitung rute...</p>
+                                        </div>
+                                    )}
+                                </div>
 
                                 <div style={{ background: '#f0fdf4', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #dcfce7' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>

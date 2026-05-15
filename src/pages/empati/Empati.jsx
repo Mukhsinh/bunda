@@ -5,77 +5,116 @@ import { useNavigate } from 'react-router-dom';
 const topics = [
     {
         id: 1,
-        title: 'Teknik Menyusui Kemenkes',
+        title: 'Teknik Menyusui Bayi',
         icon: <Baby size={24} />,
         color: '#0ea5e9',
         bgColor: '#e0f2fe',
-        description: 'Panduan lengkap posisi dan pelekatan yang benar agar menyusui nyaman. (Edukasi durasi 1 menit)',
+        description: 'Panduan lengkap posisi dan pelekatan yang benar agar menyusui nyaman.',
+        videoSrc: '/empati/Teknik Menysusui Bayi.mp4',
         imageSrc: '/images/empati/empati_breastfeeding_1778754798506.png'
     },
     {
         id: 2,
-        title: 'Perawatan Luka & Higienitas',
+        title: 'Perawatan Bayi Baru Lahir',
         icon: <Shield size={24} />,
         color: '#16a34a',
         bgColor: '#dcfce7',
-        description: 'Cara menjaga kebersihan diri dan merawat luka pasca melahirkan dengan benar.',
+        description: 'Cara merawat kebersihan dan kesehatan bayi baru lahir dengan benar.',
+        videoSrc: '/empati/Perawatan Bayi Baru Lahir.mp4',
         imageSrc: '/images/empati/empati_hygiene_1778754878193.png'
     },
     {
         id: 3,
-        title: 'Nutrisi Pasca Melahirkan',
+        title: 'Nutrisi Ibu Pasca Melahirkan',
         icon: <Utensils size={24} />,
         color: '#f59e0b',
         bgColor: '#fef3c7',
         description: 'Daftar makanan bergizi untuk mempercepat pemulihan dan kualitas ASI ibu.',
+        videoSrc: '/empati/Nutrisi Ibu Pasca Melahirkan.mp4',
         imageSrc: '/images/empati/empati_nutrition_1778755013806.png'
     },
     {
         id: 4,
-        title: 'Kesehatan Mental & Istirahat',
+        title: 'Alat Kontrasepsi Pasca Melahirkan',
+        icon: <Heart size={24} />,
+        color: '#ec4899',
+        bgColor: '#fdf2f8',
+        description: 'Informasi mengenai pilihan alat kontrasepsi yang aman pasca melahirkan.',
+        videoSrc: '/empati/Alat Kontrasepsi Pasca Melahirkan.mp4',
+        imageSrc: '/images/empati/empati_bonding_1778755126025.png'
+    },
+    {
+        id: 5,
+        title: 'Kesehatan Mental Pasca Melahirkan',
         icon: <Brain size={24} />,
         color: '#8b5cf6',
         bgColor: '#f5f3ff',
         description: 'Pentingnya menjaga psikologis ibu, mencegah baby blues, dan istirahat cukup.',
+        videoSrc: '/empati/Kesehatan Mental Pasca Melahirkan.mp4',
         imageSrc: '/images/empati/empati_mentalhealth_1778755087234.png'
     },
     {
-        id: 5,
-        title: 'Bonding dengan Bayi',
-        icon: <Heart size={24} />,
-        color: '#ec4899',
-        bgColor: '#fdf2f8',
-        description: 'Cara tepat membangun ikatan emosional dan fisik yang kuat dengan buah hati.',
-        imageSrc: '/images/empati/empati_bonding_1778755126025.png'
+        id: 6,
+        title: 'Gangguan Psikotis Pasca Melahirkan',
+        icon: <Brain size={24} />,
+        color: '#ef4444',
+        bgColor: '#fee2e2',
+        description: 'Mengenali gejala dan penanganan gangguan psikotis pasca melahirkan.',
+        videoSrc: '/empati/Gangguan Psikotis Pasca Melahirkan.mp4',
+        imageSrc: '/images/empati/empati_mentalhealth_1778755087234.png'
     }
 ];
+
 
 export default function Empati() {
     const navigate = useNavigate();
     const [selectedVideo, setSelectedVideo] = useState(topics[0]);
 
     return (
-        <div className="animate-slide-up page-content">
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                <button
-                    onClick={() => navigate('/')}
-                    style={{
-                        width: '40px', height: '40px', borderRadius: '12px',
-                        background: 'white', border: '1px solid #e2e8f0',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
-                    }}
-                >
-                    <ArrowLeft size={20} color="#64748b" />
-                </button>
-                <div>
-                    <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Menu EMPATI</h2>
-                    <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>Video Edukasi Pasca Melahirkan</p>
+        <div className="animate-slide-up page-content" style={{ paddingTop: 0 }}>
+            {/* New Stylish Header */}
+            <div style={{
+                background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+                margin: '0 -20px 24px -20px',
+                padding: '30px 20px 50px',
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: '0 0 40px 40px',
+                boxShadow: '0 10px 20px rgba(14, 165, 233, 0.15)'
+            }}>
+                {/* Decorative Waves */}
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px', overflow: 'hidden' }}>
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', opacity: 0.3, fill: '#84cc16', transform: 'translateX(-100px)' }}>
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
+                    </svg>
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', opacity: 0.2, fill: '#f59e0b', position: 'absolute', top: 0, left: 0, transform: 'translateX(100px)' }}>
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
+                    </svg>
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', fill: 'white', position: 'absolute', top: '15px', left: 0 }}>
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
+                    </svg>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative', zIndex: 10 }}>
+                    <button
+                        onClick={() => navigate('/')}
+                        style={{
+                            width: '36px', height: '36px', borderRadius: '10px',
+                            background: 'rgba(255, 255, 255, 0.2)', border: '1px solid rgba(255, 255, 255, 0.3)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', color: 'white', backdropFilter: 'blur(4px)'
+                        }}
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h2 style={{ fontSize: '1.4rem', margin: 0, color: 'white', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>EMPATI</h2>
+                        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', margin: 0, fontWeight: 500 }}>Edukasi Mewujudkan Persalinan Aman & Tenang</p>
+                    </div>
                 </div>
             </div>
 
-            {/* Simulated Cinematic Video Player (Using generated cover posters) */}
+            {/* Video Player */}
             <div style={{
                 background: 'black',
                 borderRadius: '16px',
@@ -86,50 +125,27 @@ export default function Empati() {
                 marginBottom: '16px',
                 boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
             }}>
-                <style>{`
-                    @keyframes cinematicZoom {
-                        0% { transform: scale(1.0); }
-                        50% { transform: scale(1.08); }
-                        100% { transform: scale(1.0); }
-                    }
-                `}</style>
-                <img
-                    src={selectedVideo.imageSrc}
-                    alt={selectedVideo.title}
+                <video
                     key={selectedVideo.id}
+                    src={selectedVideo.videoSrc}
+                    controls
+                    playsInline
                     style={{
-                        width: '100%', height: '100%', objectFit: 'cover',
-                        opacity: 0.85,
-                        animation: 'cinematicZoom 20s infinite ease-in-out'
+                        width: '100%', height: '100%', objectFit: 'contain', background: '#000'
                     }}
-                />
+                >
+                    Browser Anda tidak mendukung tag video.
+                </video>
 
-                {/* Play Button Overlay */}
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
-                    <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '8px', border: '1px solid rgba(255,255,255,0.4)' }}>
-                        <Play size={28} color="white" fill="white" style={{ marginLeft: '4px' }} />
-                    </div>
-                </div>
-
-                {/* Duration Badge */}
-                <div style={{ position: 'absolute', bottom: '8px', right: '16px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600 }}>
-                    00:59
-                </div>
-
-                {/* Subtitle / Topic overlay */}
-                <div style={{ position: 'absolute', bottom: '0', left: '0', width: '100%', padding: '24px 16px 12px', background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)', color: 'white' }}>
-                    <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>{selectedVideo.title}</h3>
-                </div>
-
-                {/* Watermark SAKPORE RSUD BENDAN */}
+                {/* Watermark RSUD Bendan */}
                 <div style={{
                     position: 'absolute', top: '16px', right: '16px',
                     background: 'rgba(255, 255, 255, 0.8)', padding: '4px 8px',
-                    borderRadius: '6px', color: '#0ea5e9', fontSize: '0.65rem',
+                    borderRadius: '6px', color: '#0ea5e9', fontSize: '0.55rem',
                     fontWeight: 800, letterSpacing: '0.5px', pointerEvents: 'none',
                     boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                 }}>
-                    SAKPORE RSUD
+                    RSUD Bendan
                 </div>
             </div>
 
@@ -174,7 +190,7 @@ export default function Empati() {
                                 {topic.description}
                             </p>
                         </div>
-                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>0:59</div>
+                        {selectedVideo.id === topic.id && <div style={{ fontSize: '0.7rem', color: topic.color, fontWeight: 700 }}>Sedang Diputar</div>}
                     </div>
                 ))}
             </div>

@@ -5,22 +5,32 @@ import { calculateNutritionIndices } from '../../lib/nutritionData';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-// Reusable Improved Speedometer
+// Reusable Improved Speedometer (WHO/Permenkes Z-score Gauge)
 const Speedometer = ({ title, zScore, status }) => {
     const clampedValue = Math.max(-4, Math.min(4, parseFloat(zScore)));
+    // Map -4..+4 to 0..180 degrees
     const angle = ((clampedValue + 4) / 8) * 180;
     const rotation = angle - 90;
 
-    let statusColor = '#22c55e'; // Green
-    if (clampedValue < -2 || clampedValue > 2) statusColor = '#f59e0b'; // Yellow
-    if (clampedValue < -3 || clampedValue > 3) statusColor = '#ef4444'; // Red
+    // Color by clinical severity per Permenkes thresholds
+    let statusColor = '#22c55e'; // Green = Normal
+    const absZ = Math.abs(clampedValue);
+    if (absZ > 3) statusColor = '#dc2626';      // Red = Severe
+    else if (absZ > 2) statusColor = '#ea580c';  // Orange = Moderate
+    else if (clampedValue > 1) statusColor = '#f59e0b'; // Yellow = Risk
+
+    // Arc gradient: matches WHO thresholds
+    // -4 to -3 (severe), -3 to -2 (moderate), -2 to +1 (normal), +1 to +2 (risk), +2 to +3 (overweight), +3 to +4 (obese)
+    // Mapped to 0-180deg: each unit = 22.5deg
+    // -4=0%, -3=12.5%, -2=25%, +1=62.5%, +2=75%, +3=87.5%, +4=100%
+    const arcGradient = 'linear-gradient(90deg, #dc2626 0%, #dc2626 12.5%, #ea580c 12.5%, #ea580c 25%, #22c55e 25%, #22c55e 62.5%, #f59e0b 62.5%, #f59e0b 75%, #ea580c 75%, #ea580c 87.5%, #dc2626 87.5%, #dc2626 100%)';
 
     return (
         <div style={{ background: '#f8fafc', padding: '20px 16px', borderRadius: '20px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h5 style={{ fontSize: '0.8rem', fontWeight: 800, margin: '0 0 20px 0', color: '#1e293b', textAlign: 'center' }}>{title}</h5>
 
             {/* Speedometer Arc */}
-            <div style={{ position: 'relative', width: '160px', height: '80px', borderTopLeftRadius: '80px', borderTopRightRadius: '80px', background: 'linear-gradient(90deg, #ef4444 0%, #ef4444 12.5%, #f59e0b 12.5%, #f59e0b 25%, #22c55e 25%, #22c55e 62.5%, #f59e0b 62.5%, #f59e0b 75%, #ef4444 75%, #ef4444 100%)', boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.1)' }}>
+            <div style={{ position: 'relative', width: '160px', height: '80px', borderTopLeftRadius: '80px', borderTopRightRadius: '80px', background: arcGradient, boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.1)' }}>
                 {/* Inner cutout */}
                 <div style={{ position: 'absolute', top: '24px', left: '24px', right: '24px', bottom: 0, backgroundColor: '#f8fafc', borderTopLeftRadius: '60px', borderTopRightRadius: '60px', boxShadow: '0 -4px 10px rgba(0,0,0,0.05)' }}></div>
 
@@ -31,9 +41,9 @@ const Speedometer = ({ title, zScore, status }) => {
                 <div style={{ position: 'absolute', bottom: '0px', left: '50%', width: '4px', height: '58px', marginLeft: '-2px', backgroundColor: '#1e293b', transformOrigin: 'bottom center', transform: `rotate(${rotation}deg)`, borderRadius: '4px', transition: 'transform 1s cubic-bezier(0.34, 1.56, 0.64, 1)', zIndex: 5 }}></div>
 
                 {/* Scale Labels */}
-                <span style={{ position: 'absolute', bottom: '-20px', left: '0px', fontSize: '0.65rem', fontWeight: 800, color: '#ef4444' }}>-4</span>
+                <span style={{ position: 'absolute', bottom: '-20px', left: '0px', fontSize: '0.65rem', fontWeight: 800, color: '#dc2626' }}>-4</span>
                 <span style={{ position: 'absolute', bottom: '-20px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.65rem', fontWeight: 800, color: '#22c55e' }}>0</span>
-                <span style={{ position: 'absolute', bottom: '-20px', right: '0px', fontSize: '0.65rem', fontWeight: 800, color: '#ef4444' }}>+4</span>
+                <span style={{ position: 'absolute', bottom: '-20px', right: '0px', fontSize: '0.65rem', fontWeight: 800, color: '#dc2626' }}>+4</span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', width: '170px', marginTop: '24px', fontSize: '0.65rem', color: '#64748b', fontWeight: 700 }}>
@@ -90,7 +100,7 @@ export default function Sehati() {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(22);
         doc.setFont(undefined, 'bold');
-        doc.text('Kartu Analisis Gizi SAKPORE', 105, 20, { align: 'center' });
+        doc.text('Kartu Analisis Gizi', 105, 20, { align: 'center' });
         doc.setFontSize(12);
         doc.setFont(undefined, 'normal');
         doc.text('RSUD Bendan Kota Pekalongan', 105, 30, { align: 'center' });
@@ -233,22 +243,46 @@ export default function Sehati() {
     };
 
     return (
-        <div className="animate-slide-up page-content">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                <button
-                    onClick={() => navigate('/')}
-                    style={{
-                        width: '40px', height: '40px', borderRadius: '12px',
-                        background: 'white', border: '1px solid #e2e8f0',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
-                    }}
-                >
-                    <ArrowLeft size={20} color="#64748b" />
-                </button>
-                <div>
-                    <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Menu SEHATI</h2>
-                    <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>Laporan Gizi 4-Indeks Kemenkes</p>
+        <div className="animate-slide-up page-content" style={{ paddingTop: 0 }}>
+            {/* New Stylish Header */}
+            <div style={{
+                background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+                margin: '0 -20px 24px -20px',
+                padding: '30px 20px 50px',
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: '0 0 40px 40px',
+                boxShadow: '0 10px 20px rgba(14, 165, 233, 0.15)'
+            }}>
+                {/* Decorative Waves */}
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px', overflow: 'hidden' }}>
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', opacity: 0.3, fill: '#84cc16', transform: 'translateX(-100px)' }}>
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
+                    </svg>
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', opacity: 0.2, fill: '#f59e0b', position: 'absolute', top: 0, left: 0, transform: 'translateX(100px)' }}>
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
+                    </svg>
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', fill: 'white', position: 'absolute', top: '15px', left: 0 }}>
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
+                    </svg>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative', zIndex: 10 }}>
+                    <button
+                        onClick={() => navigate('/')}
+                        style={{
+                            width: '36px', height: '36px', borderRadius: '10px',
+                            background: 'rgba(255, 255, 255, 0.2)', border: '1px solid rgba(255, 255, 255, 0.3)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', color: 'white', backdropFilter: 'blur(4px)'
+                        }}
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h2 style={{ fontSize: '1.4rem', margin: 0, color: 'white', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>SEHATI</h2>
+                        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', margin: 0, fontWeight: 500 }}>Laporan Gizi 4-Indeks Kemenkes</p>
+                    </div>
                 </div>
             </div>
 
@@ -284,8 +318,8 @@ export default function Sehati() {
                             <input type="number" step="0.1" name="height" className="input" placeholder="Misal: 75" value={formData.height} onChange={handleInputChange} required />
                         </div>
                     </div>
-                    <button type="submit" className="btn btn-primary" style={{ marginTop: '16px' }}>
-                        <Calculator size={18} /> Hitung 4 Indeks Kemenkes
+                    <button type="submit" className="btn btn-primary" style={{ marginTop: '16px', gap: '8px' }}>
+                        <Calculator size={18} /> Hitung Kondisi Gizi
                     </button>
                 </form>
             </div>
@@ -310,16 +344,60 @@ export default function Sehati() {
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                                 <Info size={16} color="var(--primary)" style={{ marginTop: '2px', flexShrink: 0 }} />
                                 <div>
-                                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', margin: '0 0 4px 0' }}>Keterangan Kemenkes</h4>
+                                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', margin: '0 0 4px 0' }}>Analisis Kondisi Gizi</h4>
                                     <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
-                                        Diatas menunjukkan 4 pilar pertumbuhan balita. Warna hijau di gauge menandakan status yang aman dan normal sesuai standar grafik Gizi WHO.
+                                        Berdasarkan perhitungan di atas, status gizi anak Anda adalah:
+                                        <ul style={{ paddingLeft: '20px', marginTop: '4px' }}>
+                                            <li>TB/U: <strong>{result.tb_u.status}</strong></li>
+                                            <li>BB/TB: <strong>{result.bb_tb.status}</strong></li>
+                                        </ul>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Abnormal Result CTA */}
+                        {(result.tb_u.zScore < -2 || result.bb_tb.zScore < -2 || result.bb_tb.zScore > 2 || result.imt_u.zScore > 2) && (
+                            <div style={{ background: '#fff1f2', padding: '16px', borderRadius: '16px', border: '1px solid #fecdd3', marginBottom: '20px' }}>
+                                <p style={{ fontSize: '0.8rem', color: '#be123c', fontWeight: 700, margin: '0 0 8px 0', textAlign: 'center' }}>
+                                    ⚠️ Perhatian: Kondisi gizi terdeteksi tidak normal.
+                                </p>
+                                <button
+                                    onClick={() => window.location.href = 'https://wa.me/628123456789'} // Placeholder for Puskesmas contact
+                                    className="btn"
+                                    style={{ background: '#e11d48', color: 'white', width: '100%', fontSize: '0.85rem', padding: '10px' }}
+                                >
+                                    Segera Hubungi Puskesmas Terdekat
+                                </button>
+                                <p style={{ fontSize: '0.65rem', color: '#9f1239', marginTop: '6px', textAlign: 'center' }}>
+                                    Laporan Anda akan didata oleh petugas kesehatan untuk penanganan lebih lanjut.
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Prevention & Solution Section */}
+                        <div style={{ background: '#f0f9ff', padding: '20px', borderRadius: '20px', border: '1px solid #bae6fd', marginBottom: '24px' }}>
+                            <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0369a1', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <ActivitySquare size={18} /> Pencegahan & Solusi (Kemenkes RI)
+                            </h4>
+                            <div style={{ display: 'grid', gap: '12px' }}>
+                                <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #e0f2fe' }}>
+                                    <h5 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0c4a6e', margin: '0 0 4px 0' }}>🛡️ Pencegahan Stunting</h5>
+                                    <p style={{ fontSize: '0.7rem', color: '#334155', margin: 0, lineHeight: 1.4 }}>
+                                        ASI Eksklusif 6 bulan, MPASI bergizi tinggi protein hewani, dan rutin cek pertumbuhan di Posyandu/Puskesmas.
+                                    </p>
+                                </div>
+                                <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #e0f2fe' }}>
+                                    <h5 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0c4a6e', margin: '0 0 4px 0' }}>🥗 Solusi Wasting</h5>
+                                    <p style={{ fontSize: '0.7rem', color: '#334155', margin: 0, lineHeight: 1.4 }}>
+                                        Pemberian makanan tambahan (PMT), asupan kalori tercukupi, dan penanganan penyakit infeksi segera.
                                     </p>
                                 </div>
                             </div>
                         </div>
 
                         <button onClick={exportPDF} className="btn" style={{ border: 'none', color: 'white', background: '#10b981', width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }}>
-                            <FileText size={18} /> Cetak Laporan PDF 4-Indeks (Warna Emerald)
+                            <FileText size={18} /> Cetak Laporan Analisis Gizi
                         </button>
                     </div>
                 </div>

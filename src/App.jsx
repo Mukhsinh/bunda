@@ -17,6 +17,8 @@ import Sehati from './pages/sehati/Sehati';
 import Vaksinasi from './pages/vaksinasi/Vaksinasi';
 
 import LacakSelection from './pages/LacakSelection';
+import QuranHome from './pages/quran/QuranHome';
+import SurahDetail from './pages/quran/SurahDetail';
 
 import AdminPanel from './pages/admin/AdminPanel';
 
@@ -83,6 +85,9 @@ function App() {
 
           <Route path="/lacak" element={<LacakSelection />} />
 
+          <Route path="/quran" element={<QuranHome />} />
+          <Route path="/quran/:id" element={<SurahDetail />} />
+
           {/* Admin Routes */}
           <Route path="/admin/login" element={<Login />} />
           <Route path="/admin/dashboard" element={
@@ -107,7 +112,7 @@ function App() {
           whiteSpace: 'nowrap',
           letterSpacing: '0.2px',
         }}>
-          Aplikasi Sakpore @2026 Mukhsin Hadi. All Right Reserved
+          Sahabat bunda@2026.Mukhsin hadi. All right reserved
         </footer>
       </main>
 

@@ -141,22 +141,46 @@ export default function Vaksinasi() {
     };
 
     return (
-        <div className="animate-slide-up page-content">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                <button
-                    onClick={() => navigate('/')}
-                    style={{
-                        width: '40px', height: '40px', borderRadius: '12px',
-                        background: 'white', border: '1px solid #e2e8f0',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
-                    }}
-                >
-                    <ArrowLeft size={20} color="#64748b" />
-                </button>
-                <div>
-                    <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Menu VAKSINASI</h2>
-                    <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>Jadwal Imunisasi Rutin Lengkap</p>
+        <div className="animate-slide-up page-content" style={{ paddingTop: 0 }}>
+            {/* New Stylish Header */}
+            <div style={{
+                background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+                margin: '0 -20px 24px -20px',
+                padding: '30px 20px 50px',
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: '0 0 40px 40px',
+                boxShadow: '0 10px 20px rgba(14, 165, 233, 0.15)'
+            }}>
+                {/* Decorative Waves */}
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px', overflow: 'hidden' }}>
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', opacity: 0.3, fill: '#84cc16', transform: 'translateX(-100px)' }}>
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
+                    </svg>
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', opacity: 0.2, fill: '#f59e0b', position: 'absolute', top: 0, left: 0, transform: 'translateX(100px)' }}>
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
+                    </svg>
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', fill: 'white', position: 'absolute', top: '15px', left: 0 }}>
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
+                    </svg>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative', zIndex: 10 }}>
+                    <button
+                        onClick={() => navigate('/')}
+                        style={{
+                            width: '36px', height: '36px', borderRadius: '10px',
+                            background: 'rgba(255, 255, 255, 0.2)', border: '1px solid rgba(255, 255, 255, 0.3)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', color: 'white', backdropFilter: 'blur(4px)'
+                        }}
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h2 style={{ fontSize: '1.4rem', margin: 0, color: 'white', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>VAKSINASI</h2>
+                        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', margin: 0, fontWeight: 500 }}>Jadwal Imunisasi Rutin Lengkap</p>
+                    </div>
                 </div>
             </div>
 
