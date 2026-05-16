@@ -18,27 +18,27 @@ function FAQSection({ inlineMode = false }) {
         {
             icon: '📋',
             q: 'Apa itu layanan Sahabat Bunda?',
-            a: 'Sahabat Bunda adalah ekosistem layanan inovatif RSUD Bendan yang mendampingi Bunda sejak masa persalinan hingga perawatan pasca melahirkan.\n\nFitur unggulan kami meliputi:\n• RAMAH: Pengurusan dokumen kependudukan (Akta Lahir, KIA, KK, JKN) secara gratis dan tuntas.\n• SANTUN: Layanan antar-jemput pasien gratis untuk kenyamanan mobilitas Bunda dan bayi.\n• EMPATI: Akses video edukasi medis profesional tentang keperawatan bayi dan pemulihan ibu.\n• SEHATI: Alat deteksi dini status gizi balita menggunakan standar 4-Indeks Kemenkes.\n• VAKSIN: Pengingat dan penjadwalan imunisasi otomatis agar buah hati terlindungi tepat waktu.\n• AL-QUR\'AN: Fitur spiritual untuk mendukung ketenangan batin Bunda melalui lantunan ayat suci.'
+            a: 'Sahabat Bunda adalah ekosistem layanan inovatif RSUD Bendan yang mendampingi Bunda sejak masa persalinan hingga pemulihan.\n\n✨ Fitur Unggulan:\n• 🟢 RAMAH: Registrasi Akta Mudah (Gratis & Tuntas)\n• 🟢 SANTUN: Layanan Antar-Jemput Pasien (Gratis)\n• 🟢 EMPATI: Edukasi Video Medis Profesional\n• 🟢 SEHATI: Deteksi Gizi Balita (Standar Kemenkes)\n• 🟢 VAKSIN: Penjadwalan Imunisasi Otomatis\n• 🟢 AL-QUR\'AN: Support Ketenangan Spiritual'
         },
         {
             icon: '🎁',
             q: 'Apa manfaat yang saya peroleh?',
-            a: '• Layanan RAMAH: Pengurusan akta lahir GRATIS dan dokumen diantar langsung ke rumah.\n• Layanan SANTUN: Fasilitas antar jemput pasien pasca melahirkan GRATIS (lokasi Kota Pekalongan).'
+            a: '🎁 Layanan RAMAH:\n   Pengurusan akta lahir gratis dan dokumen kependudukan lengkap diantar langsung ke rumah.\n\n🚗 Layanan SANTUN:\n   Fasilitas antar jemput pasien pasca melahirkan gratis khusus wilayah Kota Pekalongan.'
         },
         {
             icon: '📝',
             q: 'Bagaimana cara mengisi formulir?',
-            a: '1. Pilih menu layanan yang diinginkan.\n2. Isi data diri dan medis dengan lengkap.\n3. Upload dokumen pendukung (KTP/SKL).\n4. Klik Kirim dan simpan kode tracking Anda.'
+            a: '1️⃣ Pilih Menu Layanan yang diinginkan.\n2️⃣ Isi Data Diri & Medis secara lengkap.\n3️⃣ Unggah Dokumen (KTP Pasutri/SKL).\n4️⃣ Klik Kirim dan simpan kode lacak Anda.'
         },
         {
             icon: '⏱️',
             q: 'Berapa lama prosesnya?',
-            a: '• RAMAH: Estimasi pengurusan dokumen adalah 7 hari kerja.\n• SANTUN: Permintaan transportasi langsung diproses sesuai ketersediaan armada RSUD Bendan.'
+            a: '⌛ RAMAH:\n   Estimasi penyelesaian berkas 7 hari kerja.\n\n🚀 SANTUN:\n   Langsung diproses sesuai antrean & ketersediaan armada RSUD Bendan.'
         },
         {
             icon: '💬',
             q: 'Bagaimana jika saya bingung?',
-            a: 'Bunda dapat langsung menghubungi Admin melalui tombol WhatsApp yang tersedia di halaman utama untuk konsultasi atau bantuan lebih lanjut.'
+            a: 'Bunda dapat langsung menghubungi Admin melalui tombol WhatsApp di halaman utama untuk mendapatkan panduan atau bantuan langsung dari petugas kami.'
         }
     ];
 
@@ -361,16 +361,16 @@ export default function HomePage() {
                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                 background: '#f8fafc', borderRadius: '16px', padding: '12px',
                                 border: '1px solid #f1f5f9', cursor: 'pointer',
-                                transition: 'all 0.2s ease'
+                                transition: 'all 0.2s ease', position: 'relative', overflow: 'hidden'
                             }} className="wa-hover-box" onClick={() => window.open('https://wa.me/6282324408910', '_blank')}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative', zIndex: 2 }}>
                                     <div style={{
-                                        width: '40px', height: '40px', borderRadius: '12px',
-                                        background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
+                                        width: '44px', height: '44px', borderRadius: '12px',
+                                        background: 'transparent',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        color: 'white', boxShadow: '0 4px 10px rgba(34, 197, 94, 0.2)'
+                                        overflow: 'hidden'
                                     }}>
-                                        <MessageCircle size={22} fill="white" />
+                                        <img src="/admin-3d-transparent.png" alt="Petugas" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                     </div>
                                     <div>
                                         <p style={{ fontSize: '0.8rem', fontWeight: 800, color: '#16a34a', margin: 0 }}>Hubungi via WhatsApp</p>
@@ -378,12 +378,10 @@ export default function HomePage() {
                                     </div>
                                 </div>
                                 <div style={{
-                                    width: '44px', height: '44px', borderRadius: '50%',
-                                    border: '2px solid white', boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-                                    overflow: 'hidden', background: '#e2e8f0',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: '#22c55e', opacity: 0.1, position: 'absolute', right: '-5px'
                                 }}>
-                                    <User size={24} color="#94a3b8" />
+                                    <MessageCircle size={60} fill="currentColor" />
                                 </div>
                             </div>
                         </div>

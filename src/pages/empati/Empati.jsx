@@ -116,22 +116,35 @@ export default function Empati() {
 
             {/* Video Player */}
             <div style={{
-                background: 'black',
+                background: 'transparent',
                 borderRadius: '16px',
                 overflow: 'hidden',
                 position: 'relative',
                 width: '100%',
                 aspectRatio: '16/9',
                 marginBottom: '16px',
-                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.05)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
             }}>
                 <iframe
                     key={selectedVideo.id}
                     src={`https://drive.google.com/file/d/${selectedVideo.videoSrc}/preview`}
                     style={{
-                        width: '100%', height: '100%', border: 'none'
+                        width: '100%',
+                        height: '100%',
+                        border: 'none',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        backgroundColor: 'transparent'
                     }}
-                    allow="autoplay"
+                    allow="autoplay; fullscreen"
+                    allowFullScreen
+                    webkitallowfullscreen="true"
+                    mozallowfullscreen="true"
+                    title={selectedVideo.title}
                 >
                     Browser Anda tidak mendukung embed video Google Drive.
                 </iframe>

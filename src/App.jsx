@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { Home, FileText, Truck, LogIn, Hospital, Search } from 'lucide-react';
 import { useAuthStore } from './store/useAuthStore';
+import { speakGreeting } from './lib/voiceUtils';
 
 import HomePage from './pages/HomePage';
 import Login from './pages/Login';
@@ -51,12 +52,37 @@ function App() {
     initializeAuth();
   }, [initializeAuth]);
 
-  // Listen for admin view mode changes
   useEffect(() => {
     const handleViewMode = (e) => setAdminViewMode(e.detail);
     window.addEventListener('admin-view-mode', handleViewMode);
     return () => window.removeEventListener('admin-view-mode', handleViewMode);
   }, []);
+
+  // Voice Greeting Logic
+  useEffect(() => {
+    const isAdminPage = location.pathname.startsWith('/admin');
+
+    const greetings = {
+      '/': 'Selamat Datang para sahabat bunda, nikmati pengalaman melahirkan yang nyaman dan menyenangkan di RSUD Bendan',
+      '/empati': 'Hai Bunda, Silakan pelajari video edukasi untuk Bunda paska melahirkan',
+      '/sehati': 'Hai Bunda, identifikasi kondisi gizi bayi Bunda secara mudah dan akurat',
+      '/vaksinasi': 'Hai Bunda, buat jadwal waktu vaksin bayi bunda dengan mudah',
+      '/quran': 'Hai Bunda, bacalah alquran untuk ketenangan hati Bunda',
+      '/ramah/submit': 'Hai Bunda, ajukan pengurusan akte dengan mudah dan gratis cukup isi form dan unggah dokumen yang diperlukan disini',
+      '/santun/submit': 'Hai Bunda, ajukan pengantaran pulang ke rumah Bunda dengan nyaman dan gratis, silakan isi form disini',
+      '/lacak': 'Hai Bunda, untuk melacak proses pengajuan silakan masukan kode registrasi Bunda saat pengajuan layanan'
+    };
+
+    const currentPath = location.pathname.toLowerCase();
+    const message = greetings[currentPath];
+
+    if (message && !isAdminPage) {
+      const timer = setTimeout(() => {
+        speakGreeting(message);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname]);
 
   // Check if we're on an admin page
   const isAdminPage = location.pathname.startsWith('/admin');
@@ -112,7 +138,7 @@ function App() {
           whiteSpace: 'nowrap',
           letterSpacing: '0.2px',
         }}>
-          Sahabat bunda@2026.Mukhsin hadi. All right reserved
+          SahabatBunda @ 2026. Mukhsin Hadi. All right Reserved
         </footer>
       </main>
 
