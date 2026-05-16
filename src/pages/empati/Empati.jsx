@@ -10,8 +10,8 @@ const topics = [
         color: '#0ea5e9',
         bgColor: '#e0f2fe',
         description: 'Panduan lengkap posisi dan pelekatan yang benar agar menyusui nyaman.',
-        videoSrc: '/empati/Teknik Menysusui Bayi.mp4',
-        imageSrc: '/images/empati/empati_breastfeeding_1778754798506.png'
+        videoSrc: '1B7IjRHiT9dTSzUnQPfqWxi01yli8zsDp',
+        imageSrc: '/images/empati/empati_breastfeeding_1778761557180.png'
     },
     {
         id: 2,
@@ -20,7 +20,7 @@ const topics = [
         color: '#16a34a',
         bgColor: '#dcfce7',
         description: 'Cara merawat kebersihan dan kesehatan bayi baru lahir dengan benar.',
-        videoSrc: '/empati/Perawatan Bayi Baru Lahir.mp4',
+        videoSrc: '1B7mC3jqUWhPbYNiraU360ntkzEDDNTjy',
         imageSrc: '/images/empati/empati_hygiene_1778754878193.png'
     },
     {
@@ -30,7 +30,7 @@ const topics = [
         color: '#f59e0b',
         bgColor: '#fef3c7',
         description: 'Daftar makanan bergizi untuk mempercepat pemulihan dan kualitas ASI ibu.',
-        videoSrc: '/empati/Nutrisi Ibu Pasca Melahirkan.mp4',
+        videoSrc: '1ejlnpyA60rPVzb5e0tkvJmC_VAueIMxD',
         imageSrc: '/images/empati/empati_nutrition_1778755013806.png'
     },
     {
@@ -40,7 +40,7 @@ const topics = [
         color: '#ec4899',
         bgColor: '#fdf2f8',
         description: 'Informasi mengenai pilihan alat kontrasepsi yang aman pasca melahirkan.',
-        videoSrc: '/empati/Alat Kontrasepsi Pasca Melahirkan.mp4',
+        videoSrc: '18bSkypN92uuj5ZkCyqkGY-Z7NSLs4p2Y',
         imageSrc: '/images/empati/empati_bonding_1778755126025.png'
     },
     {
@@ -50,7 +50,7 @@ const topics = [
         color: '#8b5cf6',
         bgColor: '#f5f3ff',
         description: 'Pentingnya menjaga psikologis ibu, mencegah baby blues, dan istirahat cukup.',
-        videoSrc: '/empati/Kesehatan Mental Pasca Melahirkan.mp4',
+        videoSrc: '1lN9mzQ9tOCAyHE5Ia5mo6Edtpc6AOKZo',
         imageSrc: '/images/empati/empati_mentalhealth_1778755087234.png'
     },
     {
@@ -60,7 +60,7 @@ const topics = [
         color: '#ef4444',
         bgColor: '#fee2e2',
         description: 'Mengenali gejala dan penanganan gangguan psikotis pasca melahirkan.',
-        videoSrc: '/empati/Gangguan Psikotis Pasca Melahirkan.mp4',
+        videoSrc: '1L5GXzunq_7tiZzOTVxCCm1g5_T8I-33k',
         imageSrc: '/images/empati/empati_mentalhealth_1778755087234.png'
     }
 ];
@@ -125,17 +125,16 @@ export default function Empati() {
                 marginBottom: '16px',
                 boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
             }}>
-                <video
+                <iframe
                     key={selectedVideo.id}
-                    src={selectedVideo.videoSrc}
-                    controls
-                    playsInline
+                    src={`https://drive.google.com/file/d/${selectedVideo.videoSrc}/preview`}
                     style={{
-                        width: '100%', height: '100%', objectFit: 'contain', background: '#000'
+                        width: '100%', height: '100%', border: 'none'
                     }}
+                    allow="autoplay"
                 >
-                    Browser Anda tidak mendukung tag video.
-                </video>
+                    Browser Anda tidak mendukung embed video Google Drive.
+                </iframe>
 
                 {/* Watermark RSUD Bendan */}
                 <div style={{

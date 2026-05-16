@@ -132,6 +132,20 @@ function TestimonialSection() {
                 </h3>
             </div>
 
+            {/* Moved Rating Badge */}
+            <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                background: '#fef3c7', padding: '6px 12px', borderRadius: '12px',
+                marginBottom: '16px', border: '1px solid #fde68a'
+            }}>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                    {[...Array(5)].map((_, i) => <Star key={i} size={12} fill="#f59e0b" color="#f59e0b" />)}
+                </div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#92400e', fontFamily: "'Outfit', sans-serif" }}>
+                    4.9/5 <span style={{ fontWeight: 500 }}>Rating Kepuasan Bunda</span>
+                </span>
+            </div>
+
             <div className="marquee-wrapper" style={{ marginBottom: '24px' }}>
                 <div className="marquee-content">
                     {[...display, ...display].map((t, i) => (
@@ -233,21 +247,6 @@ export default function HomePage() {
                         Layanan inovatif untuk pasien melahirkan di <span style={{ fontWeight: 900 }}>RSUD Bendan</span>
                     </p>
 
-                    {/* Rating Feedback Widget */}
-                    <div style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '10px',
-                        background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(12px)',
-                        padding: '8px 14px', borderRadius: '16px', marginTop: '12px',
-                        border: '1px solid rgba(255, 255, 255, 0.25)',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
-                    }}>
-                        <div style={{ display: 'flex', gap: '2px' }}>
-                            {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="#fcd34d" color="#fcd34d" />)}
-                        </div>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 900, color: 'white', fontFamily: "'Outfit', sans-serif" }}>
-                            4.9/5 <span style={{ fontWeight: 500, opacity: 0.9 }}>Rating Kepuasan Bunda</span>
-                        </span>
-                    </div>
                 </div>
             </div>
 

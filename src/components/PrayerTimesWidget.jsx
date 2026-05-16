@@ -69,11 +69,11 @@ const PrayerTimesWidget = () => {
     ];
 
     return (
-        <div style={{ margin: '0 16px', marginTop: '12px' }}>
+        <div style={{ margin: '0 4px', marginTop: '12px' }}>
             <div style={{
                 background: 'linear-gradient(135deg, #f97316, #ea580c)',
                 borderRadius: '16px',
-                padding: '12px 14px',
+                padding: '8px 14px',
                 boxShadow: '0 8px 24px rgba(249, 115, 22, 0.25)',
             }}>
                 {/* Main row */}
@@ -116,7 +116,7 @@ const PrayerTimesWidget = () => {
                 {/* Inline times row */}
                 <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    marginTop: '10px', paddingTop: '10px',
+                    marginTop: '8px', paddingTop: '8px',
                     borderTop: '1px solid rgba(255,255,255,0.15)',
                 }}>
                     {allPrayers.map((p, i) => {
