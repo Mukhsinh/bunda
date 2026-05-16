@@ -1,12 +1,14 @@
 /**
  * Voice Utilities for Sahabat Bunda
  * Handles Text-to-Speech using Web Speech API
+ * Suara: ramah, ceria, santai, menyenangkan
  */
+
+let hasSpoken = {};  // Track which pages have already spoken
 
 export const speakGreeting = (text) => {
     if (!('speechSynthesis' in window)) return;
 
-    // Wait for voices to be loaded (sometimes they load async)
     const synth = window.speechSynthesis;
 
     const performSpeak = () => {
@@ -16,31 +18,60 @@ export const speakGreeting = (text) => {
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'id-ID';
 
-        // Find a female voice if possible
+        // Find the best Indonesian female voice
         const voices = synth.getVoices();
-        // Look for Indonesian voices
-        const idVoices = voices.filter(v => v.lang.includes('id') || v.lang.includes('ID'));
+
+        // Prioritize Indonesian voices
+        const idVoices = voices.filter(v =>
+            v.lang.includes('id') || v.lang.includes('ID')
+        );
+
+        // Also collect all female-sounding voices as fallback
+        const allFemaleVoices = voices.filter(v =>
+            v.name.toLowerCase().includes('female') ||
+            v.name.toLowerCase().includes('woman') ||
+            v.name.toLowerCase().includes('zira') ||    // Microsoft Zira (English female)
+            v.name.toLowerCase().includes('hazel') ||   // Microsoft Hazel
+            v.name.toLowerCase().includes('susan')      // Microsoft Susan
+        );
 
         if (idVoices.length > 0) {
-            const femaleKeywords = ['female', 'google', 'indonesia', 'gadis', 'damayanti', 'risma', 'siti', 'ayu'];
-            const femaleVoice = idVoices.find(v =>
+            // Search for female Indonesian voice with expanded keywords
+            const femaleKeywords = [
+                'female', 'google', 'gadis', 'damayanti',
+                'risma', 'siti', 'ayu', 'wanita', 'perempuan'
+            ];
+            const bestVoice = idVoices.find(v =>
                 femaleKeywords.some(key => v.name.toLowerCase().includes(key))
             ) || idVoices[0];
 
-            utterance.voice = femaleVoice;
+            utterance.voice = bestVoice;
+        } else if (allFemaleVoices.length > 0) {
+            // Fallback to any female voice
+            utterance.voice = allFemaleVoices[0];
         }
 
-        // Settings for "ramah" and "ceria"
-        utterance.pitch = 1.1; // Slightly higher for cheerfulness
-        utterance.rate = 0.95;  // Slightly slower for better articulation
-        utterance.volume = 1.0;
+        // === TUNING: Santai, Ceria, Tidak Kaku ===
+        utterance.pitch = 1.15;   // Sedikit lebih tinggi -> kesan ceria & semangat
+        utterance.rate = 1.0;     // Kecepatan normal -> tidak terburu-buru, santai
+        utterance.volume = 0.9;   // Volume sedikit dikurangi -> tidak mengejutkan
 
         synth.speak(utterance);
     };
 
+    // Wait for voices to load
     if (synth.getVoices().length > 0) {
         performSpeak();
     } else {
-        synth.onvoiceschanged = performSpeak;
+        synth.onvoiceschanged = () => {
+            performSpeak();
+        };
     }
+};
+
+/**
+ * Reset tracking for a specific page (used when navigating away)
+ */
+export const resetSpokenPage = (path) => {
+    delete hasSpoken[path];
 };

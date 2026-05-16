@@ -69,6 +69,12 @@ const topics = [
 export default function Empati() {
     const navigate = useNavigate();
     const [selectedVideo, setSelectedVideo] = useState(topics[0]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const handleSelectVideo = (topic) => {
+        setIsLoading(true);
+        setSelectedVideo(topic);
+    };
 
     return (
         <div className="animate-slide-up page-content" style={{ paddingTop: 0 }}>
@@ -116,18 +122,34 @@ export default function Empati() {
 
             {/* Video Player */}
             <div style={{
-                background: 'transparent',
                 borderRadius: '16px',
                 overflow: 'hidden',
                 position: 'relative',
                 width: '100%',
-                aspectRatio: '16/9',
+                paddingBottom: '56.25%', /* 16:9 fallback */
                 marginBottom: '16px',
-                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.05)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                background: '#f1f5f9',
             }}>
+                {/* Loading overlay - fades out when iframe loads */}
+                {isLoading && (
+                    <div style={{
+                        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                        background: 'linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 5, transition: 'opacity 0.5s ease',
+                        borderRadius: '16px'
+                    }}>
+                        <div style={{
+                            width: '48px', height: '48px', borderRadius: '50%',
+                            border: '3px solid #0ea5e9', borderTopColor: 'transparent',
+                            animation: 'spin 1s linear infinite'
+                        }}></div>
+                        <p style={{ fontSize: '0.8rem', color: '#0ea5e9', fontWeight: 600, marginTop: '12px' }}>
+                            Memuat video...
+                        </p>
+                    </div>
+                )}
                 <iframe
                     key={selectedVideo.id}
                     src={`https://drive.google.com/file/d/${selectedVideo.videoSrc}/preview`}
@@ -138,27 +160,12 @@ export default function Empati() {
                         position: 'absolute',
                         top: 0,
                         left: 0,
-                        backgroundColor: 'transparent'
                     }}
                     allow="autoplay; fullscreen"
                     allowFullScreen
-                    webkitallowfullscreen="true"
-                    mozallowfullscreen="true"
                     title={selectedVideo.title}
-                >
-                    Browser Anda tidak mendukung embed video Google Drive.
-                </iframe>
-
-                {/* Watermark RSUD Bendan */}
-                <div style={{
-                    position: 'absolute', top: '16px', right: '16px',
-                    background: 'rgba(255, 255, 255, 0.8)', padding: '4px 8px',
-                    borderRadius: '6px', color: '#0ea5e9', fontSize: '0.55rem',
-                    fontWeight: 800, letterSpacing: '0.5px', pointerEvents: 'none',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                }}>
-                    RSUD Bendan
-                </div>
+                    onLoad={() => setIsLoading(false)}
+                />
             </div>
 
             {/* Video Title and Desc */}
@@ -176,7 +183,7 @@ export default function Empati() {
                 {topics.map((topic) => (
                     <div
                         key={topic.id}
-                        onClick={() => setSelectedVideo(topic)}
+                        onClick={() => handleSelectVideo(topic)}
                         style={{
                             background: selectedVideo.id === topic.id ? '#f8fafc' : 'white',
                             borderRadius: '16px', padding: '12px',

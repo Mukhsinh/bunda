@@ -70,7 +70,7 @@ function App() {
       '/quran': 'Hai Bunda, bacalah alquran untuk ketenangan hati Bunda',
       '/ramah/submit': 'Hai Bunda, ajukan pengurusan akte dengan mudah dan gratis cukup isi form dan unggah dokumen yang diperlukan disini',
       '/santun/submit': 'Hai Bunda, ajukan pengantaran pulang ke rumah Bunda dengan nyaman dan gratis, silakan isi form disini',
-      '/lacak': 'Hai Bunda, untuk melacak proses pengajuan silakan masukan kode registrasi Bunda saat pengajuan layanan'
+      '/lacak': 'Hai bunda, untuk melacak proses pengajuan silakan masukan kode registrasi Bunda saat pengajuan layanan'
     };
 
     const currentPath = location.pathname.toLowerCase();
@@ -79,8 +79,11 @@ function App() {
     if (message && !isAdminPage) {
       const timer = setTimeout(() => {
         speakGreeting(message);
-      }, 500);
-      return () => clearTimeout(timer);
+      }, 800);
+      return () => {
+        clearTimeout(timer);
+        window.speechSynthesis?.cancel();
+      };
     }
   }, [location.pathname]);
 
