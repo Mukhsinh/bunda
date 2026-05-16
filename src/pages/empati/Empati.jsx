@@ -121,24 +121,33 @@ export default function Empati() {
             </div>
 
             {/* Video Player */}
+            {/* 
+              Analisa: Google Drive /preview menambahkan toolbar bawaan 
+              (timeline di atas + kontrol di bawah) di dalam iframe.
+              Ini menyebabkan video terlihat lebih kecil dari container, 
+              menghasilkan area hitam di sekitar video.
+              
+              Solusi: Scale iframe 20% lebih besar dari container, sehingga
+              toolbar GDrive terpotong oleh overflow:hidden pada container.
+              Hasilnya: yang terlihat hanya konten video saja.
+            */}
             <div style={{
                 borderRadius: '16px',
                 overflow: 'hidden',
                 position: 'relative',
                 width: '100%',
-                paddingBottom: '56.25%', /* 16:9 fallback */
+                paddingBottom: '56.25%', /* 16:9 */
                 marginBottom: '16px',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                background: '#f1f5f9',
+                background: '#e2e8f0',
             }}>
-                {/* Loading overlay - fades out when iframe loads */}
+                {/* Loading overlay */}
                 {isLoading && (
                     <div style={{
                         position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
                         background: 'linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%)',
                         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 5, transition: 'opacity 0.5s ease',
-                        borderRadius: '16px'
+                        zIndex: 5, borderRadius: '16px'
                     }}>
                         <div style={{
                             width: '48px', height: '48px', borderRadius: '50%',
@@ -154,12 +163,12 @@ export default function Empati() {
                     key={selectedVideo.id}
                     src={`https://drive.google.com/file/d/${selectedVideo.videoSrc}/preview`}
                     style={{
-                        width: '100%',
-                        height: '100%',
                         border: 'none',
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
+                        top: '-10%',
+                        left: '-10%',
+                        width: '120%',
+                        height: '120%',
                     }}
                     allow="autoplay; fullscreen"
                     allowFullScreen
