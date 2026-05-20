@@ -60,6 +60,11 @@ function App() {
     return () => window.removeEventListener('admin-view-mode', handleViewMode);
   }, []);
 
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   // Voice Greeting Logic
   useEffect(() => {
     const isAdminPage = location.pathname.startsWith('/admin');
@@ -67,9 +72,9 @@ function App() {
     const greetings = {
       '/': 'Selamat Datang para sahabat bunda, nikmati pengalaman melahirkan yang nyaman dan menyenangkan di RSUD Bendan',
       '/empati': 'Hai Bunda, Silakan pelajari video edukasi untuk Bunda paska melahirkan',
-      '/sehati': 'Hai Bunda, identifikasi kondisi gizi bayi Bunda secara mudah dan akurat',
+      '/sehati': 'Hai Bunda, identifikasi kondisi gizi bayi Bunda secara mudah and akurat',
       '/vaksinasi': 'Hai Bunda, buat jadwal waktu vaksin bayi bunda dengan mudah',
-      '/sinergi': 'Hai Bunda, konsultasikan tumbuh kembang ananda bersama ahli gizi kami melalui video meet',
+      '/sinergi': 'Konsultasikan gizi buah hati dengan ahli gizi RSUD Bendan',
       '/quran': 'Hai Bunda, bacalah alquran untuk ketenangan hati Bunda',
       '/ramah/submit': 'Hai Bunda, ajukan pengurusan akte dengan mudah dan gratis cukup isi form dan unggah dokumen yang diperlukan disini',
       '/santun/submit': 'Hai Bunda, ajukan pengantaran pulang ke rumah Bunda dengan nyaman dan gratis, silakan isi form disini',
