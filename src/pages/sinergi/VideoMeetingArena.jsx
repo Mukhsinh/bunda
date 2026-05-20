@@ -135,7 +135,7 @@ const VideoMeetingArena = () => {
     }, []);
 
     const initJitsi = (sessionData) => {
-        const domain = "meet.jit.si";
+        const domain = "meet.ffmuc.net";
         let roomName = sessionData.jitsi_room || `sahabatbunda-sinergi-${sessionData.id}`;
 
         // Robust normalization: extract only the last part of the path if a URL is provided

@@ -451,8 +451,8 @@ export default function HomePage() {
                                         <div
                                             key={session.id}
                                             onClick={() => {
-                                                setTargetSession(session);
-                                                setShowVideoIdModal(true);
+                                                const type = session.is_group ? 'group' : 'individual';
+                                                navigate(`/sinergi/video?sessionId=${session.id}&type=${type}`);
                                             }}
                                             style={{
                                                 background: '#f8fafc', borderRadius: '16px', padding: '12px 14px',

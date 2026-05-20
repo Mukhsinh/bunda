@@ -101,7 +101,7 @@ const Sinergi = () => {
 
     useEffect(() => {
         if (jitsiMeeting && consultation?.jitsi_room) {
-            const domain = "meet.jit.si";
+            const domain = "meet.ffmuc.net";
             let roomName = consultation.jitsi_room || `sahabatbunda-sinergi-${consultation.id}`;
 
             // Robust normalization: extract only the last part of the path if a URL is provided
@@ -145,7 +145,7 @@ const Sinergi = () => {
 
             if (!window.JitsiMeetExternalAPI) {
                 const script = document.createElement("script");
-                script.src = "https://meet.jit.si/external_api.js";
+                script.src = "https://meet.ffmuc.net/external_api.js";
                 script.async = true;
                 script.onload = initJitsi;
                 document.body.appendChild(script);

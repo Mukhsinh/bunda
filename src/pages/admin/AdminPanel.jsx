@@ -1223,7 +1223,7 @@ export default function AdminPanel() {
                                                 setScheduleForm({
                                                     date: new Date().toISOString().split('T')[0],
                                                     time: '10:00',
-                                                    jitsi: `https://meet.jit.si/sahabatbunda-sinergi-${item.name.replace(/\s+/g, '-')}-${Math.random().toString(36).substring(7)}`
+                                                    jitsi: `https://meet.ffmuc.net/sahabatbunda-sinergi-${item.name.replace(/\s+/g, '-')}-${Math.random().toString(36).substring(7)}`
                                                 });
                                             }}>Jadwalkan</button>
                                         )}
