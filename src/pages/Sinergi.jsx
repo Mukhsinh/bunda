@@ -102,11 +102,11 @@ const Sinergi = () => {
     useEffect(() => {
         if (jitsiMeeting && consultation?.jitsi_room) {
             const domain = "meet.jit.si";
-            let roomName = consultation.jitsi_room;
+            let roomName = consultation.jitsi_room || `sahabatbunda-sinergi-${consultation.id}`;
+
+            // Normalize room name: if it's a full URL, extract the part after the domain
             if (roomName.includes('meet.jit.si/')) {
-                roomName = roomName.split('meet.jit.si/')[1];
-            } else {
-                roomName = 'sahabatbunda-sinergi-' + consultation.id;
+                roomName = roomName.split('meet.jit.si/')[1].split(/[#?]/)[0];
             }
 
             const initJitsi = () => {
@@ -118,6 +118,16 @@ const Sinergi = () => {
                         parentNode: document.querySelector('#jitsi-container'),
                         userInfo: {
                             displayName: consultation?.name || 'Pasien'
+                        },
+                        configOverwrite: {
+                            prejoinPageEnabled: false,
+                            disableDeepLinking: true,
+                            lobbyModeEnabled: false,
+                            enableLobby: false,
+                            requireDisplayName: true
+                        },
+                        interfaceConfigOverwrite: {
+                            ENABLE_LOBBY_BY_DEFAULT: false
                         }
                     };
                     const api = new window.JitsiMeetExternalAPI(domain, options);

@@ -127,7 +127,12 @@ const VideoMeetingArena = () => {
 
     const initJitsi = (sessionData) => {
         const domain = "meet.jit.si";
-        const roomName = sessionData.jitsi_room || `sahabatbunda-sinergi-${sessionData.id}`;
+        let roomName = sessionData.jitsi_room || `sahabatbunda-sinergi-${sessionData.id}`;
+
+        // Normalize room name: if it's a full URL, extract the part after the domain
+        if (roomName.includes('meet.jit.si/')) {
+            roomName = roomName.split('meet.jit.si/')[1].split(/[#?]/)[0];
+        }
 
         const options = {
             roomName: roomName,
@@ -166,7 +171,7 @@ const VideoMeetingArena = () => {
                 SHOW_WATERMARK_FOR_GUESTS: false,
                 GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
                 DISPLAY_WELCOME_PAGE_CONTENT: false,
-                ENABLE_LOBBY_BY_DEFAULT: true
+                ENABLE_LOBBY_BY_DEFAULT: false
             }
         };
 
