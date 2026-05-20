@@ -381,7 +381,9 @@ export default function AdminPanel() {
     // Manual Session
     const [manualSessionModal, setManualSessionModal] = useState(false);
     const [collectiveModal, setCollectiveModal] = useState(false);
-    const [manualSessionForm, setManualSessionForm] = useState({ full_name: '', jitsi_link: '', date: '', time: '' });
+    const [editSessionModal, setEditSessionModal] = useState(false);
+    const [editSessionForm, setEditSessionForm] = useState({ id: '', date: '', time: '' });
+    const [manualSessionForm, setManualSessionForm] = useState({ full_name: '', date: '', time: '', jitsi_link: '' });
     const [collectiveForm, setCollectiveForm] = useState({ title: '', date: '', time: '', jitsi: '' });
     const [narasumberForm, setNarasumberForm] = useState({ name: '', whatsapp: '' });
     const [expandedSessions, setExpandedSessions] = useState([]);
@@ -580,12 +582,14 @@ export default function AdminPanel() {
                 .in('id', sinergiSelectedReqs);
             if (rError) throw rError;
 
-            // 3. Send WA to all
+            // 3. Send WA to all (Sequential with delay to prevent browser blocking)
             const selectedData = sinergiCons.filter(c => sinergiSelectedReqs.includes(c.id));
-            for (const item of selectedData) {
-                const msg = `Halo ${item.name}, Anda telah dijadwalkan untuk *Konsultasi Online SINERGI Kolektif* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
-                openWhatsApp(item.whatsapp, msg);
-            }
+            selectedData.forEach((item, index) => {
+                setTimeout(() => {
+                    const msg = `Halo ${item.name}, Anda telah dijadwalkan untuk *Konsultasi Online SINERGI Kolektif* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
+                    openWhatsApp(item.whatsapp, msg);
+                }, index * 1500); // 1.5s delay between windows
+            });
 
             // 4. Send WA to Narasumber if manual
             if (narasumberForm.whatsapp) {
@@ -1095,13 +1099,27 @@ export default function AdminPanel() {
                                                 <p style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '12px' }}>🔗 <Link to={`/sinergi/video?sessionId=${session.id}`} style={{ color: '#0284c7', fontWeight: 700 }}>Masuk Arena (Dual-Frame)</Link></p>
                                                 <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                                                     {session.status !== 'Completed' ? (
-                                                        <button className="btn-m btn-success btn-sm" style={{ flex: 1 }} onClick={async () => {
-                                                            if (window.confirm('Tandai sesi grup ini sebagai selesai?')) {
-                                                                await supabase.from('sinergi_sessions').update({ status: 'Completed' }).eq('id', session.id);
-                                                                await supabase.from('sinergi_requests').update({ status: 'Completed' }).eq('session_id', session.id);
-                                                                fetchData();
-                                                            }
-                                                        }}>Selesaikan Sesi</button>
+                                                        <>
+                                                            <button className="btn-m btn-success btn-sm" style={{ flex: 2 }} onClick={async () => {
+                                                                if (window.confirm('Tandai sesi grup ini sebagai selesai?')) {
+                                                                    await supabase.from('sinergi_sessions').update({ status: 'Completed' }).eq('id', session.id);
+                                                                    await supabase.from('sinergi_requests').update({ status: 'Completed' }).eq('session_id', session.id);
+                                                                    fetchData();
+                                                                }
+                                                            }}>Selesaikan Sesi</button>
+                                                            <button className="btn-m btn-success btn-sm" style={{ flex: 1 }} onClick={() => {
+                                                                navigate(`/sinergi/video?sessionId=${session.id}&type=group`);
+                                                            }}>Masuk Arena</button>
+                                                            <button className="btn-m btn-excel btn-sm" onClick={() => {
+                                                                setEditSessionModal(true);
+                                                                const sAt = new Date(session.scheduled_at);
+                                                                setEditSessionForm({
+                                                                    id: session.id,
+                                                                    date: sAt.toISOString().split('T')[0],
+                                                                    time: sAt.toTimeString().slice(0, 5)
+                                                                });
+                                                            }}>Edit</button>
+                                                        </>
                                                     ) : (
                                                         <button className="btn-m btn-chart btn-sm" style={{ flex: 1 }} onClick={async () => {
                                                             if (window.confirm('Arsipkan sesi grup ini?')) {
@@ -1381,29 +1399,24 @@ export default function AdminPanel() {
                                                     onChange={e => setCollectiveForm({ ...collectiveForm, title: e.target.value })}
                                                 />
                                             </div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                                <div>
-                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Nama Narasumber</label>
-                                                    <input
-                                                        type="text"
-                                                        className="filter-dd"
-                                                        placeholder="Contoh: dr. Amanda"
-                                                        style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
-                                                        value={narasumberForm.name}
-                                                        onChange={e => setNarasumberForm({ ...narasumberForm, name: e.target.value })}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>WA Narasumber (opsional)</label>
-                                                    <input
-                                                        type="text"
-                                                        className="filter-dd"
-                                                        placeholder="Contoh: 628..."
-                                                        style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
-                                                        value={narasumberForm.whatsapp}
-                                                        onChange={e => setNarasumberForm({ ...narasumberForm, whatsapp: e.target.value })}
-                                                    />
-                                                </div>
+                                            <div>
+                                                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Ahli Gizi (Narasumber)</label>
+                                                <select
+                                                    className="filter-dd"
+                                                    style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                    value={narasumberForm.id || ''}
+                                                    onChange={e => {
+                                                        const expert = nutritionists.find(n => n.id === e.target.value);
+                                                        if (expert) {
+                                                            setNarasumberForm({ id: expert.id, name: expert.name, whatsapp: expert.whatsapp });
+                                                        }
+                                                    }}
+                                                >
+                                                    <option value="">Pilih Ahli Gizi...</option>
+                                                    {nutritionists.map(n => (
+                                                        <option key={n.id} value={n.id}>{n.name}</option>
+                                                    ))}
+                                                </select>
                                             </div>
                                             <div>
                                                 <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Tanggal Sesi</label>
@@ -1443,6 +1456,45 @@ export default function AdminPanel() {
                                             <button type="submit" className="btn-m btn-excel btn-full" style={{ marginTop: '10px' }}>Buat Sesi & Kirim WA Massal</button>
                                         </form>
                                     </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Edit Session Modal */}
+                        {editSessionModal && (
+                            <div className="modal-overlay" onClick={() => setEditSessionModal(false)}>
+                                <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+                                    <button className="modal-close" onClick={() => setEditSessionModal(false)}><X size={18} /></button>
+                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b', marginBottom: '20px', fontFamily: "'Outfit', sans-serif" }}>
+                                        Ubah Waktu Sesi
+                                    </h3>
+                                    <form onSubmit={async (e) => {
+                                        e.preventDefault();
+                                        const scheduledAt = `${editSessionForm.date}T${editSessionForm.time}:00`;
+                                        await supabase.from('sinergi_sessions').update({ scheduled_at: scheduledAt }).eq('id', editSessionForm.id);
+                                        setEditSessionModal(false);
+                                        fetchData();
+                                    }}>
+                                        <div style={{ marginBottom: '12px' }}>
+                                            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Tanggal Baru</label>
+                                            <input
+                                                type="date" required className="filter-dd"
+                                                style={{ width: '100%', appearance: 'auto', backgroundImage: 'none' }}
+                                                value={editSessionForm.date}
+                                                onChange={e => setEditSessionForm({ ...editSessionForm, date: e.target.value })}
+                                            />
+                                        </div>
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Waktu Baru</label>
+                                            <input
+                                                type="time" required className="filter-dd"
+                                                style={{ width: '100%', appearance: 'auto', backgroundImage: 'none' }}
+                                                value={editSessionForm.time}
+                                                onChange={e => setEditSessionForm({ ...editSessionForm, time: e.target.value })}
+                                            />
+                                        </div>
+                                        <button type="submit" className="btn-m btn-success btn-full">Simpan Perubahan</button>
+                                    </form>
                                 </div>
                             </div>
                         )}

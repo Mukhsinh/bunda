@@ -94,8 +94,8 @@ const Sinergi = () => {
     };
 
     const joinJitsi = () => {
-        if (consultation?.jitsi_room) {
-            setJitsiMeeting(true);
+        if (consultation?.jitsi_room || consultation?.jitsi_link) {
+            navigate(`/sinergi/video?sessionId=${consultation.id}&type=manual`);
         }
     };
 
@@ -452,18 +452,17 @@ const Sinergi = () => {
                                                 <p style={{ margin: '0 0 16px 0', fontSize: '0.82rem', color: '#94a3b8' }}>
                                                     Gunakan link berikut untuk masuk ke ruang konsultasi video pada waktu yang ditentukan.
                                                 </p>
-
-                                                <button onClick={joinJitsi} disabled={!consultation.jitsi_room} style={{
+                                                <button onClick={joinJitsi} disabled={!consultation.jitsi_room && !consultation.jitsi_link} style={{
                                                     width: '100%', padding: '16px 20px', borderRadius: 14,
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                                    fontWeight: 800, fontSize: '0.95rem', border: 'none', cursor: consultation.jitsi_room ? 'pointer' : 'not-allowed',
+                                                    fontWeight: 800, fontSize: '0.95rem', border: 'none', cursor: (consultation.jitsi_room || consultation.jitsi_link) ? 'pointer' : 'not-allowed',
                                                     transition: 'all 0.2s', fontFamily: "'Outfit', sans-serif",
-                                                    background: consultation.jitsi_room ? 'linear-gradient(135deg, #16a34a, #15803d)' : '#e2e8f0',
-                                                    color: consultation.jitsi_room ? 'white' : '#94a3b8',
-                                                    boxShadow: consultation.jitsi_room ? '0 8px 20px rgba(22,163,74,0.3)' : 'none'
+                                                    background: (consultation.jitsi_room || consultation.jitsi_link) ? 'linear-gradient(135deg, #16a34a, #15803d)' : '#e2e8f0',
+                                                    color: (consultation.jitsi_room || consultation.jitsi_link) ? 'white' : '#94a3b8',
+                                                    boxShadow: (consultation.jitsi_room || consultation.jitsi_link) ? '0 8px 20px rgba(22,163,74,0.3)' : 'none'
                                                 }}>
                                                     <Video size={20} />
-                                                    {consultation.jitsi_room ? 'Mulai Video Meet' : 'Link Belum Tersedia'}
+                                                    {(consultation.jitsi_room || consultation.jitsi_link) ? 'Mulai Video Meet' : 'Link Belum Tersedia'}
                                                 </button>
                                             </div>
                                         </div>

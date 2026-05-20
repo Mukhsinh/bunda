@@ -23,9 +23,10 @@ const VideoMeetingArena = () => {
     const [isEnding, setIsEnding] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
 
-    // Get sessionId from query params
+    // Get sessionId and type from query params
     const queryParams = new URLSearchParams(location.search);
     const sessionId = queryParams.get('sessionId');
+    const sessionType = queryParams.get('type') || 'group'; // Default to group for backward compatibility
     const isNarasumber = profile?.role === 'admin' || profile?.role === 'narasumber';
 
     useEffect(() => {
@@ -81,8 +82,9 @@ const VideoMeetingArena = () => {
 
     const fetchSessionDetails = async () => {
         try {
+            const table = sessionType === 'manual' ? 'sinergi_requests' : 'sinergi_sessions';
             const { data, error } = await supabase
-                .from('sinergi_sessions')
+                .from(table)
                 .select('*')
                 .eq('id', sessionId)
                 .single();
@@ -93,8 +95,15 @@ const VideoMeetingArena = () => {
                     setTimeout(() => navigate('/'), 3000);
                     return;
                 }
-                setSession(data);
-                initJitsi(data);
+                // Normalize some fields if manual
+                const normalizedData = {
+                    ...data,
+                    title: sessionType === 'manual' ? `Konsultasi: ${data.name}` : data.title,
+                    narasumber_name: sessionType === 'manual' ? (data.narasumber_name || 'Ahli Gizi RSUD Bendan') : data.narasumber_name,
+                    jitsi_room: data.jitsi_room || data.jitsi_link || `SAKPORE-SINERGI-${data.id}`
+                };
+                setSession(normalizedData);
+                initJitsi(normalizedData);
             } else {
                 navigate('/');
             }
