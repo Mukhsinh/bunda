@@ -468,7 +468,7 @@ export default function HomePage() {
                                                 </p>
                                             </div>
                                             <div style={{ background: '#dcfce7', color: '#16a34a', padding: '6px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 800, textAlign: 'center', minWidth: '70px', boxShadow: '0 2px 5px rgba(22, 163, 74, 0.1)' }}>
-                                                {new Date(session.scheduled_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
+                                                {new Date(session.scheduled_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB
                                             </div>
                                         </div>
                                     ))}

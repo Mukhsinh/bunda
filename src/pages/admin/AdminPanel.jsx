@@ -353,6 +353,7 @@ export default function AdminPanel() {
     const [nutritionistModal, setNutritionistModal] = useState(false);
     const [nutritionistForm, setNutritionistForm] = useState({ name: '', whatsapp: '' });
     const [sinergiSelectedReqs, setSinergiSelectedReqs] = useState([]);
+    const [userProfile, setUserProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [notifications, setNotifications] = useState([]);
     const [viewMode, setViewMode] = useState(() => {
@@ -423,6 +424,19 @@ export default function AdminPanel() {
     const ramahChartRef = useRef(null); const santunChartRef = useRef(null);
 
     useEffect(() => {
+        const fetchProfile = async () => {
+            if (!user) return;
+            const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            if (data) {
+                setUserProfile(data);
+                // If nutritionist, only allow sinergi tab
+                if (data.role === 'narasumber') {
+                    setActiveTab('sinergi');
+                }
+            }
+        };
+        fetchProfile();
+
         fetchData();
 
         const ramahSub = supabase.channel('public:ramah_documents')
@@ -521,28 +535,29 @@ export default function AdminPanel() {
     const handleScheduleSinergi = async (e) => {
         e.preventDefault();
         try {
-            const scheduledAt = `${scheduleForm.date}T${scheduleForm.time}:00`;
-            // Generate a simple 5-char access ID
+            const scheduledAt = new Date(`${scheduleForm.date}T${scheduleForm.time}:00`).toISOString();
             const accessId = Math.random().toString(36).substring(2, 7).toUpperCase();
 
-            const { error } = await supabase.from('sinergi_requests').update({
-                status: 'Scheduled',
-                scheduled_at: scheduledAt,
-                jitsi_room: scheduleForm.jitsi
-            }).eq('id', schedulingSinergi.id);
-            if (error) throw error;
-
-            // Also create a entry in sinergi_sessions for individual too, to maintain consistency
-            const { error: sError } = await supabase.from('sinergi_sessions').insert([{
+            // 1. Create a session entry
+            const { data: session, error: sError } = await supabase.from('sinergi_sessions').insert([{
                 title: `Konsultasi: ${schedulingSinergi.name}`,
                 scheduled_at: scheduledAt,
                 jitsi_room: scheduleForm.jitsi,
                 status: 'Scheduled',
                 access_id: accessId
-            }]);
+            }]).select().single();
             if (sError) throw sError;
 
-            const msg = `Halo ${schedulingSinergi.name}, sesi *Konsultasi Online SINERGI* Anda telah dijadwalkan pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${scheduleForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
+            // 2. Link request to the session
+            const { error: rError } = await supabase.from('sinergi_requests').update({
+                status: 'Scheduled',
+                scheduled_at: scheduledAt,
+                jitsi_room: scheduleForm.jitsi,
+                session_id: session.id
+            }).eq('id', schedulingSinergi.id);
+            if (rError) throw rError;
+
+            const msg = `Halo ${schedulingSinergi.name}, sesi *Konsultasi Online SINERGI* Anda telah dijadwalkan pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${scheduleForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
             openWhatsApp(schedulingSinergi.whatsapp, msg);
             setSchedulingSinergi(null);
             fetchData();
@@ -589,7 +604,7 @@ export default function AdminPanel() {
             if (selectedData.length > 0) {
                 selectedData.forEach((item, index) => {
                     setTimeout(() => {
-                        const msg = `Halo ${item.name}, Anda telah dijadwalkan untuk *Konsultasi Online SINERGI Kolektif* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
+                        const msg = `Halo ${item.name}, Anda telah dijadwalkan untuk *Konsultasi Online SINERGI Kolektif* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
                         openWhatsApp(item.whatsapp, msg);
                     }, index * 1500);
                 });
@@ -598,7 +613,7 @@ export default function AdminPanel() {
             // 4. Send WA to Narasumber
             if (narasumberForm.whatsapp) {
                 setTimeout(() => {
-                    const nMsg = `Halo ${narasumberForm.name}, Anda ditugaskan sebagai Narasumber untuk *Konsultasi Online SINERGI* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nTerima kasih.`;
+                    const nMsg = `Halo ${narasumberForm.name}, Anda ditugaskan sebagai Narasumber untuk *Konsultasi Online SINERGI* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nTerima kasih.`;
                     openWhatsApp(narasumberForm.whatsapp, nMsg);
                 }, (selectedData.length + 1) * 1500);
             }
@@ -920,7 +935,7 @@ export default function AdminPanel() {
 
             <div className="page-content" style={{ padding: '16px 16px 32px' }}>
                 <div className="admin-tabs-modern">
-                    {tabs.map(t => {
+                    {tabs.filter(t => userProfile?.role !== 'narasumber' || t.key === 'sinergi').map(t => {
                         const I = t.icon;
                         let badgeCount = 0;
                         if (t.key === 'ramah') badgeCount = ramahDocs.filter(d => d.status === 'pending').length;
@@ -1186,7 +1201,7 @@ export default function AdminPanel() {
                                         </p>
                                         {item.scheduled_at && (
                                             <p style={{ marginTop: '4px', color: '#0284c7', fontWeight: 600 }}>
-                                                ⏰ Jadwal: {new Date(item.scheduled_at).toLocaleString('id-ID')}
+                                                ⏰ Jadwal: {new Date(item.scheduled_at).toLocaleString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')}
                                             </p>
                                         )}
                                         {item.jitsi_room && (
@@ -1505,17 +1520,17 @@ export default function AdminPanel() {
                                             const participants = sinergiCons.filter(c => String(c.session_id).toLowerCase() === String(editSessionForm.id).toLowerCase());
                                             const session = sinergiSessions.find(s => String(s.id).toLowerCase() === String(editSessionForm.id).toLowerCase());
 
-                                            if (participants.length > 0 && window.confirm(`Reschedule berhasil. Kirim pesan WhatsApp massal ke ${participants.length} peserta?`)) {
+                                            if (participants.length > 0 && window.confirm(`Jadwal diperbarui. Kirim pemberitahuan WhatsApp ke ${participants.length} peserta?`)) {
                                                 const newTimeStr = new Date(scheduledAt).toLocaleString('id-ID', {
-                                                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                                                });
+                                                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
+                                                }).replace('.', ':');
 
-                                                // Sequential broadcast
+                                                // Mass broadcast via WA
                                                 participants.forEach((p, idx) => {
                                                     setTimeout(() => {
-                                                        const msg = `Halo ${p.name}, kami menginformasikan perubahan jadwal sesi ${session?.title || 'Konsultasi Gizi'}. Jadwal terbaru adalah: *${newTimeStr} WIB*.\n\nSilakan masuk arena menggunakan ID Akses Anda pada jam tersebut. Terima kasih.`;
+                                                        const msg = `Halo ${p.name}, pemberitahuan dari SAKPORE RSUD Bendan. Jadwal sesi *${session?.title || 'Konsultasi Gizi'}* telah diubah. Jadwal terbaru: *${newTimeStr} WIB*.\n\nMohon hadir tepat waktu. Terima kasih.`;
                                                         openWhatsApp(p.whatsapp, msg);
-                                                    }, idx * 1500);
+                                                    }, idx * 2000); // 2s delay between messages
                                                 });
                                             }
 

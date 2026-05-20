@@ -152,7 +152,13 @@ const VideoMeetingArena = () => {
                 SHOW_JITSI_WATERMARK: false,
                 SHOW_WATERMARK_FOR_GUESTS: false,
                 GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
-                DISPLAY_WELCOME_PAGE_CONTENT: false
+                DISPLAY_WELCOME_PAGE_CONTENT: false,
+                ENABLE_LOBBY_BY_DEFAULT: isNarasumber
+            },
+            configOverwrite: {
+                ...options.configOverwrite,
+                lobbyModeEnabled: isNarasumber,
+                enableLobby: isNarasumber
             }
         };
 
