@@ -552,7 +552,7 @@ export default function AdminPanel() {
     const handleCreateCollectiveSession = async (e) => {
         e.preventDefault();
         try {
-            const scheduledAt = `${collectiveForm.date}T${collectiveForm.time}:00`;
+            const scheduledAt = new Date(`${collectiveForm.date}T${collectiveForm.time}:00`).toISOString();
             const accessId = Math.random().toString(36).substring(2, 7).toUpperCase();
 
             // 1. Create the session
@@ -564,9 +564,9 @@ export default function AdminPanel() {
                     jitsi_room: collectiveForm.jitsi,
                     status: 'Scheduled',
                     access_id: accessId,
-                    narasumber_name: collectiveForm.narasumber || 'Alih Gizi RSUD Bendan',
-                    narasumber_whatsapp: collectiveForm.whatsapp || '',
-                    nutritionist_id: collectiveForm.narasumber_id || null
+                    narasumber_name: narasumberForm.name || 'Ahli Gizi RSUD Bendan',
+                    narasumber_whatsapp: narasumberForm.whatsapp || '',
+                    nutritionist_id: narasumberForm.id || null
                 }])
                 .select()
                 .single();
@@ -584,26 +584,29 @@ export default function AdminPanel() {
                 .in('id', sinergiSelectedReqs);
             if (rError) throw rError;
 
-            // 3. Send WA to all (Sequential with delay to prevent browser blocking)
+            // 3. Send WA to all (Sequential with delay)
             const selectedData = sinergiCons.filter(c => sinergiSelectedReqs.includes(c.id));
-            selectedData.forEach((item, index) => {
-                setTimeout(() => {
-                    const msg = `Halo ${item.name}, Anda telah dijadwalkan untuk *Konsultasi Online SINERGI Kolektif* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
-                    openWhatsApp(item.whatsapp, msg);
-                }, index * 1500); // 1.5s delay between windows
-            });
+            if (selectedData.length > 0) {
+                selectedData.forEach((item, index) => {
+                    setTimeout(() => {
+                        const msg = `Halo ${item.name}, Anda telah dijadwalkan untuk *Konsultasi Online SINERGI Kolektif* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
+                        openWhatsApp(item.whatsapp, msg);
+                    }, index * 1500);
+                });
+            }
 
-            // 4. Send WA to Narasumber if manual
+            // 4. Send WA to Narasumber
             if (narasumberForm.whatsapp) {
-                const nMsg = `Halo ${narasumberForm.name}, Anda ditugaskan sebagai Narasumber untuk *Konsultasi Online SINERGI* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nTerima kasih.`;
-                openWhatsApp(narasumberForm.whatsapp, nMsg);
+                setTimeout(() => {
+                    const nMsg = `Halo ${narasumberForm.name}, Anda ditugaskan sebagai Narasumber untuk *Konsultasi Online SINERGI* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nTerima kasih.`;
+                    openWhatsApp(narasumberForm.whatsapp, nMsg);
+                }, (selectedData.length + 1) * 1500);
             }
 
             setCollectiveModal(false);
             setSinergiSelectedReqs([]);
-            setNarasumberForm({ name: '', whatsapp: '' });
+            setNarasumberForm({ id: '', name: '', whatsapp: '' });
             fetchData();
-            alert('Sesi kolektif berhasil dibuat!');
         } catch (e) { alert('Gagal: ' + e.message); }
     };
     const handleAddNutritionist = async (e) => {
@@ -1423,14 +1426,18 @@ export default function AdminPanel() {
                                                     style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
                                                     value={narasumberForm.id || ''}
                                                     onChange={e => {
-                                                        const expert = nutritionists.find(n => n.id === e.target.value);
+                                                        if (e.target.value === "") {
+                                                            setNarasumberForm({ id: '', name: '', whatsapp: '' });
+                                                            return;
+                                                        }
+                                                        const expert = sinergiNutritionists.find(n => n.id === e.target.value);
                                                         if (expert) {
                                                             setNarasumberForm({ id: expert.id, name: expert.name, whatsapp: expert.whatsapp });
                                                         }
                                                     }}
                                                 >
                                                     <option value="">Pilih Ahli Gizi...</option>
-                                                    {nutritionists.map(n => (
+                                                    {sinergiNutritionists.map(n => (
                                                         <option key={n.id} value={n.id}>{n.name}</option>
                                                     ))}
                                                 </select>
@@ -1487,25 +1494,29 @@ export default function AdminPanel() {
                                     </h3>
                                     <form onSubmit={async (e) => {
                                         e.preventDefault();
-                                        const scheduledAt = new Date(`${editSessionForm.date}T${editSessionForm.time}`).toISOString();
+                                        const scheduledAt = new Date(`${editSessionForm.date}T${editSessionForm.time}:00`).toISOString();
                                         const { error } = await supabase.from('sinergi_sessions').update({ scheduled_at: scheduledAt }).eq('id', editSessionForm.id);
 
                                         if (!error) {
-                                            // Broadcast to participants
-                                            const participants = sinergiCons.filter(c => c.session_id === editSessionForm.id);
-                                            const session = sinergiSessions.find(s => s.id === editSessionForm.id);
+                                            // Sync scheduled_at to all requests in this session
+                                            await supabase.from('sinergi_requests').update({ scheduled_at: scheduledAt }).eq('session_id', editSessionForm.id);
 
-                                            if (window.confirm(`Reschedule berhasil. Kirim pesan WhatsApp massal ke ${participants.length} peserta?`)) {
+                                            // Broadcast to participants
+                                            const participants = sinergiCons.filter(c => String(c.session_id).toLowerCase() === String(editSessionForm.id).toLowerCase());
+                                            const session = sinergiSessions.find(s => String(s.id).toLowerCase() === String(editSessionForm.id).toLowerCase());
+
+                                            if (participants.length > 0 && window.confirm(`Reschedule berhasil. Kirim pesan WhatsApp massal ke ${participants.length} peserta?`)) {
                                                 const newTimeStr = new Date(scheduledAt).toLocaleString('id-ID', {
                                                     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
                                                 });
 
-                                                for (let i = 0; i < participants.length; i++) {
-                                                    const p = participants[i];
-                                                    const msg = `Halo ${p.name}, kami menginformasikan perubahan jadwal sesi ${session?.title || 'Konsultasi Gizi'}. Jadwal terbaru adalah: *${newTimeStr} WIB*. Silakan masuk arena menggunakan ID Akses Anda pada jam tersebut. Terima kasih.`;
-                                                    openWhatsApp(p.whatsapp, msg);
-                                                    if (i < participants.length - 1) await new Promise(r => setTimeout(r, 1500));
-                                                }
+                                                // Sequential broadcast
+                                                participants.forEach((p, idx) => {
+                                                    setTimeout(() => {
+                                                        const msg = `Halo ${p.name}, kami menginformasikan perubahan jadwal sesi ${session?.title || 'Konsultasi Gizi'}. Jadwal terbaru adalah: *${newTimeStr} WIB*.\n\nSilakan masuk arena menggunakan ID Akses Anda pada jam tersebut. Terima kasih.`;
+                                                        openWhatsApp(p.whatsapp, msg);
+                                                    }, idx * 1500);
+                                                });
                                             }
 
                                             setEditSessionModal(false);

@@ -223,15 +223,45 @@ export default function HomePage() {
     useEffect(() => {
         const fetchSessions = async () => {
             try {
-                // Fetch all sessions that are not completed
-                const { data, error } = await supabase
+                setLoadingSessions(true);
+                // 1. Fetch group sessions
+                const { data: groupSessions, error: gError } = await supabase
                     .from('sinergi_sessions')
                     .select('*')
                     .not('status', 'in', '("Completed","Archived")')
                     .order('scheduled_at', { ascending: true });
 
-                if (error) throw error;
-                setLiveSessions(data || []);
+                if (gError) throw gError;
+
+                // 2. Fetch individual scheduled requests that ARE NOT part of a group session
+                const { data: indRequests, error: iError } = await supabase
+                    .from('sinergi_requests')
+                    .select('*')
+                    .eq('status', 'Scheduled')
+                    .is('session_id', null)
+                    .order('scheduled_at', { ascending: true });
+
+                if (iError) throw iError;
+
+                // Map individual requests to a similar format as sessions
+                const mappedInd = (indRequests || []).map(r => ({
+                    ...r,
+                    title: `Konsultasi: ${r.name}`,
+                    is_group: false,
+                    access_id: r.tracking_code // Use tracking_code for individual sessions
+                }));
+
+                const mappedGroup = (groupSessions || []).map(s => ({
+                    ...s,
+                    is_group: true
+                }));
+
+                // Combine and sort by date
+                const combined = [...mappedGroup, ...mappedInd].sort((a, b) =>
+                    new Date(a.scheduled_at) - new Date(b.scheduled_at)
+                );
+
+                setLiveSessions(combined);
             } catch (err) {
                 console.error("Error fetching sessions:", err);
             } finally {
@@ -241,13 +271,14 @@ export default function HomePage() {
 
         fetchSessions();
         // Set up real-time subscription for session updates
-        const subscription = supabase
-            .channel('public:sinergi_sessions')
+        const sessionSub = supabase
+            .channel('sinergi_updates')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'sinergi_sessions' }, fetchSessions)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'sinergi_requests' }, fetchSessions)
             .subscribe();
 
         return () => {
-            supabase.removeChannel(subscription);
+            supabase.removeChannel(sessionSub);
         };
     }, []);
 
@@ -576,33 +607,50 @@ export default function HomePage() {
                                     style={{ flex: 1, padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', fontWeight: 700, cursor: 'pointer' }}
                                 >Batal</button>
                                 <button
-                                    onClick={() => {
+                                    onClick={async () => {
                                         if (!inputVideoId) return;
 
-                                        // Verify logic
-                                        const sessionToJoin = targetSession || null;
                                         const inputCode = inputVideoId.trim().toUpperCase();
 
-                                        if (sessionToJoin) {
-                                            // Specific session click
-                                            if ((sessionToJoin.access_id && sessionToJoin.access_id.trim().toUpperCase() === inputCode) || inputCode === 'ADMIN') {
-                                                navigate(`/sinergi/video?sessionId=${sessionToJoin.id}&type=group`);
+                                        // 1. Try finding in loaded liveSessions (optimistic)
+                                        let found = targetSession ?
+                                            ((targetSession.access_id && targetSession.access_id.trim().toUpperCase() === inputCode) ? targetSession : null) :
+                                            liveSessions.find(s => s.access_id && s.access_id.trim().toUpperCase() === inputCode);
+
+                                        // Admin override for testing
+                                        if (inputCode === 'ADMIN' && targetSession) found = targetSession;
+
+                                        if (found) {
+                                            const type = found.is_group ? 'group' : 'individual';
+                                            navigate(`/sinergi/video?sessionId=${found.id}&type=${type}`);
+                                            setShowVideoIdModal(false);
+                                            setTargetSession(null);
+                                            setInputVideoId('');
+                                            return;
+                                        }
+
+                                        // 2. Fallback: Query database directly for individual request (in case it's not in liveSessions)
+                                        try {
+                                            const { data, error } = await supabase
+                                                .from('sinergi_requests')
+                                                .select('*')
+                                                .eq('tracking_code', inputCode)
+                                                .eq('status', 'Scheduled')
+                                                .single();
+
+                                            if (data && !error) {
+                                                // If it has a session_id, it's actually group-based
+                                                const finalType = data.session_id ? 'group' : 'individual';
+                                                const finalId = data.session_id || data.id;
+                                                navigate(`/sinergi/video?sessionId=${finalId}&type=${finalType}`);
                                                 setShowVideoIdModal(false);
                                                 setTargetSession(null);
                                                 setInputVideoId('');
                                             } else {
-                                                alert('ID Akses tidak valid untuk sesi ini.');
+                                                alert('ID Akses tidak valid atau sesi belum dimulai.');
                                             }
-                                        } else {
-                                            // Direct access button - we need to find the session
-                                            const found = liveSessions.find(s => s.access_id && s.access_id.trim().toUpperCase() === inputCode);
-                                            if (found) {
-                                                navigate(`/sinergi/video?sessionId=${found.id}&type=group`);
-                                                setShowVideoIdModal(false);
-                                                setInputVideoId('');
-                                            } else {
-                                                alert('Sesi tidak ditemukan atau ID salah.');
-                                            }
+                                        } catch (err) {
+                                            alert('Gagal memverifikasi ID Akses.');
                                         }
                                     }}
                                     style={{ flex: 1, padding: '16px', borderRadius: '16px', border: 'none', background: '#10b981', color: 'white', fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)' }}
