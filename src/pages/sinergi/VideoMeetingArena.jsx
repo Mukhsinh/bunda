@@ -125,12 +125,20 @@ const VideoMeetingArena = () => {
         }
     }, [loading, session, jitsiApi]);
 
+    // Use a state for window width to handle responsiveness
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1100);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 1100);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const initJitsi = (sessionData) => {
         const domain = "meet.jit.si";
         let roomName = sessionData.jitsi_room || `sahabatbunda-sinergi-${sessionData.id}`;
 
         // Robust normalization: extract only the last part of the path if a URL is provided
-        // This handles https://meet.jit.si/room, meet.jit.si/room, or just room
         if (roomName.includes('/')) {
             const parts = roomName.split('/');
             // Get the last non-empty part
@@ -145,7 +153,8 @@ const VideoMeetingArena = () => {
             height: '100%',
             parentNode: document.querySelector('#jitsi-arena'),
             userInfo: {
-                displayName: queryParams.get('expertName') || profile?.full_name || user?.email?.split('@')[0] || 'Peserta'
+                displayName: queryParams.get('expertName') || profile?.full_name || user?.email?.split('@')[0] || 'Peserta',
+                role: isNarasumber ? 'moderator' : 'participant'
             },
             configOverwrite: {
                 startWithAudioMuted: true,
@@ -161,7 +170,10 @@ const VideoMeetingArena = () => {
                 lobbyModeEnabled: true,
                 enableLobby: true,
                 disableModeratorIndicator: false,
-                requireDisplayName: true
+                requireDisplayName: true,
+                hosts: {
+                    anonymousModerator: true
+                }
             },
             interfaceConfigOverwrite: {
                 TOOLBAR_BUTTONS: isNarasumber ? [
@@ -182,6 +194,15 @@ const VideoMeetingArena = () => {
 
         const api = new window.JitsiMeetExternalAPI(domain, options);
         setJitsiApi(api);
+
+        // Force lobby if moderator joins
+        if (isNarasumber) {
+            api.on('videoConferenceJoined', () => {
+                setTimeout(() => {
+                    api.executeCommand('toggleLobby', true);
+                }, 1000);
+            });
+        }
 
         api.addEventListeners({
             videoConferenceJoined: () => {
@@ -369,13 +390,28 @@ const VideoMeetingArena = () => {
             </div>
 
             {/* ═══ MAIN CONSULTATION ARENA (DUAL-FRAME) ═══ */}
-            <div style={{ flex: 1, display: 'flex', background: '#000', padding: '12px', gap: '12px' }}>
+            <div style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                background: '#000',
+                padding: '12px',
+                gap: '12px',
+                overflowY: isMobile ? 'auto' : 'hidden'
+            }}>
 
-                {/* Left Frame (Frame 1): Narasumber / Expert View Focus */}
+                {/* Left Frame (Frame 1): Jitsi Arena */}
                 <div style={{
-                    flex: 1, position: 'relative', borderRadius: '24px', overflow: 'hidden',
-                    border: '1px solid rgba(255,255,255,0.08)', background: '#020617',
-                    boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column'
+                    flex: isMobile ? 'none' : 1,
+                    position: 'relative',
+                    borderRadius: '24px',
+                    overflow: 'hidden',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: '#020617',
+                    height: isMobile ? '500px' : 'auto',
+                    boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    flexDirection: 'column'
                 }}>
                     {/* Inner Content Label */}
                     <div style={{
@@ -394,9 +430,13 @@ const VideoMeetingArena = () => {
 
                 {/* Right Frame (Frame 2): Participant Info & Interaction Panel */}
                 <div style={{
-                    width: '380px', background: 'linear-gradient(180deg, #0F172A 0%, #020617 100%)',
-                    borderRadius: '24px', display: 'flex', flexDirection: 'column',
-                    border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+                    width: isMobile ? '100%' : '380px',
+                    background: 'linear-gradient(180deg, #0F172A 0%, #020617 100%)',
+                    borderRadius: '24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
                     overflow: 'hidden'
                 }}>
                     <div style={{ padding: '24px', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
