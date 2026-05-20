@@ -104,7 +104,6 @@ const VideoMeetingArena = () => {
                     jitsi_room: data.jitsi_room || data.jitsi_link || `sahabatbunda-sinergi-${data.id}`
                 };
                 setSession(normalizedData);
-                initJitsi(normalizedData);
             } else {
                 navigate('/');
             }
@@ -115,6 +114,16 @@ const VideoMeetingArena = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (!loading && session && !jitsiApi) {
+            // Use setTimeout to ensure React has fully committed the DOM update
+            // and the #jitsi-arena node is definitely completely mounted.
+            setTimeout(() => {
+                initJitsi(session);
+            }, 50);
+        }
+    }, [loading, session, jitsiApi]);
 
     const initJitsi = (sessionData) => {
         const domain = "meet.jit.si";
