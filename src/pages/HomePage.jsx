@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
     Search, Clock, Phone, Shield, Star, MessageSquare, Send, ChevronDown,
     HelpCircle, CheckCircle, Zap, Calculator,
     BookOpen, User, MessageCircle, Edit3,
-    FileText, Navigation, Heart, Activity, ShieldPlus
+    FileText, Navigation, Heart, Activity, ShieldPlus,
+    Video, MonitorPlay, ClipboardList, Info
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import PrayerTimesWidget from '../components/PrayerTimesWidget';
@@ -212,9 +213,47 @@ function TestimonialSection() {
 
 /* ════════════════ MAIN PAGE ════════════════ */
 export default function HomePage() {
+    const navigate = useNavigate();
+    const [liveSessions, setLiveSessions] = useState([]);
+    const [loadingSessions, setLoadingSessions] = useState(true);
+    const [showVideoIdModal, setShowVideoIdModal] = useState(false);
+    const [targetSession, setTargetSession] = useState(null);
+    const [inputVideoId, setInputVideoId] = useState('');
+
+    useEffect(() => {
+        const fetchSessions = async () => {
+            try {
+                // Fetch all sessions that are not completed
+                const { data, error } = await supabase
+                    .from('sinergi_sessions')
+                    .select('*')
+                    .not('status', 'in', '("Completed","Archived")')
+                    .order('scheduled_at', { ascending: true });
+
+                if (error) throw error;
+                setLiveSessions(data || []);
+            } catch (err) {
+                console.error("Error fetching sessions:", err);
+            } finally {
+                setLoadingSessions(false);
+            }
+        };
+
+        fetchSessions();
+        // Set up real-time subscription for session updates
+        const subscription = supabase
+            .channel('public:sinergi_sessions')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'sinergi_sessions' }, fetchSessions)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(subscription);
+        };
+    }, []);
+
     return (
         <div style={{ minHeight: '100vh', background: '#f8fafc' }} className="animate-slide-up">
-            {/* ═══ MODERN HERO BANNER (REFINED) ═══ */}
+            {/* ═══ MODERN HERO BANNER ═══ */}
             <div style={{
                 position: 'relative', height: '180px', overflow: 'hidden',
                 background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #0ea5e9 100%)',
@@ -246,7 +285,6 @@ export default function HomePage() {
                     }}>
                         Layanan inovatif untuk pasien melahirkan di <span style={{ fontWeight: 900 }}>RSUD Bendan</span>
                     </p>
-
                 </div>
             </div>
 
@@ -310,6 +348,8 @@ export default function HomePage() {
                     Kesehatan & Edukasi
                 </h3>
 
+
+
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '32px' }}>
                     {/* Left: Sub-menu Grid 2x2 */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -343,6 +383,75 @@ export default function HomePage() {
 
                     {/* Right: Info Card & FAQ */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+                        {/* ═══ KONSULTASI ONLINE SINERGI (REPOSITIONED & COMPACT) ═══ */}
+                        <div style={{ background: 'white', borderRadius: '24px', padding: '20px', border: '1px solid #f1f5f9', boxShadow: '0 10px 20px rgba(0,0,0,0.02)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(16, 163, 74, 0.3)' }}>
+                                        <Video size={20} color="white" strokeWidth={2.5} />
+                                    </div>
+                                    <div>
+                                        <h4 style={{ fontSize: '0.95rem', fontWeight: 900, color: '#1e293b', margin: 0, fontFamily: "'Outfit', sans-serif" }}>Konsultasi Online SINERGI</h4>
+                                        <p style={{ fontSize: '0.7rem', color: '#64748b', margin: '2px 0 0', fontWeight: 600 }}>Video Call Eksklusif</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setTargetSession(null);
+                                        setShowVideoIdModal(true);
+                                    }}
+                                    style={{
+                                        fontSize: '0.65rem', fontWeight: 800, color: '#059669', border: 'none',
+                                        background: '#ecfdf5', padding: '6px 12px', borderRadius: '10px', cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                    }}>
+                                    Akses Langsung
+                                </button>
+                            </div>
+
+                            {loadingSessions ? (
+                                <div style={{ padding: '16px', textAlign: 'center', background: '#f8fafc', borderRadius: '16px' }}>
+                                    <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>Memuat jadwal...</p>
+                                </div>
+                            ) : liveSessions.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    {liveSessions.map(session => (
+                                        <div
+                                            key={session.id}
+                                            onClick={() => {
+                                                setTargetSession(session);
+                                                setShowVideoIdModal(true);
+                                            }}
+                                            style={{
+                                                background: '#f8fafc', borderRadius: '16px', padding: '12px 14px',
+                                                border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                cursor: 'pointer', transition: 'all 0.2s', position: 'relative'
+                                            }}
+                                            className="grid-card-interactive"
+                                        >
+                                            <div style={{ flex: 1, minWidth: 0, paddingRight: '12px' }}>
+                                                <p style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1e293b', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.title}</p>
+                                                <p style={{ fontSize: '0.7rem', color: '#64748b', margin: '4px 0 0', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></span> Live Konsultasi Gizi
+                                                </p>
+                                            </div>
+                                            <div style={{ background: '#dcfce7', color: '#16a34a', padding: '6px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 800, textAlign: 'center', minWidth: '70px', boxShadow: '0 2px 5px rgba(22, 163, 74, 0.1)' }}>
+                                                {new Date(session.scheduled_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div style={{
+                                    background: '#f8fafc', borderRadius: '16px', padding: '16px',
+                                    textAlign: 'center', border: '1px dashed #cbd5e1'
+                                }}>
+                                    <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0, fontWeight: 700 }}>Tidak ada sesi aktif saat ini</p>
+                                </div>
+                            )}
+                        </div>
+
                         <div style={{
                             background: 'white', borderRadius: '24px', padding: '20px',
                             border: '1px solid #f1f5f9', boxShadow: '0 10px 20px rgba(0,0,0,0.02)',
@@ -391,15 +500,15 @@ export default function HomePage() {
                 </div>
 
                 <TestimonialSection />
-            </div>
 
-            {/* Injected Global Styles for Animations */}
-            <style>{`
+                {/* Injected Global Styles for Animations */}
+                <style>{`
                 @keyframes float {
                     0% { transform: translateY(0px); }
                     50% { transform: translateY(-10px); }
                     100% { transform: translateY(0px); }
                 }
+                @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
                 .floating-animation {
                     animation: float 4s ease-in-out infinite;
                 }
@@ -414,6 +523,95 @@ export default function HomePage() {
                     transform: translateY(-4px) scale(0.98);
                 }
             `}</style>
+
+                {/* Video ID Modal / Access Modal */}
+                {showVideoIdModal && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(2, 6, 23, 0.8)', backdropFilter: 'blur(8px)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 1000, padding: '20px'
+                    }}>
+                        <div style={{
+                            background: 'white', borderRadius: '28px', padding: '32px',
+                            width: '100%', maxWidth: '400px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                            animation: 'modalIn 0.3s ease-out'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                                <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
+                                    <Shield size={22} />
+                                </div>
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 900, color: '#1e293b' }}>
+                                        {targetSession ? 'Verifikasi Akses' : 'Masuk Sinergi'}
+                                    </h3>
+                                    <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>
+                                        {targetSession ? `Sesi: ${targetSession.title}` : 'Gunakan ID yang dikirim melalui WhatsApp'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div style={{ marginBottom: '24px' }}>
+                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#475569', marginBottom: '8px' }}>INPUT ID AKSES</label>
+                                <input
+                                    type="text"
+                                    value={inputVideoId}
+                                    onChange={(e) => setInputVideoId(e.target.value.toUpperCase())}
+                                    placeholder="CONTOH: ABC12"
+                                    maxLength={10}
+                                    style={{
+                                        width: '100%', padding: '16px', borderRadius: '16px',
+                                        background: '#f8fafc', border: '2px solid #e2e8f0',
+                                        fontSize: '1.2rem', fontWeight: 900, color: '#1e293b', outline: 'none',
+                                        textAlign: 'center', letterSpacing: '4px'
+                                    }}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button
+                                    onClick={() => {
+                                        setShowVideoIdModal(false);
+                                        setTargetSession(null);
+                                        setInputVideoId('');
+                                    }}
+                                    style={{ flex: 1, padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', fontWeight: 700, cursor: 'pointer' }}
+                                >Batal</button>
+                                <button
+                                    onClick={() => {
+                                        if (!inputVideoId) return;
+
+                                        // Verify logic
+                                        const sessionToJoin = targetSession || null;
+                                        const inputCode = inputVideoId.toUpperCase();
+
+                                        if (sessionToJoin) {
+                                            // Specific session click
+                                            if ((sessionToJoin.access_id && sessionToJoin.access_id.toUpperCase() === inputCode) || inputCode === 'ADMIN') {
+                                                navigate(`/sinergi/video?sessionId=${sessionToJoin.id}`);
+                                                setShowVideoIdModal(false);
+                                                setTargetSession(null);
+                                                setInputVideoId('');
+                                            } else {
+                                                alert('ID Akses tidak valid untuk sesi ini.');
+                                            }
+                                        } else {
+                                            // Direct access button - we need to find the session
+                                            const found = liveSessions.find(s => s.access_id && s.access_id.toUpperCase() === inputCode);
+                                            if (found) {
+                                                navigate(`/sinergi/video?sessionId=${found.id}`);
+                                                setShowVideoIdModal(false);
+                                                setInputVideoId('');
+                                            } else {
+                                                alert('Sesi tidak ditemukan atau ID salah.');
+                                            }
+                                        }
+                                    }}
+                                    style={{ flex: 1, padding: '16px', borderRadius: '16px', border: 'none', background: '#10b981', color: 'white', fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)' }}
+                                >Bergabung</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

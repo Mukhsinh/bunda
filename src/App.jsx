@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Home, FileText, Truck, LogIn, Hospital, Search } from 'lucide-react';
+import { Home, FileText, Truck, LogIn, Hospital, Search, Monitor } from 'lucide-react';
 import { useAuthStore } from './store/useAuthStore';
 import { speakGreeting } from './lib/voiceUtils';
 
@@ -16,12 +16,14 @@ import TrackRide from './pages/santun/TrackRide';
 import Empati from './pages/empati/Empati';
 import Sehati from './pages/sehati/Sehati';
 import Vaksinasi from './pages/vaksinasi/Vaksinasi';
+import Sinergi from './pages/Sinergi';
 
 import LacakSelection from './pages/LacakSelection';
 import QuranHome from './pages/quran/QuranHome';
 import SurahDetail from './pages/quran/SurahDetail';
 
 import AdminPanel from './pages/admin/AdminPanel';
+import VideoMeetingArena from './pages/sinergi/VideoMeetingArena';
 
 // Protected route wrapper for admin pages
 function AdminRoute({ children }) {
@@ -67,6 +69,7 @@ function App() {
       '/empati': 'Hai Bunda, Silakan pelajari video edukasi untuk Bunda paska melahirkan',
       '/sehati': 'Hai Bunda, identifikasi kondisi gizi bayi Bunda secara mudah dan akurat',
       '/vaksinasi': 'Hai Bunda, buat jadwal waktu vaksin bayi bunda dengan mudah',
+      '/sinergi': 'Hai Bunda, konsultasikan tumbuh kembang ananda bersama ahli gizi kami melalui video meet',
       '/quran': 'Hai Bunda, bacalah alquran untuk ketenangan hati Bunda',
       '/ramah/submit': 'Hai Bunda, ajukan pengurusan akte dengan mudah dan gratis cukup isi form dan unggah dokumen yang diperlukan disini',
       '/santun/submit': 'Hai Bunda, ajukan pengantaran pulang ke rumah Bunda dengan nyaman dan gratis, silakan isi form disini',
@@ -111,6 +114,8 @@ function App() {
           <Route path="/empati" element={<Empati />} />
           <Route path="/sehati" element={<Sehati />} />
           <Route path="/vaksinasi" element={<Vaksinasi />} />
+          <Route path="/sinergi" element={<Sinergi />} />
+          <Route path="/sinergi/video" element={<VideoMeetingArena />} />
 
           <Route path="/lacak" element={<LacakSelection />} />
 
@@ -118,6 +123,7 @@ function App() {
           <Route path="/quran/:id" element={<SurahDetail />} />
 
           {/* Admin Routes */}
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/login" element={<Login />} />
           <Route path="/admin/dashboard" element={
             <AdminRoute>
@@ -132,7 +138,9 @@ function App() {
         {/* Global Footer */}
         <footer style={{
           textAlign: 'center',
-          padding: '24px 12px',
+          paddingTop: '24px',
+          paddingLeft: '12px',
+          paddingRight: '12px',
           marginTop: '20px',
           fontSize: '0.65rem',
           color: 'var(--text-muted)',
@@ -159,6 +167,10 @@ function App() {
           <Link to="/santun/submit" className={`nav-item ${location.pathname.startsWith('/santun') ? 'active' : ''}`}>
             <Truck size={22} />
             <span>SANTUN</span>
+          </Link>
+          <Link to="/sinergi" className={`nav-item ${location.pathname === '/sinergi' ? 'active' : ''}`}>
+            <Monitor size={22} />
+            <span>SINERGI</span>
           </Link>
           <Link to="/lacak" className={`nav-item ${location.pathname === '/lacak' ? 'active' : ''}`}>
             <Search size={22} />

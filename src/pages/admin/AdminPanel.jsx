@@ -1,11 +1,12 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/useAuthStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
     LogOut, FileText, Truck, CheckCircle, PackageCheck, Navigation,
     Eye, ClipboardList, Download, Square, Archive, Search, Bell, X, MessageCircle,
-    Monitor, Smartphone
+    Monitor, Smartphone, Video, Calendar, Clock, MessageSquare,
+    Users, ChevronDown, ChevronUp, Trash2, UserPlus
 } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import {
@@ -343,9 +344,15 @@ const styles = `
 export default function AdminPanel() {
     const { user, signOut } = useAuthStore();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('ramah');
+    const [activeTab, setActiveTab] = useState('sinergi');
     const [ramahDocs, setRamahDocs] = useState([]);
     const [santunReqs, setSantunReqs] = useState([]);
+    const [sinergiCons, setSinergiCons] = useState([]);
+    const [sinergiSessions, setSinergiSessions] = useState([]);
+    const [sinergiNutritionists, setSinergiNutritionists] = useState([]);
+    const [nutritionistModal, setNutritionistModal] = useState(false);
+    const [nutritionistForm, setNutritionistForm] = useState({ name: '', whatsapp: '' });
+    const [sinergiSelectedReqs, setSinergiSelectedReqs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [notifications, setNotifications] = useState([]);
     const [viewMode, setViewMode] = useState(() => {
@@ -370,6 +377,44 @@ export default function AdminPanel() {
     const [rSearch, setRSearch] = useState(''); const [sSearch, setSSearch] = useState('');
     const [aSearch, setASearch] = useState('');
     const [selectedArchive, setSelectedArchive] = useState(null);
+
+    // Manual Session
+    const [manualSessionModal, setManualSessionModal] = useState(false);
+    const [collectiveModal, setCollectiveModal] = useState(false);
+    const [manualSessionForm, setManualSessionForm] = useState({ full_name: '', jitsi_link: '', date: '', time: '' });
+    const [collectiveForm, setCollectiveForm] = useState({ title: '', date: '', time: '', jitsi: '' });
+    const [narasumberForm, setNarasumberForm] = useState({ name: '', whatsapp: '' });
+    const [expandedSessions, setExpandedSessions] = useState([]);
+
+    const handleCreateManualSession = async (e) => {
+        e.preventDefault();
+        let link = manualSessionForm.jitsi_link;
+        if (link && !link.startsWith('http')) {
+            link = `https://meet.jit.si/${link}`;
+        }
+        if (!link) {
+            link = `https://meet.jit.si/SAKPORE-Gizi-${manualSessionForm.full_name.replace(/\s+/g, '-')}-${Math.random().toString(36).substring(7)}`;
+        }
+
+        const insertData = {
+            name: manualSessionForm.full_name,
+            status: 'Scheduled',
+            scheduled_at: new Date(`${manualSessionForm.date}T${manualSessionForm.time}`).toISOString(),
+            jitsi_room: link,
+            address: '-',
+            whatsapp: '-'
+        };
+        try {
+            const { error } = await supabase.from('sinergi_requests').insert([insertData]);
+            if (error) throw error;
+            setManualSessionModal(false);
+            setManualSessionForm({ full_name: '', jitsi_link: '', date: '', time: '' });
+            fetchData();
+        } catch (error) {
+            console.error('Error creating manual session:', error);
+            alert('Gagal membuat sesi manual.');
+        }
+    };
 
     const ramahChartRef = useRef(null); const santunChartRef = useRef(null);
 
@@ -411,12 +456,19 @@ export default function AdminPanel() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [ramahRes, santunRes] = await Promise.all([
+            const [ramahRes, santunRes, sinergiRes] = await Promise.all([
                 supabase.from('ramah_documents').select('*').order('created_at', { ascending: false }),
-                supabase.from('santun_requests').select('*').order('created_at', { ascending: false })
+                supabase.from('santun_requests').select('*').order('created_at', { ascending: false }),
+                supabase.from('sinergi_requests').select('*').order('created_at', { ascending: false }),
             ]);
+            const sinergiSessionsRes = await supabase.from('sinergi_sessions').select('*').order('created_at', { ascending: false });
+            const sinergiNutRes = await supabase.from('sinergi_nutritionists').select('*').order('name', { ascending: true });
+
             setRamahDocs(ramahRes.data || []);
             setSantunReqs(santunRes.data || []);
+            setSinergiCons(sinergiRes.data || []);
+            setSinergiSessions(sinergiSessionsRes.data || []);
+            setSinergiNutritionists(sinergiNutRes.data || []);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };
@@ -448,6 +500,139 @@ export default function AdminPanel() {
             }
         } catch (e) { alert('Gagal: ' + e.message); }
     };
+    const updateSinergiStatus = async (id, s, item) => {
+        if (!window.confirm(`Update status ke "${s}"?`)) return;
+        try {
+            const { error } = await supabase.from('sinergi_requests').update({ status: s }).eq('id', id);
+            if (error) throw error;
+            fetchData();
+            if (s === 'completed' && item?.whatsapp) {
+                const msg = `Halo ${item.name}, sesi konsultasi SINERGI Anda telah selesai. Semoga bermanfaat untuk tumbuh kembang ananda. Terima kasih!`;
+                openWhatsApp(item.whatsapp, msg);
+            }
+        } catch (e) { alert('Gagal: ' + e.message); }
+    };
+    const [schedulingSinergi, setSchedulingSinergi] = useState(null);
+    const [scheduleForm, setScheduleForm] = useState({ date: '', time: '', jitsi: '' });
+    const handleScheduleSinergi = async (e) => {
+        e.preventDefault();
+        try {
+            const scheduledAt = `${scheduleForm.date}T${scheduleForm.time}:00`;
+            // Generate a simple 5-char access ID
+            const accessId = Math.random().toString(36).substring(2, 7).toUpperCase();
+
+            const { error } = await supabase.from('sinergi_requests').update({
+                status: 'Scheduled',
+                scheduled_at: scheduledAt,
+                jitsi_room: scheduleForm.jitsi
+            }).eq('id', schedulingSinergi.id);
+            if (error) throw error;
+
+            // Also create a entry in sinergi_sessions for individual too, to maintain consistency
+            const { error: sError } = await supabase.from('sinergi_sessions').insert([{
+                title: `Konsultasi: ${schedulingSinergi.name}`,
+                scheduled_at: scheduledAt,
+                jitsi_room: scheduleForm.jitsi,
+                status: 'Scheduled',
+                access_id: accessId
+            }]);
+            if (sError) throw sError;
+
+            const msg = `Halo ${schedulingSinergi.name}, sesi *Konsultasi Online SINERGI* Anda telah dijadwalkan pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${scheduleForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
+            openWhatsApp(schedulingSinergi.whatsapp, msg);
+            setSchedulingSinergi(null);
+            fetchData();
+        } catch (e) { alert('Gagal: ' + e.message); }
+    };
+
+    const handleCreateCollectiveSession = async (e) => {
+        e.preventDefault();
+        try {
+            const scheduledAt = `${collectiveForm.date}T${collectiveForm.time}:00`;
+            const accessId = Math.random().toString(36).substring(2, 7).toUpperCase();
+
+            // 1. Create the session
+            const { data: session, error: sError } = await supabase
+                .from('sinergi_sessions')
+                .insert([{
+                    title: collectiveForm.title,
+                    scheduled_at: scheduledAt,
+                    jitsi_room: collectiveForm.jitsi,
+                    status: 'Scheduled',
+                    access_id: accessId,
+                    narasumber_name: collectiveForm.narasumber || 'Alih Gizi RSUD Bendan',
+                    narasumber_whatsapp: collectiveForm.whatsapp || '',
+                    nutritionist_id: collectiveForm.narasumber_id || null
+                }])
+                .select()
+                .single();
+            if (sError) throw sError;
+
+            // 2. Update all selected requests
+            const { error: rError } = await supabase
+                .from('sinergi_requests')
+                .update({
+                    session_id: session.id,
+                    status: 'Scheduled',
+                    scheduled_at: scheduledAt,
+                    jitsi_room: collectiveForm.jitsi
+                })
+                .in('id', sinergiSelectedReqs);
+            if (rError) throw rError;
+
+            // 3. Send WA to all
+            const selectedData = sinergiCons.filter(c => sinergiSelectedReqs.includes(c.id));
+            for (const item of selectedData) {
+                const msg = `Halo ${item.name}, Anda telah dijadwalkan untuk *Konsultasi Online SINERGI Kolektif* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
+                openWhatsApp(item.whatsapp, msg);
+            }
+
+            // 4. Send WA to Narasumber if manual
+            if (narasumberForm.whatsapp) {
+                const nMsg = `Halo ${narasumberForm.name}, Anda ditugaskan sebagai Narasumber untuk *Konsultasi Online SINERGI* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nTerima kasih.`;
+                openWhatsApp(narasumberForm.whatsapp, nMsg);
+            }
+
+            setCollectiveModal(false);
+            setSinergiSelectedReqs([]);
+            setNarasumberForm({ name: '', whatsapp: '' });
+            fetchData();
+            alert('Sesi kolektif berhasil dibuat!');
+        } catch (e) { alert('Gagal: ' + e.message); }
+    };
+    const handleAddNutritionist = async (e) => {
+        e.preventDefault();
+        try {
+            const { error } = await supabase.from('sinergi_nutritionists').insert([nutritionistForm]);
+            if (error) throw error;
+            setNutritionistForm({ name: '', whatsapp: '' });
+            fetchData();
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+    const handleDeleteNutritionist = async (id) => {
+        if (!confirm('Hapus ahli gizi ini?')) return;
+        try {
+            const { error } = await supabase.from('sinergi_nutritionists').delete().eq('id', id);
+            if (error) throw error;
+            fetchData();
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
+    const updateSinergiSessionStatus = async (id, status) => {
+        try {
+            const { error } = await supabase.from('sinergi_sessions').update({ status }).eq('id', id);
+            if (error) throw error;
+
+            if (status === 'Completed') {
+                // Also update all requests associated with this session to 'Completed'
+                const { error: rError } = await supabase.from('sinergi_requests').update({ status: 'Completed' }).eq('session_id', id);
+                if (rError) throw rError;
+            }
+
+            fetchData();
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
     const handleSignOut = async () => { await signOut(); navigate('/'); };
     const toggleSpjClaimRamah = async (id, currentVal) => {
         try {
@@ -491,6 +676,15 @@ export default function AdminPanel() {
     const arsipSantun = completedSantun.filter(r =>
         !aSearch.trim() || r.patient_name?.toLowerCase().includes(aSearch.toLowerCase()) || r.patient_nik?.includes(aSearch) || r.tracking_code?.toLowerCase().includes(aSearch.toLowerCase())
     );
+    const arsipSinergi = [
+        ...sinergiCons.filter(c => c.status === 'Completed' && !c.session_id),
+        ...sinergiSessions.filter(s => s.status === 'Completed' || s.status === 'Archived').map(s => ({
+            ...s,
+            name: `[Grup] ${s.title}`,
+            whatsapp: s.narasumber_whatsapp || '-',
+            is_group_session: true
+        }))
+    ].filter(item => !aSearch.trim() || item.name?.toLowerCase().includes(aSearch.toLowerCase()));
 
     // Chart data
     const ramahChart = useMemo(() => getChartLabelsAndData(ramahFiltered, rPeriod, rSub, rYear), [ramahFiltered, rPeriod, rSub, rYear]);
@@ -666,6 +860,7 @@ export default function AdminPanel() {
     const tabs = [
         { key: 'ramah', label: 'RAMAH', icon: FileText },
         { key: 'santun', label: 'SANTUN', icon: Truck },
+        { key: 'sinergi', label: 'SINERGI', icon: Monitor },
         { key: 'arsip', label: 'ARSIP', icon: Archive },
         { key: 'spj', label: 'SPJ', icon: ClipboardList },
     ];
@@ -833,156 +1028,602 @@ export default function AdminPanel() {
                         }
                     </div>)}
 
-                    {/* ═══════ ARSIP ═══════ */}
-                    {activeTab === 'arsip' && (<div>
+                    {/* ═══════ SINERGI ═══════ */}
+                    {activeTab === 'sinergi' && (<div>
                         <div className="sc-grid">
-                            <div className="sc-card sc-blue"><div className="sc-emoji">📚</div><div className="sc-val">{arsipRamah.length + arsipSantun.length}</div><div className="sc-lbl">Total Arsip Selesai</div></div>
-                            <div className="sc-card sc-green"><div className="sc-emoji">📄</div><div className="sc-val">{arsipRamah.length}</div><div className="sc-lbl">Arsip RAMAH</div></div>
-                            <div className="sc-card sc-amber"><div className="sc-emoji">🚑</div><div className="sc-val">{arsipSantun.length}</div><div className="sc-lbl">Arsip SANTUN</div></div>
-                            <div className="sc-card sc-rose"><div className="sc-emoji">🔍</div><div className="sc-val">#</div><div className="sc-lbl">Gunakan Pencarian</div></div>
+                            <div className="sc-card sc-blue"><div className="sc-emoji">🎥</div><div className="sc-val">{sinergiCons.length}</div><div className="sc-lbl">Total Konsultasi</div></div>
+                            <div className="sc-card sc-green"><div className="sc-emoji">✅</div><div className="sc-val">{sinergiCons.filter(c => c.status === 'Completed').length}</div><div className="sc-lbl">Selesai</div></div>
+                            <div className="sc-card sc-amber"><div className="sc-emoji">📅</div><div className="sc-val">{sinergiCons.filter(c => c.status === 'Scheduled').length}</div><div className="sc-lbl">Terjadwal</div></div>
+                            <div className="sc-card sc-rose"><div className="sc-emoji">⏳</div><div className="sc-val">{sinergiCons.filter(c => c.status === 'Pending').length}</div><div className="sc-lbl">Menunggu</div></div>
                         </div>
-                        <div className="search-box" style={{ marginBottom: '20px' }}><Search size={16} color="#94a3b8" /><input placeholder="Cari arsip nama atau NIK..." value={aSearch} onChange={e => setASearch(e.target.value)} /></div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-                            <div className="admin-card">
-                                <div className="admin-card-title">Arsip RAMAH ({arsipRamah.length})</div>
-                                {arsipRamah.length === 0 ? <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '12px' }}>Tidak ada arsip ditemukan</p> :
-                                    arsipRamah.map(doc => (
-                                        <div key={doc.id} className="spj-item" style={{ cursor: 'pointer' }} onClick={() => setSelectedArchive({ type: 'ramah', data: doc })}>
-                                            <div style={{ flex: 1, minWidth: 0 }}><p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: "'Outfit'" }}>{doc.applicant_name}</p><p style={{ fontSize: '0.72rem', color: '#64748b' }}>{doc.tracking_code} · {new Date(doc.created_at).toLocaleDateString('id-ID')}</p></div>
-                                            <span style={{ fontSize: '0.68rem', background: '#dcfce7', color: '#16a34a', padding: '3px 8px', borderRadius: '10px', fontWeight: 700 }}>Selesai</span>
-                                        </div>
-                                    ))
-                                }
-                            </div>
-                            <div className="admin-card">
-                                <div className="admin-card-title">Arsip SANTUN ({arsipSantun.length})</div>
-                                {arsipSantun.length === 0 ? <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '12px' }}>Tidak ada arsip ditemukan</p> :
-                                    arsipSantun.map(req => (
-                                        <div key={req.id} className="spj-item" style={{ cursor: 'pointer' }} onClick={() => setSelectedArchive({ type: 'santun', data: req })}>
-                                            <div style={{ flex: 1, minWidth: 0 }}><p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: "'Outfit'" }}>{req.patient_name}</p><p style={{ fontSize: '0.72rem', color: '#64748b' }}>{req.tracking_code} · {new Date(req.created_at).toLocaleDateString('id-ID')}</p></div>
-                                            <span style={{ fontSize: '0.68rem', background: '#dcfce7', color: '#16a34a', padding: '3px 8px', borderRadius: '10px', fontWeight: 700 }}>Selesai</span>
-                                        </div>
-                                    ))
-                                }
-                            </div>
+                        <div className="section-sep"></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '10px', flexWrap: 'wrap' }}>
+                            <h3 style={{ fontSize: '1rem', fontFamily: "'Outfit',sans-serif", fontWeight: 700, margin: 0 }}>Daftar Konsultasi Gizi ({sinergiCons.filter(c => c.status !== 'Completed').length})</h3>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                {sinergiSelectedReqs.length > 0 && (
+                                    <button className="btn-m btn-excel btn-sm" onClick={() => {
+                                        setCollectiveModal(true);
+                                        const d = new Date();
+                                        setCollectiveForm({
+                                            title: 'Konsultasi Grup Gizi',
+                            {
+                                                sinergiSelectedReqs.length > 0 && (
+                                                    <button className="btn-m btn-excel btn-sm" onClick={() => {
+                                                        setCollectiveModal(true);
+                                                        const d = new Date();
+                                                        setCollectiveForm({
+                                                            title: 'Konsultasi Grup Gizi',
+                                                            date: d.toISOString().split('T')[0],
+                                                            time: '10:00',
+                                                            jitsi: `https://meet.jit.si/SAKPORE-Group-Gizi-${Math.random().toString(36).substring(7)}`
+                                                        });
+                                                    }}>Jadwalkan Kolektif ({sinergiSelectedReqs.length})</button>
+                                                )
+                                            }
+                                            < div style = {{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                        <button className="btn-m btn-success btn-sm" onClick={() => {
+                                            setManualSessionModal(true);
+                                            const d = new Date();
+                                            setManualSessionForm({ full_name: '', date: d.toISOString().split('T')[0], time: '10:00' });
+                                        }}>+ Buat Sesi Manual</button>
+                                        <button className="btn-m btn-chart btn-sm" style={{ whiteSpace: 'nowrap' }} onClick={() => setNutritionistModal(true)}>
+                                            <Users size={14} /> Kelola Ahli Gizi
+                                        </button>
+                                    </div>
                         </div>
-                    </div>)}
 
-                    {/* ═══════ SPJ ═══════ */}
-                    {activeTab === 'spj' && (<div>
-                        <div className="sc-grid">
-                            <div className="sc-card sc-blue"><div className="sc-emoji">📄</div><div className="sc-val">{completedRamah.length}</div><div className="sc-lbl">RAMAH Selesai</div></div>
-                            <div className="sc-card sc-green"><div className="sc-emoji">🚑</div><div className="sc-val">{completedSantun.length}</div><div className="sc-lbl">SANTUN Selesai</div></div>
-                            <div className="sc-card sc-amber"><div className="sc-emoji">✍️</div><div className="sc-val">{completedRamah.filter(d => d.is_spj_claimed).length + completedSantun.filter(r => r.is_spj_claimed).length}</div><div className="sc-lbl">Total Diklaim</div></div>
-                            <div className="sc-card sc-rose"><div className="sc-emoji">📝</div><div className="sc-val">{completedRamah.filter(d => !d.is_spj_claimed).length + completedSantun.filter(r => !r.is_spj_claimed).length}</div><div className="sc-lbl">Sisa Belum Diklaim</div></div>
-                        </div>
-                        <FilterBar year={spjYear} setYear={setSpjYear} period={spjPeriod} setPeriod={setSpjPeriod} sub={spjSub} setSub={setSpjSub} />
+                            {sinergiSessions.length > 0 && (
+                                <div style={{ marginBottom: '24px' }}>
+                                    <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#334155', marginBottom: '12px' }}>Sesi Grup Terjadwal ({sinergiSessions.filter(s => s.status !== 'Completed').length})</h4>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}>
+                                        {sinergiSessions.filter(s => s.status !== 'Completed' && s.status !== 'Archived').map(session => {
+                                            const participants = sinergiCons.filter(c => c.session_id && String(c.session_id).toLowerCase() === String(session.id).toLowerCase());
+                                            return (
+                                                <div key={session.id} className="admin-card" style={{ borderLeft: '4px solid #0284c7', padding: '16px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                        <p style={{ fontWeight: 700, fontSize: '0.9rem' }}>{session.title}</p>
+                                                        <span style={{ fontSize: '0.7rem', color: '#0284c7', background: '#e0f2fe', padding: '2px 8px', borderRadius: '10px' }}>{session.status}</span>
+                                                    </div>
+                                                    <p style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '4px' }}>⏰ {new Date(session.scheduled_at).toLocaleString('id-ID')}</p>
 
-                        {renderSpjList(`SPJ RAMAH (${completedRamah.length})`, completedRamah, toggleSpjClaimRamah)}
-                        {renderSpjList(`SPJ SANTUN (${completedSantun.length})`, completedSantun, toggleSpjClaimSantun)}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '16px', marginTop: '24px' }}>
-                            <div className="spj-dl-frame">
-                                <div className="spj-dl-header">
-                                    <div style={{ background: '#e0f2fe', padding: '16px', borderRadius: '50%' }}><FileText size={36} color="#0284c7" /></div>
-                                    SPJ RAMAH
-                                </div>
-                                <div className="dl-wrap">
-                                    <button className="btn-m btn-excel btn-sm" onClick={() => generateExcel(completedRamah.map(d => ({ ...d, is_claimed: d.is_spj_claimed ? 'Ya' : 'Belum' })), 'REKAPITULASI SPJ RAMAH', 'SPJ RAMAH', getPeriodText(spjYear, spjPeriod, spjSub), ['Nama', 'NIK', 'HP', 'Alamat', 'Tracking', 'Tanggal', 'Diklaim'], ['applicant_name', 'applicant_nik', 'phone_number', 'address', 'tracking_code', 'created_at', 'is_claimed'])}>Unduh Excel</button>
-                                    <button className="btn-m btn-pdf btn-sm" onClick={() => generatePDF(completedRamah.map(d => ({ ...d, is_claimed: d.is_spj_claimed ? 'Ya' : 'Belum' })), 'REKAPITULASI SPJ RAMAH', getPeriodText(spjYear, spjPeriod, spjSub), ['Nama', 'NIK', 'HP', 'Alamat', 'Tracking', 'Tanggal', 'Diklaim'], ['applicant_name', 'applicant_nik', 'phone_number', 'address', 'tracking_code', 'created_at', 'is_claimed'])}>Unduh PDF</button>
-                                </div>
-                            </div>
-                            <div className="spj-dl-frame">
-                                <div className="spj-dl-header">
-                                    <div style={{ background: '#dcfce7', padding: '16px', borderRadius: '50%' }}><Truck size={36} color="#16a34a" /></div>
-                                    SPJ SANTUN
-                                </div>
-                                <div className="dl-wrap">
-                                    <button className="btn-m btn-excel btn-sm" onClick={() => generateExcel(completedSantun.map(r => ({ ...r, is_claimed: r.is_spj_claimed ? 'Ya' : 'Belum' })), 'REKAPITULASI SPJ SANTUN', 'SPJ SANTUN', getPeriodText(spjYear, spjPeriod, spjSub), ['Nama', 'NIK', 'HP', 'Jemput', 'Tujuan', 'Tracking', 'Tanggal', 'Diklaim'], ['patient_name', 'patient_nik', 'phone_number', 'pickup_address', 'dropoff_address', 'tracking_code', 'created_at', 'is_claimed'])}>Unduh Excel</button>
-                                    <button className="btn-m btn-pdf btn-sm" onClick={() => generatePDF(completedSantun.map(r => ({ ...r, is_claimed: r.is_spj_claimed ? 'Ya' : 'Belum' })), 'REKAPITULASI SPJ SANTUN', getPeriodText(spjYear, spjPeriod, spjSub), ['Nama', 'NIK', 'HP', 'Jemput', 'Tujuan', 'Tracking', 'Tanggal', 'Diklaim'], ['patient_name', 'patient_nik', 'phone_number', 'pickup_address', 'dropoff_address', 'tracking_code', 'created_at', 'is_claimed'])}>Unduh PDF</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>)}
-                </>)}
-            </div>
+                                                    {/* Expandable Participants */}
+                                                    <div style={{ marginTop: '8px' }}>
+                                                        <details style={{ fontSize: '0.8rem', color: '#334155', background: '#f8fafc', padding: '8px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                                            <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Lihat Peserta ({participants.length})</summary>
+                                                            <ul style={{ paddingLeft: '20px', marginTop: '6px', listStyleType: 'disc', color: '#475569' }}>
+                                                                {participants.map(p => (
+                                                                    <li key={p.id}>
+                                                                        <span style={{ fontWeight: 500 }}>{p.name}</span> <span style={{ color: '#94a3b8' }}>- {p.whatsapp}</span>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </details>
+                                                    </div>
 
-            {/* ── TOAST NOTIFICATIONS ── */}
-            <div className="toast-container">
-                {notifications.map(n => (
-                    <div key={n.id} className={`toast-item ${n.type}`} onClick={() => {
-                        const msg = `Halo ${n.name}, kami dari Admin SAKPORE RSUD Bendan mengonfirmasi bahwa pengajuan layanan ${n.type.toUpperCase()} Anda telah kami terima dan sedang ditindaklanjuti.`;
-                        openWhatsApp(n.phone, msg);
-                        setNotifications(prev => prev.filter(x => x.id !== n.id));
-                    }}>
-                        <button className="toast-close" onClick={(e) => {
-                            e.stopPropagation();
-                            setNotifications(prev => prev.filter(x => x.id !== n.id));
-                        }}><X size={16} /></button>
-                        <div className="toast-title"><Bell size={14} color={n.type === 'ramah' ? "#2563eb" : "#16a34a"} /> {n.title}</div>
-                        <div className="toast-msg"><b>{n.name}</b> mengirimkan permohonan baru. Klik untuk menindaklanjuti via WhatsApp.</div>
-                    </div>
-                ))}
-            </div>
-
-            {/* ── ARCHIVE MODAL ── */}
-            {selectedArchive && (
-                <div className="modal-overlay" onClick={() => setSelectedArchive(null)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <button className="modal-close" onClick={() => setSelectedArchive(null)}><X size={18} /></button>
-                        <div className="modal-header">
-                            {selectedArchive.type === 'ramah' ? <FileText size={20} color="#2563eb" /> : <Truck size={20} color="#16a34a" />}
-                            Detail Arsip {selectedArchive.type === 'ramah' ? 'RAMAH' : 'SANTUN'}
-                        </div>
-                        <div className="modal-body">
-                            <div style={{ marginBottom: '20px' }}>
-                                <h4 style={{ fontSize: '0.95rem', fontWeight: 700, fontFamily: "'Outfit'", marginBottom: '8px' }}>
-                                    {selectedArchive.type === 'ramah' ? selectedArchive.data.applicant_name : selectedArchive.data.patient_name}
-                                </h4>
-                                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>NIK: {selectedArchive.type === 'ramah' ? selectedArchive.data.applicant_nik : selectedArchive.data.patient_nik}</p>
-                                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>No HP: {selectedArchive.data.phone_number || '-'}</p>
-                                {selectedArchive.type === 'ramah' ? (
-                                    <>
-                                        {selectedArchive.data.baby_name && <p style={{ fontSize: '0.8rem', color: '#0284c7', fontWeight: 600 }}>👶 Nama Bayi: {selectedArchive.data.baby_name}</p>}
-                                        {selectedArchive.data.mother_name && <p style={{ fontSize: '0.8rem', color: '#64748b' }}>👩 Ibu Kandung Bayi: {selectedArchive.data.mother_name}</p>}
-                                        {selectedArchive.data.father_name && <p style={{ fontSize: '0.8rem', color: '#64748b' }}>👨 Ayah Kandung Bayi: {selectedArchive.data.father_name}</p>}
-                                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>📍 Alamat: {selectedArchive.data.address}</p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>📍 Jemput: {selectedArchive.data.pickup_address}</p>
-                                        <p style={{ fontSize: '0.8rem', color: '#64748b' }}>🏠 Tujuan: {selectedArchive.data.dropoff_address}</p>
-                                    </>
-                                )}
-                            </div>
-
-                            <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px', fontFamily: "'Outfit'" }}>Kronologi Status</p>
-                            <div className="timeline-list">
-                                <div className="timeline-item">
-                                    <div className="timeline-dot" style={{ background: '#16a34a', boxShadow: '0 0 0 1px #16a34a' }}></div>
-                                    <div className="timeline-title">Layanan Selesai</div>
-                                    <div className="timeline-date">Status saat ini</div>
+                                                    <p style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '12px' }}>🔗 <Link to={`/sinergi/video?sessionId=${session.id}`} style={{ color: '#0284c7', fontWeight: 700 }}>Masuk Arena (Dual-Frame)</Link></p>
+                                                    <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                                                        {session.status !== 'Completed' ? (
+                                                            <button className="btn-m btn-success btn-sm" style={{ flex: 1 }} onClick={async () => {
+                                                                if (window.confirm('Tandai sesi grup ini sebagai selesai?')) {
+                                                                    await supabase.from('sinergi_sessions').update({ status: 'Completed' }).eq('id', session.id);
+                                                                    await supabase.from('sinergi_requests').update({ status: 'Completed' }).eq('session_id', session.id);
+                                                                    fetchData();
+                                                                }
+                                                            }}>Selesaikan Sesi</button>
+                                                        ) : (
+                                                            <button className="btn-m btn-chart btn-sm" style={{ flex: 1 }} onClick={async () => {
+                                                                if (window.confirm('Arsipkan sesi grup ini?')) {
+                                                                    await supabase.from('sinergi_sessions').update({ status: 'Archived' }).eq('id', session.id);
+                                                                    fetchData();
+                                                                }
+                                                            }}>Arsipkan Sesi</button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
                                 </div>
-                                <div className="timeline-item">
-                                    <div className="timeline-dot"></div>
-                                    <div className="timeline-title">Pengajuan Diterima</div>
-                                    <div className="timeline-date">{new Date(selectedArchive.data.created_at).toLocaleString('id-ID')}</div>
-                                </div>
-                            </div>
-
-                            <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px', fontFamily: "'Outfit'" }}>Dokumen Upload</p>
-                            {selectedArchive.data.document_files?.length > 0 ? (
-                                <DocumentChecklist
-                                    files={selectedArchive.data.document_files}
-                                    zipName={`Arsip_${selectedArchive.type.toUpperCase()}_${selectedArchive.data.tracking_code}`}
-                                />
-                            ) : (
-                                <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Tidak ada dokumen terlampir.</p>
                             )}
+
+                            {sinergiCons.filter(c => c.status !== 'Completed' && !c.session_id).length === 0 ? <div className="empty-state"><Monitor size={40} /><p>Belum ada konsultasi individu aktif</p></div> :
+                                sinergiCons.filter(c => c.status !== 'Completed' && !c.session_id).map(item => (
+                                    <div key={item.id} className="admin-card" style={{ position: 'relative' }}>
+                                        {item.status === 'Pending' && (
+                                            <input
+                                                type="checkbox"
+                                                style={{ position: 'absolute', top: '20px', right: '20px', width: '20px', height: '20px', cursor: 'pointer' }}
+                                                checked={sinergiSelectedReqs.includes(item.id)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) setSinergiSelectedReqs([...sinergiSelectedReqs, item.id]);
+                                                    else setSinergiSelectedReqs(sinergiSelectedReqs.filter(id => id !== item.id));
+                                                }}
+                                            />
+                                        )}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                            <div style={{ paddingRight: '40px' }}>
+                                                <p style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Outfit'" }}>{item.name}</p>
+                                                <p style={{ fontSize: '0.78rem', color: '#64748b' }} dangerouslySetInnerHTML={{ __html: `📍 ${item.address ? item.address.replace(/\n/g, '<br/>') : ''}` }}></p>
+                                            </div>
+                                            <StatusBadge status={item.status} />
+                                        </div>
+                                        <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '12px' }}>
+                                            <p style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                                📞 {item.whatsapp}
+                                                <button className="wa-btn" onClick={() => openWhatsApp(item.whatsapp, `Halo ${item.name}, kami dari Admin SAKPORE. Terkait pengajuan konsultasi gizi Anda...`)}>
+                                                    <MessageCircle size={12} /> Hubungi
+                                                </button>
+                                            </p>
+                                            {item.scheduled_at && (
+                                                <p style={{ marginTop: '4px', color: '#0284c7', fontWeight: 600 }}>
+                                                    ⏰ Jadwal: {new Date(item.scheduled_at).toLocaleString('id-ID')}
+                                                </p>
+                                            )}
+                                            {item.jitsi_room && (
+                                                <p style={{ marginTop: '2px', color: '#16a34a', fontWeight: 600 }}>
+                                                    🔗 Link: <Link to={`/sinergi/video?sessionId=${item.session_id || item.id}`} style={{ color: '#16a34a', fontWeight: 700, textDecoration: 'underline' }}>Masuk Arena (Dual-Frame)</Link>
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div className="status-actions">
+                                            {item.status === 'Pending' && (
+                                                <button className="btn-m btn-excel btn-sm" onClick={() => {
+                                                    setSchedulingSinergi(item);
+                                                    setScheduleForm({
+                                                        date: new Date().toISOString().split('T')[0],
+                                                        time: '10:00',
+                                                        jitsi: `https://meet.jit.si/SAKPORE-Gizi-${item.name.replace(/\s+/g, '-')}-${Math.random().toString(36).substring(7)}`
+                                                    });
+                                                }}>Jadwalkan</button>
+                                            )}
+                                            {item.status === 'Scheduled' && (
+                                                <>
+                                                    <button className="btn-m btn-chart btn-sm" onClick={() => {
+                                                        setSchedulingSinergi(item);
+                                                        const d = new Date(item.scheduled_at);
+                                                        setScheduleForm({
+                                                            date: d.toISOString().split('T')[0],
+                                                            time: d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':'),
+                                                            jitsi: item.jitsi_room
+                                                        });
+                                                    }}>Ubah Jadwal</button>
+                                                    <button className="btn-m btn-success btn-sm" onClick={() => updateSinergiStatus(item.id, 'Completed', item)}>Selesai</button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            }
+
+                            {/* Scheduling Modal */}
+                            {schedulingSinergi && (
+                                <div className="modal-overlay" onClick={() => setSchedulingSinergi(null)}>
+                                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                        <button className="modal-close" onClick={() => setSchedulingSinergi(null)}><X size={18} /></button>
+                                        <div className="modal-header"><Video size={20} color="#0284c7" /> Atur Jadwal Konsultasi</div>
+                                        <div className="modal-body">
+                                            <form onSubmit={handleScheduleSinergi} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Tanggal Sesi</label>
+                                                    <input
+                                                        type="date"
+                                                        required
+                                                        className="filter-dd"
+                                                        style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none' }}
+                                                        value={scheduleForm.date}
+                                                        onChange={e => setScheduleForm({ ...scheduleForm, date: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Waktu Sesi (WIB)</label>
+                                                    <input
+                                                        type="time"
+                                                        required
+                                                        className="filter-dd"
+                                                        style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none' }}
+                                                        value={scheduleForm.time}
+                                                        onChange={e => setScheduleForm({ ...scheduleForm, time: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Link Jitsi Meet</label>
+                                                    <input
+                                                        type="url"
+                                                        required
+                                                        className="filter-dd"
+                                                        style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none' }}
+                                                        value={scheduleForm.jitsi}
+                                                        onChange={e => setScheduleForm({ ...scheduleForm, jitsi: e.target.value })}
+                                                    />
+                                                </div>
+                                                <button type="submit" className="btn-m btn-excel btn-full" style={{ marginTop: '10px' }}>Simpan Jadwal & Kirim WA</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Manual Session Modal */}
+                            {manualSessionModal && (
+                                <div className="modal-overlay" onClick={() => setManualSessionModal(false)}>
+                                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                        <button className="modal-close" onClick={() => setManualSessionModal(false)}><X size={18} /></button>
+                                        <div className="modal-header"><Video size={20} color="#16a34a" /> Buat Sesi Konsultasi Manual</div>
+                                        <div className="modal-body">
+                                            <form onSubmit={handleCreateManualSession} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Nama Pasien / Sesi</label>
+                                                    <input
+                                                        type="text"
+                                                        required
+                                                        className="filter-dd"
+                                                        style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                        value={manualSessionForm.full_name}
+                                                        onChange={e => setManualSessionForm({ ...manualSessionForm, full_name: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Tanggal Sesi</label>
+                                                    <input
+                                                        type="date"
+                                                        required
+                                                        className="filter-dd"
+                                                        style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                        value={manualSessionForm.date}
+                                                        onChange={e => setManualSessionForm({ ...manualSessionForm, date: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Waktu Sesi (WIB)</label>
+                                                    <input
+                                                        type="time"
+                                                        required
+                                                        className="filter-dd"
+                                                        style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                        value={manualSessionForm.time}
+                                                        onChange={e => setManualSessionForm({ ...manualSessionForm, time: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Link / Kode Jitsi (Opsional)</label>
+                                                    <input
+                                                        type="text"
+                                                        className="filter-dd"
+                                                        placeholder="Kosongi untuk generate otomatis"
+                                                        style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                        value={manualSessionForm.jitsi_link}
+                                                        onChange={e => setManualSessionForm({ ...manualSessionForm, jitsi_link: e.target.value })}
+                                                    />
+                                                </div>
+                                                <button type="submit" className="btn-m btn-success btn-full" style={{ marginTop: '10px' }}>Buat Sesi</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Nutritionist Management Modal */}
+                            {nutritionistModal && (
+                                <div className="modal-overlay" onClick={() => setNutritionistModal(false)}>
+                                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+                                        <button className="modal-close" onClick={() => setNutritionistModal(false)}><X size={18} /></button>
+                                        <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#1e293b', marginBottom: '24px', fontFamily: "'Outfit', sans-serif" }}>
+                                            Kelola Database Ahli Gizi
+                                        </h3>
+
+                                        <form onSubmit={handleAddNutritionist} style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', marginBottom: '24px', border: '1px solid #e2e8f0' }}>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'end' }}>
+                                                <div style={{ flex: '1 1 200px' }}>
+                                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Nama Lengkap</label>
+                                                    <input
+                                                        type="text" required
+                                                        value={nutritionistForm.name}
+                                                        onChange={e => setNutritionistForm({ ...nutritionistForm, name: e.target.value })}
+                                                        placeholder="Contoh: Sarah Jones"
+                                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                                                    />
+                                                </div>
+                                                <div style={{ flex: '1 1 150px' }}>
+                                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>WhatsApp</label>
+                                                    <input
+                                                        type="text" required
+                                                        value={nutritionistForm.whatsapp}
+                                                        onChange={e => setNutritionistForm({ ...nutritionistForm, whatsapp: e.target.value })}
+                                                        placeholder="0812..."
+                                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                                                    />
+                                                </div>
+                                                <button type="submit" className="btn-m btn-chart btn-sm" style={{ flex: '1 1 100px', height: '42px' }}>Simpan</button>
+                                            </div>
+                                        </form>
+
+                                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                                <thead>
+                                                    <tr style={{ textAlign: 'left', borderBottom: '2px solid #f1f5f9' }}>
+                                                        <th style={{ padding: '12px', fontSize: '0.75rem', color: '#64748b' }}>NAMA</th>
+                                                        <th style={{ padding: '12px', fontSize: '0.75rem', color: '#64748b' }}>WHATSAPP</th>
+                                                        <th style={{ padding: '12px', textAlign: 'right' }}>AKSI</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {sinergiNutritionists.map(nut => (
+                                                        <tr key={nut.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                            <td style={{ padding: '12px', fontSize: '0.85rem', fontWeight: 600 }}>{nut.name}</td>
+                                                            <td style={{ padding: '12px', fontSize: '0.85rem' }}>{nut.whatsapp}</td>
+                                                            <td style={{ padding: '12px', textAlign: 'right' }}>
+                                                                <button onClick={() => handleDeleteNutritionist(nut.id)} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}>
+                                                                    Hapus
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Collective Session Modal */}
+                            {collectiveModal && (
+                                <div className="modal-overlay" onClick={() => setCollectiveModal(false)}>
+                                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                        <button className="modal-close" onClick={() => setCollectiveModal(false)}><X size={18} /></button>
+                                        <div className="modal-header"><ClipboardList size={20} color="#0284c7" /> Jadwalkan Sesi Kolektif</div>
+                                        <div className="modal-body">
+                                            <p style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: '16px' }}>
+                                                Anda sedang menjadwalkan <b>{sinergiSelectedReqs.length} pasien</b> untuk satu sesi video meeting bersama.
+                                            </p>
+                                            <form onSubmit={handleCreateCollectiveSession} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Judul Sesi Grup</label>
+                                                    <input
+                                                        type="text"
+                                                        required
+                                                        className="filter-dd"
+                                                        placeholder="Contoh: Konsultasi Gizi Balita Stunting"
+                                                        style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                        value={collectiveForm.title}
+                                                        onChange={e => setCollectiveForm({ ...collectiveForm, title: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                                    <div>
+                                                        <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Nama Narasumber</label>
+                                                        <input
+                                                            type="text"
+                                                            className="filter-dd"
+                                                            placeholder="Contoh: dr. Amanda"
+                                                            style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                            value={narasumberForm.name}
+                                                            onChange={e => setNarasumberForm({ ...narasumberForm, name: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>WA Narasumber (opsional)</label>
+                                                        <input
+                                                            type="text"
+                                                            className="filter-dd"
+                                                            placeholder="Contoh: 628..."
+                                                            style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                            value={narasumberForm.whatsapp}
+                                                            onChange={e => setNarasumberForm({ ...narasumberForm, whatsapp: e.target.value })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Tanggal Sesi</label>
+                                                    <input
+                                                        type="date"
+                                                        required
+                                                        className="filter-dd"
+                                                        style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                        value={collectiveForm.date}
+                                                        onChange={e => setCollectiveForm({ ...collectiveForm, date: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                                    <div>
+                                                        <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Waktu Sesi</label>
+                                                        <input
+                                                            type="time"
+                                                            required
+                                                            className="filter-dd"
+                                                            style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                            value={collectiveForm.time}
+                                                            onChange={e => setCollectiveForm({ ...collectiveForm, time: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Link Jitsi</label>
+                                                        <input
+                                                            type="text"
+                                                            required
+                                                            className="filter-dd"
+                                                            style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                            value={collectiveForm.jitsi}
+                                                            onChange={e => setCollectiveForm({ ...collectiveForm, jitsi: e.target.value })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <button type="submit" className="btn-m btn-excel btn-full" style={{ marginTop: '10px' }}>Buat Sesi & Kirim WA Massal</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>)}
+
+                        {/* ═══════ ARSIP ═══════ */}
+                        {activeTab === 'arsip' && (<div>
+                            <div className="sc-grid">
+                                <div className="sc-card sc-blue"><div className="sc-emoji">📚</div><div className="sc-val">{arsipRamah.length + arsipSantun.length + arsipSinergi.length}</div><div className="sc-lbl">Total Arsip Selesai</div></div>
+                                <div className="sc-card sc-green"><div className="sc-emoji">📄</div><div className="sc-val">{arsipRamah.length}</div><div className="sc-lbl">Arsip RAMAH</div></div>
+                                <div className="sc-card sc-amber"><div className="sc-emoji">🚑</div><div className="sc-val">{arsipSantun.length}</div><div className="sc-lbl">Arsip SANTUN</div></div>
+                                <div className="sc-card sc-rose"><div className="sc-emoji">🎥</div><div className="sc-val">{arsipSinergi.length}</div><div className="sc-lbl">Arsip SINERGI</div></div>
+                            </div>
+                            <div className="search-box" style={{ marginBottom: '20px' }}><Search size={16} color="#94a3b8" /><input placeholder="Cari arsip nama atau NIK..." value={aSearch} onChange={e => setASearch(e.target.value)} /></div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                                <div className="admin-card">
+                                    <div className="admin-card-title">Arsip RAMAH ({arsipRamah.length})</div>
+                                    {arsipRamah.length === 0 ? <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '12px' }}>Tidak ada arsip ditemukan</p> :
+                                        arsipRamah.map(doc => (
+                                            <div key={doc.id} className="spj-item" style={{ cursor: 'pointer' }} onClick={() => setSelectedArchive({ type: 'ramah', data: doc })}>
+                                                <div style={{ flex: 1, minWidth: 0 }}><p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: "'Outfit'" }}>{doc.applicant_name}</p><p style={{ fontSize: '0.72rem', color: '#64748b' }}>{doc.tracking_code} · {new Date(doc.created_at).toLocaleDateString('id-ID')}</p></div>
+                                                <span style={{ fontSize: '0.68rem', background: '#dcfce7', color: '#16a34a', padding: '3px 8px', borderRadius: '10px', fontWeight: 700 }}>Selesai</span>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                                <div className="admin-card">
+                                    <div className="admin-card-title">Arsip SANTUN ({arsipSantun.length})</div>
+                                    {arsipSantun.length === 0 ? <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '12px' }}>Tidak ada arsip ditemukan</p> :
+                                        arsipSantun.map(req => (
+                                            <div key={req.id} className="spj-item" style={{ cursor: 'pointer' }} onClick={() => setSelectedArchive({ type: 'santun', data: req })}>
+                                                <div style={{ flex: 1, minWidth: 0 }}><p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: "'Outfit'" }}>{req.patient_name}</p><p style={{ fontSize: '0.72rem', color: '#64748b' }}>{req.tracking_code} · {new Date(req.created_at).toLocaleDateString('id-ID')}</p></div>
+                                                <span style={{ fontSize: '0.68rem', background: '#dcfce7', color: '#16a34a', padding: '3px 8px', borderRadius: '10px', fontWeight: 700 }}>Selesai</span>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                                <div className="admin-card">
+                                    <div className="admin-card-title">Arsip SINERGI ({arsipSinergi.length})</div>
+                                    {arsipSinergi.length === 0 ? <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '12px' }}>Tidak ada arsip ditemukan</p> :
+                                        arsipSinergi.map(item => (
+                                            <div key={item.id} className="spj-item" style={{ cursor: 'pointer' }} onClick={() => setSelectedArchive({ type: 'sinergi', data: item })}>
+                                                <div style={{ flex: 1, minWidth: 0 }}><p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: "'Outfit'" }}>{item.name}</p><p style={{ fontSize: '0.72rem', color: '#64748b' }}>Sesi Video Meet · {new Date(item.created_at).toLocaleDateString('id-ID')}</p></div>
+                                                <span style={{ fontSize: '0.68rem', background: '#dcfce7', color: '#16a34a', padding: '3px 8px', borderRadius: '10px', fontWeight: 700 }}>Selesai</span>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                        </div>)}
+
+                        {/* ═══════ SPJ ═══════ */}
+                        {activeTab === 'spj' && (<div>
+                            <div className="sc-grid">
+                                <div className="sc-card sc-blue"><div className="sc-emoji">📄</div><div className="sc-val">{completedRamah.length}</div><div className="sc-lbl">RAMAH Selesai</div></div>
+                                <div className="sc-card sc-green"><div className="sc-emoji">🚑</div><div className="sc-val">{completedSantun.length}</div><div className="sc-lbl">SANTUN Selesai</div></div>
+                                <div className="sc-card sc-amber"><div className="sc-emoji">✍️</div><div className="sc-val">{completedRamah.filter(d => d.is_spj_claimed).length + completedSantun.filter(r => r.is_spj_claimed).length}</div><div className="sc-lbl">Total Diklaim</div></div>
+                                <div className="sc-card sc-rose"><div className="sc-emoji">📝</div><div className="sc-val">{completedRamah.filter(d => !d.is_spj_claimed).length + completedSantun.filter(r => !r.is_spj_claimed).length}</div><div className="sc-lbl">Sisa Belum Diklaim</div></div>
+                            </div>
+                            <FilterBar year={spjYear} setYear={setSpjYear} period={spjPeriod} setPeriod={setSpjPeriod} sub={spjSub} setSub={setSpjSub} />
+
+                            {renderSpjList(`SPJ RAMAH (${completedRamah.length})`, completedRamah, toggleSpjClaimRamah)}
+                            {renderSpjList(`SPJ SANTUN (${completedSantun.length})`, completedSantun, toggleSpjClaimSantun)}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '16px', marginTop: '24px' }}>
+                                <div className="spj-dl-frame">
+                                    <div className="spj-dl-header">
+                                        <div style={{ background: '#e0f2fe', padding: '16px', borderRadius: '50%' }}><FileText size={36} color="#0284c7" /></div>
+                                        SPJ RAMAH
+                                    </div>
+                                    <div className="dl-wrap">
+                                        <button className="btn-m btn-excel btn-sm" onClick={() => generateExcel(completedRamah.map(d => ({ ...d, is_claimed: d.is_spj_claimed ? 'Ya' : 'Belum' })), 'REKAPITULASI SPJ RAMAH', 'SPJ RAMAH', getPeriodText(spjYear, spjPeriod, spjSub), ['Nama', 'NIK', 'HP', 'Alamat', 'Tracking', 'Tanggal', 'Diklaim'], ['applicant_name', 'applicant_nik', 'phone_number', 'address', 'tracking_code', 'created_at', 'is_claimed'])}>Unduh Excel</button>
+                                        <button className="btn-m btn-pdf btn-sm" onClick={() => generatePDF(completedRamah.map(d => ({ ...d, is_claimed: d.is_spj_claimed ? 'Ya' : 'Belum' })), 'REKAPITULASI SPJ RAMAH', getPeriodText(spjYear, spjPeriod, spjSub), ['Nama', 'NIK', 'HP', 'Alamat', 'Tracking', 'Tanggal', 'Diklaim'], ['applicant_name', 'applicant_nik', 'phone_number', 'address', 'tracking_code', 'created_at', 'is_claimed'])}>Unduh PDF</button>
+                                    </div>
+                                </div>
+                                <div className="spj-dl-frame">
+                                    <div className="spj-dl-header">
+                                        <div style={{ background: '#dcfce7', padding: '16px', borderRadius: '50%' }}><Truck size={36} color="#16a34a" /></div>
+                                        SPJ SANTUN
+                                    </div>
+                                    <div className="dl-wrap">
+                                        <button className="btn-m btn-excel btn-sm" onClick={() => generateExcel(completedSantun.map(r => ({ ...r, is_claimed: r.is_spj_claimed ? 'Ya' : 'Belum' })), 'REKAPITULASI SPJ SANTUN', 'SPJ SANTUN', getPeriodText(spjYear, spjPeriod, spjSub), ['Nama', 'NIK', 'HP', 'Jemput', 'Tujuan', 'Tracking', 'Tanggal', 'Diklaim'], ['patient_name', 'patient_nik', 'phone_number', 'pickup_address', 'dropoff_address', 'tracking_code', 'created_at', 'is_claimed'])}>Unduh Excel</button>
+                                        <button className="btn-m btn-pdf btn-sm" onClick={() => generatePDF(completedSantun.map(r => ({ ...r, is_claimed: r.is_spj_claimed ? 'Ya' : 'Belum' })), 'REKAPITULASI SPJ SANTUN', getPeriodText(spjYear, spjPeriod, spjSub), ['Nama', 'NIK', 'HP', 'Jemput', 'Tujuan', 'Tracking', 'Tanggal', 'Diklaim'], ['patient_name', 'patient_nik', 'phone_number', 'pickup_address', 'dropoff_address', 'tracking_code', 'created_at', 'is_claimed'])}>Unduh PDF</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>)}
+                        {/* ── TOAST NOTIFICATIONS ── */}
+                        <div className="toast-container">
+                            {notifications.map(n => (
+                                <div key={n.id} className={`toast-item ${n.type}`} onClick={() => {
+                                    const msg = `Halo ${n.name}, kami dari Admin SAKPORE RSUD Bendan mengonfirmasi bahwa pengajuan layanan ${n.type.toUpperCase()} Anda telah kami terima dan sedang ditindaklanjuti.`;
+                                    openWhatsApp(n.phone, msg);
+                                    setNotifications(prev => prev.filter(x => x.id !== n.id));
+                                }}>
+                                    <button className="toast-close" onClick={(e) => {
+                                        e.stopPropagation();
+                                        setNotifications(prev => prev.filter(x => x.id !== n.id));
+                                    }}><X size={16} /></button>
+                                    <div className="toast-title"><Bell size={14} color={n.type === 'ramah' ? "#2563eb" : "#16a34a"} /> {n.title}</div>
+                                    <div className="toast-msg"><b>{n.name}</b> mengirimkan permohonan baru. Klik untuk menindaklanjuti via WhatsApp.</div>
+                                </div>
+                            ))}
                         </div>
-                    </div>
+
+                        {/* ── ARCHIVE MODAL ── */}
+                        {selectedArchive && (
+                            <div className="modal-overlay" onClick={() => setSelectedArchive(null)}>
+                                <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                    <button className="modal-close" onClick={() => setSelectedArchive(null)}><X size={18} /></button>
+                                    <div className="modal-header">
+                                        {selectedArchive.type === 'ramah' ? <FileText size={20} color="#2563eb" /> : selectedArchive.type === 'santun' ? <Truck size={20} color="#16a34a" /> : <Monitor size={20} color="#0284c7" />}
+                                        Detail Arsip {selectedArchive.type.toUpperCase()}
+                                    </div>
+                                    <div className="modal-body">
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, fontFamily: "'Outfit'", marginBottom: '8px' }}>
+                                                {selectedArchive.type === 'ramah' ? selectedArchive.data.applicant_name : selectedArchive.type === 'santun' ? selectedArchive.data.patient_name : selectedArchive.data.name}
+                                            </h4>
+                                            {selectedArchive.type !== 'sinergi' && <p style={{ fontSize: '0.8rem', color: '#64748b' }}>NIK: {selectedArchive.type === 'ramah' ? selectedArchive.data.applicant_nik : selectedArchive.data.patient_nik}</p>}
+                                            <p style={{ fontSize: '0.8rem', color: '#64748b' }}>No HP: {selectedArchive.data.phone_number || selectedArchive.data.whatsapp_number || '-'}</p>
+
+                                            {selectedArchive.type === 'ramah' ? (
+                                                <>
+                                                    {selectedArchive.data.baby_name && <p style={{ fontSize: '0.8rem', color: '#0284c7', fontWeight: 600 }}>👶 Nama Bayi: {selectedArchive.data.baby_name}</p>}
+                                                    {selectedArchive.data.mother_name && <p style={{ fontSize: '0.8rem', color: '#64748b' }}>👩 Ibu Kandung Bayi: {selectedArchive.data.mother_name}</p>}
+                                                    {selectedArchive.data.father_name && <p style={{ fontSize: '0.8rem', color: '#64748b' }}>👨 Ayah Kandung Bayi: {selectedArchive.data.father_name}</p>}
+                                                    <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>📍 Alamat: {selectedArchive.data.address}</p>
+                                                </>
+                                            ) : selectedArchive.type === 'santun' ? (
+                                                <>
+                                                    <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>📍 Jemput: {selectedArchive.data.pickup_address}</p>
+                                                    <p style={{ fontSize: '0.8rem', color: '#64748b' }}>🏠 Tujuan: {selectedArchive.data.dropoff_address}</p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>💬 Topik: <b>{selectedArchive.data.consultation_topic}</b></p>
+                                                    <p style={{ fontSize: '0.8rem', color: '#64748b' }}>📍 Alamat: {selectedArchive.data.address}</p>
+                                                    {selectedArchive.data.scheduled_at && <p style={{ fontSize: '0.8rem', color: '#0284c7', fontWeight: 600, marginTop: '4px' }}>⏰ Selesai pada: {new Date(selectedArchive.data.scheduled_at).toLocaleString('id-ID')}</p>}
+                                                </>
+                                            )}
+                                        </div>
+
+                                        <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px', fontFamily: "'Outfit'" }}>Kronologi Status</p>
+                                        <div className="timeline-list">
+                                            <div className="timeline-item">
+                                                <div className="timeline-dot" style={{ background: '#16a34a', boxShadow: '0 0 0 1px #16a34a' }}></div>
+                                                <div className="timeline-title">Layanan Selesai</div>
+                                                <div className="timeline-date">Status saat ini</div>
+                                            </div>
+                                            <div className="timeline-item">
+                                                <div className="timeline-dot"></div>
+                                                <div className="timeline-title">Pengajuan Diterima</div>
+                                                <div className="timeline-date">{new Date(selectedArchive.data.created_at).toLocaleString('id-ID')}</div>
+                                            </div>
+                                        </div>
+
+                                        <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px', fontFamily: "'Outfit'" }}>Dokumen Upload</p>
+                                        {selectedArchive.data.document_files?.length > 0 ? (
+                                            <DocumentChecklist
+                                                files={selectedArchive.data.document_files}
+                                                zipName={`Arsip_${selectedArchive.type.toUpperCase()}_${selectedArchive.data.tracking_code}`}
+                                            />
+                                        ) : (
+                                            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Tidak ada dokumen terlampir.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>)}
                 </div>
-            )}
-        </div>
-    );
+            </div>
+            );
 }

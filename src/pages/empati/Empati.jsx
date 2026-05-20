@@ -115,7 +115,8 @@ export default function Empati() {
                     </button>
                     <div>
                         <h2 style={{ fontSize: '1.4rem', margin: 0, color: 'white', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>EMPATI</h2>
-                        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', margin: 0, fontWeight: 500 }}>Edukasi Mewujudkan Persalinan Aman & Tenang</p>
+                        <h3 style={{ fontSize: '1rem', margin: '4px 0', color: 'white', fontWeight: 700 }}>Edukasi Masa Pasca Melahirkan Buah Hati</h3>
+                        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', margin: 0, fontWeight: 500 }}>Wujudkan Bunda yang tenang, ceria & bersahaja ✨</p>
                     </div>
                 </div>
             </div>
@@ -132,48 +133,61 @@ export default function Empati() {
               Hasilnya: yang terlihat hanya konten video saja.
             */}
             <div style={{
-                borderRadius: '16px',
+                borderRadius: '24px',
                 overflow: 'hidden',
                 position: 'relative',
                 width: '100%',
-                paddingBottom: '56.25%', /* 16:9 */
-                marginBottom: '16px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                background: '#e2e8f0',
+                paddingBottom: '56.25%', /* Strict 16:9 Aspect Ratio */
+                marginBottom: '20px',
+                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
+                background: '#000',
+                border: '4px solid white'
             }}>
-                {/* Loading overlay */}
+                {/* Premium Loading overlay with backdrop blur */}
                 {isLoading && (
                     <div style={{
                         position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                        background: 'linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%)',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        backdropFilter: 'blur(12px)',
                         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 5, borderRadius: '16px'
+                        zIndex: 10, transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}>
                         <div style={{
-                            width: '48px', height: '48px', borderRadius: '50%',
-                            border: '3px solid #0ea5e9', borderTopColor: 'transparent',
-                            animation: 'spin 1s linear infinite'
+                            width: '40px', height: '40px', borderRadius: '50%',
+                            border: '3px solid var(--primary)', borderTopColor: 'transparent',
+                            animation: 'spin 0.8s linear infinite'
                         }}></div>
-                        <p style={{ fontSize: '0.8rem', color: '#0ea5e9', fontWeight: 600, marginTop: '12px' }}>
-                            Memuat video...
+                        <p style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 800, marginTop: '16px', letterSpacing: '0.05em' }}>
+                            MEMPERSIAPKAN EDUKASI...
                         </p>
                     </div>
                 )}
+
+                {/* 
+                  Refinement: Scaling to 1.3 (30% zoom) to aggressively crop 
+                  Google Drive's player toolbars and any intrinsic black bars 
+                  in the video source, ensuring a truly edge-to-edge "clear" feel.
+                */}
                 <iframe
                     key={selectedVideo.id}
-                    src={`https://drive.google.com/file/d/${selectedVideo.videoSrc}/preview`}
+                    src={`https://drive.google.com/file/d/${selectedVideo.videoSrc}/preview?autoplay=1`}
                     style={{
                         border: 'none',
                         position: 'absolute',
-                        top: '-10%',
-                        left: '-10%',
-                        width: '120%',
-                        height: '120%',
+                        top: '50%',
+                        left: '50%',
+                        width: '100%',
+                        height: '100%',
+                        transform: 'translate(-50%, -50%) scale(1.3)',
+                        pointerEvents: 'auto'
                     }}
                     allow="autoplay; fullscreen"
                     allowFullScreen
                     title={selectedVideo.title}
-                    onLoad={() => setIsLoading(false)}
+                    onLoad={() => {
+                        // Longer delay (2s) to ensure the player is ready
+                        setTimeout(() => setIsLoading(false), 2000);
+                    }}
                 />
             </div>
 

@@ -21,10 +21,25 @@ const SurahDetail = () => {
                 const metaData = await metaRes.json();
                 if (metaData.status) {
                     const metadata = metaData.data;
-                    const ayahRes = await fetch(`https://api.myquran.com/v2/quran/ayat/${id}/1-${metadata.number_of_verses}`);
-                    const ayahData = await ayahRes.json();
-                    if (ayahData.status || ayahData.data) {
-                        setSurah({ ...metadata, ayahs: ayahData.data });
+                    const totalVerses = parseInt(metadata.number_of_verses);
+                    const CHUNK_SIZE = 30;
+                    const allAyahs = [];
+
+                    for (let i = 1; i <= totalVerses; i += CHUNK_SIZE) {
+                        const end = Math.min(i + CHUNK_SIZE - 1, totalVerses);
+                        const res = await fetch(`https://api.myquran.com/v2/quran/ayat/${id}/${i}-${end}`);
+                        const data = await res.json();
+                        if (data.data) {
+                            allAyahs.push(...data.data);
+                        }
+                        // Add a tiny delay to avoid rate limiting
+                        if (totalVerses > CHUNK_SIZE) {
+                            await new Promise(r => setTimeout(r, 100));
+                        }
+                    }
+
+                    if (allAyahs.length > 0) {
+                        setSurah({ ...metadata, ayahs: allAyahs });
                     }
                 }
             } catch (error) { console.error('Error:', error); }
@@ -103,7 +118,8 @@ const SurahDetail = () => {
 
     // Styles
     const s = {
-        page: { minHeight: '100vh', background: 'linear-gradient(180deg, #f8fafc, #f1f5f9)', paddingBottom: '100px' },
+        page: { minHeight: '100vh', background: 'linear-gradient(180deg, #f8fafc, #f1f5f9)' },
+        pageWithFooter: { minHeight: '100vh', background: 'linear-gradient(180deg, #f8fafc, #f1f5f9)', paddingBottom: '100px' },
         header: {
             position: 'relative', overflow: 'hidden',
             background: 'linear-gradient(135deg, #7c3aed, #6d28d9, #4f46e5)',
@@ -181,7 +197,7 @@ const SurahDetail = () => {
         },
         translationText: {
             fontSize: '13px', color: '#475569', lineHeight: 1.7, fontFamily: 'Outfit, sans-serif',
-            padding: '0 20px 14px', borderTop: '1px solid #f1f5f9', paddingTop: '12px', margin: '0 0 0 0',
+            padding: '12px 20px 14px', borderTop: '1px solid #f1f5f9', margin: 0,
         },
     };
 
@@ -202,7 +218,7 @@ const SurahDetail = () => {
     const progressPct = surah.ayahs ? ((currentPlayAllIndex + 1) / surah.ayahs.length) * 100 : 0;
 
     return (
-        <div style={s.page} className="animate-slide-up">
+        <div style={s.pageWithFooter} className="animate-slide-up">
             {/* Header */}
             <div style={s.header}>
                 <div style={s.headerPattern} />
@@ -211,7 +227,7 @@ const SurahDetail = () => {
                         <Link to="/quran" style={s.backBtn}><ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} /></Link>
                         <div>
                             <h1 style={{ fontSize: '18px', fontWeight: 700, color: 'white', fontFamily: 'Outfit, sans-serif', margin: 0 }}>{surah.name_id}</h1>
-                            <p style={{ fontSize: '11px', color: '#c4b5fd', fontWeight: 500, margin: '2px 0 0 0' }}>{surah.translation_id} • {surah.number_of_verses} Ayat</p>
+                            <p style={{ fontSize: '11px', color: '#c4b5fd', fontWeight: 500, marginTop: '2px', marginBottom: 0 }}>{surah.translation_id} • {surah.number_of_verses} Ayat</p>
                         </div>
                     </div>
                     <span style={{ fontSize: '22px', fontFamily: "'Scheherazade New', serif", color: 'rgba(255,255,255,0.85)' }}>{surah.name_short}</span>

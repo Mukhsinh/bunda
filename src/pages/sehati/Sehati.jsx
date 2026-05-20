@@ -20,9 +20,6 @@ const Speedometer = ({ title, zScore, status }) => {
     else if (clampedValue > 1) statusColor = '#f59e0b'; // Yellow = Risk
 
     // Arc gradient: matches WHO thresholds
-    // -4 to -3 (severe), -3 to -2 (moderate), -2 to +1 (normal), +1 to +2 (risk), +2 to +3 (overweight), +3 to +4 (obese)
-    // Mapped to 0-180deg: each unit = 22.5deg
-    // -4=0%, -3=12.5%, -2=25%, +1=62.5%, +2=75%, +3=87.5%, +4=100%
     const arcGradient = 'linear-gradient(90deg, #dc2626 0%, #dc2626 12.5%, #ea580c 12.5%, #ea580c 25%, #22c55e 25%, #22c55e 62.5%, #f59e0b 62.5%, #f59e0b 75%, #ea580c 75%, #ea580c 87.5%, #dc2626 87.5%, #dc2626 100%)';
 
     return (
@@ -62,13 +59,16 @@ const Speedometer = ({ title, zScore, status }) => {
 export default function Sehati() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        name: '', dob: '', gender: 'male', weight: '', height: ''
+        name: '', dob: '', gender: 'male', weight: '', height: '', isLyingDown: true
     });
     const [result, setResult] = useState(null);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     const handleCalculate = (e) => {
@@ -78,12 +78,18 @@ export default function Sehati() {
         let ageMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + today.getMonth() - birthDate.getMonth();
         if (ageMonths < 0) ageMonths = 0;
 
-        if (ageMonths > 60) {
-            alert('Kalkulator ini dikhususkan untuk Balita usia 0-60 bulan (5 Tahun).');
+        if (ageMonths > 216) {
+            alert('Kalkulator ini dikhususkan untuk anak usia 0-18 tahun.');
             return;
         }
 
-        const indices = calculateNutritionIndices(parseFloat(formData.weight), parseFloat(formData.height), ageMonths, formData.gender);
+        const indices = calculateNutritionIndices(
+            parseFloat(formData.weight),
+            parseFloat(formData.height),
+            ageMonths,
+            formData.gender,
+            formData.isLyingDown
+        );
 
         setResult({
             ageMonths,
@@ -100,22 +106,23 @@ export default function Sehati() {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(22);
         doc.setFont(undefined, 'bold');
-        doc.text('Kartu Analisis Gizi', 105, 20, { align: 'center' });
+        doc.text('Kartu Analisis Gizi Anak', 105, 20, { align: 'center' });
         doc.setFontSize(12);
         doc.setFont(undefined, 'normal');
-        doc.text('RSUD Bendan Kota Pekalongan', 105, 30, { align: 'center' });
+        doc.text('Berdasarkan Permenkes RI No. 2 Tahun 2020', 105, 30, { align: 'center' });
 
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('Informasi Balita', 14, 55);
+        doc.text('Informasi Pasien', 14, 55);
 
         const infoBody = [
             ['Nama Lengkap', formData.name],
             ['Jenis Kelamin', formData.gender === 'male' ? 'Laki-laki' : 'Perempuan'],
             ['Tanggal Lahir', formData.dob],
-            ['Usia', `${result.ageMonths} Bulan`],
+            ['Usia', `${result.ageMonths} Bulan (${(result.ageMonths / 12).toFixed(1)} Tahun)`],
             ['Berat / Tinggi', `${formData.weight} kg / ${formData.height} cm`],
+            ['Posisi Ukur', formData.isLyingDown ? 'Telentang (PB)' : 'Berdiri (TB)'],
         ];
 
         autoTable(doc, {
@@ -126,120 +133,90 @@ export default function Sehati() {
             columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } }
         });
 
-        // Title for the second table
+        // Title for results
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(0, 0, 0);
-        doc.text('Hasil Analisis (Standar Kemenkes / WHO)', 14, doc.lastAutoTable.finalY + 8);
+        doc.text('Hasil Analisis Klinis', 14, doc.lastAutoTable.finalY + 8);
 
-        // Table 2: Hasil Analisis
-        const head = [['Indikator Kemenkes', 'Z-Score', 'Status Gizi', 'Grafik Z-Score (-4 s/d +4)']];
-        const body = [
-            ['BB/U (Berat/Umur)', result.bb_u.zScore, result.bb_u.status, ''],
-            ['TB/U (Tinggi/Umur)', result.tb_u.zScore, result.tb_u.status, ''],
-            ['BB/TB (Berat/Tinggi)', result.bb_tb.zScore, result.bb_tb.status, ''],
-            ['IMT/U (BMI/Umur)', result.imt_u.zScore, result.imt_u.status, '']
-        ];
+        const head = [['Indikator', 'Z-Score', 'Status Gizi', 'Interpretasi Klinis']];
+        const body = [];
+
+        if (result.bb_u) body.push(['BB/U (Berat/Umur)', result.bb_u.zScore, result.bb_u.status, 'Menilai berat badan secara umum']);
+        if (result.tb_u) body.push(['TB/U (Tinggi/Umur)', result.tb_u.zScore, result.tb_u.status, 'Mendeteksi risiko Stunting']);
+        if (result.bb_tb) body.push(['BB/TB (Berat/Tinggi)', result.bb_tb.zScore, result.bb_tb.status, 'Mendeteksi Gizi Buruk/Kurus']);
+        if (result.imt_u) body.push(['IMT/U (BMI/Umur)', result.imt_u.zScore, result.imt_u.status, 'Indeks Massa Tubuh (%)']);
+
+        // Visual Graph SECTION: Speedometer Style
+        let currentY = doc.lastAutoTable.finalY + 15;
+        doc.setFontSize(10);
+        doc.setTextColor(30, 41, 59);
+        doc.text('Visualisasi Status Gizi (WHO Speedometer Gauge):', 14, currentY);
+        currentY += 22;
+
+        const drawHorizontalGauge = (x, y, label, zScore) => {
+            const width = 36;
+            const height = 5;
+            const centerY = y + 5;
+
+            // Label Positioned Above
+            doc.setFontSize(8);
+            doc.setTextColor(30, 41, 59);
+            doc.setFont(undefined, 'bold');
+            doc.text(label, x + width / 2, centerY - 6, { align: 'center' });
+
+            // Draw 5 segments
+            const drawSeg = (startZ, endZ, color) => {
+                doc.setFillColor(color[0], color[1], color[2]);
+                const sx = x + ((startZ + 4) / 8) * width;
+                const sw = ((endZ - startZ) / 8) * width;
+                doc.rect(sx, centerY, sw, height, 'F');
+            };
+
+            drawSeg(-4, -3, [220, 38, 38]);
+            drawSeg(-3, -2, [234, 88, 12]);
+            drawSeg(-2, 2, [34, 197, 94]);
+            drawSeg(2, 3, [234, 88, 12]);
+            drawSeg(3, 4, [220, 38, 38]);
+
+            // Needle
+            const clamped = Math.max(-4, Math.min(4, parseFloat(zScore)));
+            const needleX = x + ((clamped + 4) / 8) * width;
+            doc.setFillColor(30, 41, 59);
+            doc.circle(needleX, centerY + height / 2, 2, 'F');
+            doc.setDrawColor(255, 255, 255);
+            doc.setLineWidth(0.5);
+            doc.circle(needleX, centerY + height / 2, 2, 'S');
+
+            // Scale Markers
+            doc.setFontSize(6);
+            doc.setTextColor(148, 163, 184);
+            doc.setFont(undefined, 'normal');
+            doc.text('-4', x, centerY + height + 5, { align: 'center' });
+            doc.text('0', x + width / 2, centerY + height + 5, { align: 'center' });
+            doc.text('+4', x + width, centerY + height + 5, { align: 'center' });
+
+            // Result Text
+            doc.setFontSize(7);
+            doc.setTextColor(30, 41, 59);
+            doc.setFont(undefined, 'bold');
+            doc.text(`${zScore}`, needleX, centerY + height + 10, { align: 'center' });
+        };
+
+        if (result.bb_u) drawHorizontalGauge(14, currentY, 'BB/U', result.bb_u.zScore);
+        if (result.tb_u) drawHorizontalGauge(64, currentY, 'TB/U', result.tb_u.zScore);
+        if (result.bb_tb) drawHorizontalGauge(114, currentY, 'BB/TB', result.bb_tb.zScore);
+        if (result.imt_u) drawHorizontalGauge(164, currentY, 'IMT/U', result.imt_u.zScore);
 
         autoTable(doc, {
-            startY: doc.lastAutoTable.finalY + 12,
+            startY: currentY + 30,
             head: head,
             body: body,
             theme: 'grid',
-            headStyles: { fillColor: [22, 163, 74] }, // Emerald 600
-            styles: { fontSize: 9, cellPadding: 5, valign: 'middle', minCellHeight: 20 },
-            columnStyles: {
-                0: { cellWidth: 45 },
-                1: { cellWidth: 25, halign: 'center' },
-                2: { cellWidth: 60 },
-                3: { cellWidth: 50, halign: 'center' }
-            },
-            didDrawCell: function (data) {
-                if (data.section === 'body' && data.column.index === 3) {
-                    const z = parseFloat(body[data.row.index][1]);
-                    const cell = data.cell;
-                    const w = cell.width;
-                    const h = cell.height;
-                    const x = cell.x;
-                    const y = cell.y;
-
-                    // Speedometer calculations
-                    const r = 8; // Safe compact radius
-                    const x_center = x + w / 2;
-                    const y_center = y + h / 2 + r / 2 - 1; // Snug vertical centering
-
-                    // Draw the colored arc using small overlapping circles
-                    for (let i = 0; i <= 24; i++) {
-                        const t = i / 24;
-                        const a = Math.PI * (1 - t);
-                        const cx = x_center + r * Math.cos(a);
-                        const cy = y_center - r * Math.sin(a);
-
-                        let color = [34, 197, 94]; // Green
-                        if (t < 0.125 || t > 0.875) color = [239, 68, 68]; // Red
-                        else if (t < 0.25 || t > 0.75) color = [245, 158, 11]; // Yellow
-
-                        doc.setFillColor(color[0], color[1], color[2]);
-                        doc.circle(cx, cy, 1.2, 'F');
-                    }
-
-                    // Draw inner cutout (white) to make it look like an arc
-                    doc.setFillColor(255, 255, 255);
-                    doc.circle(x_center, y_center, r - 2, 'F');
-
-                    // Calculate Needle Angle
-                    const clampedZ = Math.max(-4, Math.min(4, z));
-                    const p = (clampedZ + 4) / 8;
-                    const needleAngle = Math.PI * (1 - p);
-                    const nx = x_center + (r - 0.5) * Math.cos(needleAngle);
-                    const ny = y_center - (r - 0.5) * Math.sin(needleAngle);
-
-                    // Draw Needle Line
-                    doc.setDrawColor(30, 41, 59); // Slate 800
-                    doc.setLineWidth(1.0);
-                    doc.line(x_center, y_center, nx, ny);
-
-                    // Draw Needle Base Center
-                    doc.setFillColor(30, 41, 59);
-                    doc.circle(x_center, y_center, 1.8, 'F');
-                }
-            }
+            headStyles: { fillColor: [22, 163, 74] },
+            styles: { fontSize: 9, cellPadding: 5 }
         });
 
-        // Draw footer text dynamically below the table
-        const finalY = doc.lastAutoTable.finalY + 8;
-        doc.setFontSize(8);
-        doc.setTextColor(100, 100, 100);
-        doc.text('*Grafik: Titik hijau menunjukkan nilai normal. Kuning berisiko. Merah bahaya.', 14, finalY);
-
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(0, 0, 0);
-        doc.text('Keterangan Analisis & Penjelasan Gizi:', 14, finalY + 12);
-
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.text('1. BB/U menunjukkan risiko berat badan kurang atau lebih secara umum.', 14, finalY + 18);
-        doc.text('2. TB/U digunakan untuk mendeteksi stunting (pertumbuhan terhambat kronis).', 14, finalY + 24);
-        doc.text('3. BB/TB adalah indikator untuk mengukur kondisi kurus (wasting) atau gemuk akut.', 14, finalY + 30);
-        doc.text(`4. IMT/U (BMI) mengukur status gizi umum secara spesifik.`, 14, finalY + 36);
-
-        // Advice logic based on worst status
-        const isBad = parseFloat(result.imt_u.zScore) < -2 || parseFloat(result.imt_u.zScore) > 2;
-
-        if (isBad) {
-            doc.setFillColor(254, 226, 226);
-            doc.rect(20, doc.lastAutoTable.finalY + 50, 170, 15, 'F');
-            doc.setTextColor(159, 18, 57);
-            doc.text('Rekomendasi: Terdapat indikator di luar batas normal. Harap hubungi poli anak.', 25, doc.lastAutoTable.finalY + 59);
-        } else {
-            doc.setFillColor(220, 252, 231);
-            doc.rect(20, doc.lastAutoTable.finalY + 50, 170, 15, 'F');
-            doc.setTextColor(22, 101, 52);
-            doc.text('Rekomendasi: Semua indikator normal. Lanjutkan pola makan dan asuh balita.', 25, doc.lastAutoTable.finalY + 59);
-        }
-
-        doc.save(`Laporan_4Indeks_Gizi_${formData.name}.pdf`);
+        doc.save(`Laporan_Gizi_${formData.name}.pdf`);
     };
 
     return (
@@ -254,34 +231,18 @@ export default function Sehati() {
                 borderRadius: '0 0 40px 40px',
                 boxShadow: '0 10px 20px rgba(14, 165, 233, 0.15)'
             }}>
-                {/* Decorative Waves */}
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px', overflow: 'hidden' }}>
-                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', opacity: 0.3, fill: '#84cc16', transform: 'translateX(-100px)' }}>
-                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
-                    </svg>
-                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', opacity: 0.2, fill: '#f59e0b', position: 'absolute', top: 0, left: 0, transform: 'translateX(100px)' }}>
-                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
-                    </svg>
-                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ width: '100%', height: '100%', fill: 'white', position: 'absolute', top: '15px', left: 0 }}>
-                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.23,113.87,145.6,121.38,210,105.69,273.81,90,298,60,321.39,56.44Z"></path>
-                    </svg>
-                </div>
-
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative', zIndex: 10 }}>
                     <button
                         onClick={() => navigate('/')}
-                        style={{
-                            width: '36px', height: '36px', borderRadius: '10px',
-                            background: 'rgba(255, 255, 255, 0.2)', border: '1px solid rgba(255, 255, 255, 0.3)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: 'pointer', color: 'white', backdropFilter: 'blur(4px)'
-                        }}
+                        className="btn-icon"
+                        style={{ background: 'rgba(255, 255, 255, 0.2)', color: 'white', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.3)' }}
                     >
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h2 style={{ fontSize: '1.4rem', margin: 0, color: 'white', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>SEHATI</h2>
-                        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', margin: 0, fontWeight: 500 }}>Laporan Gizi 4-Indeks Kemenkes</p>
+                        <h2 style={{ fontSize: '1.4rem', margin: 0, color: 'white', fontWeight: 800 }}>SEHATI</h2>
+                        <h3 style={{ fontSize: '1rem', margin: '4px 0', color: 'white', fontWeight: 700 }}>Skrining gizi Buah Hati</h3>
+                        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)', margin: 0 }}>Pantau tumbuh kembang ceria ananda tercinta 🌈</p>
                     </div>
                 </div>
             </div>
@@ -289,7 +250,7 @@ export default function Sehati() {
             <div className="card" style={{ padding: '24px', borderRadius: '24px' }}>
                 <form onSubmit={handleCalculate}>
                     <div className="input-group">
-                        <label><User size={14} style={{ marginRight: '6px' }} /> Nama Balita</label>
+                        <label><User size={14} style={{ marginRight: '6px' }} /> Nama Anak</label>
                         <input
                             type="text" name="name" className="input" placeholder="Masukkan nama"
                             value={formData.name} onChange={handleInputChange} required
@@ -309,95 +270,101 @@ export default function Sehati() {
                         </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        <div className="input-group" style={{ marginBottom: '8px' }}>
+                        <div className="input-group">
                             <label><Activity size={14} style={{ marginRight: '6px' }} /> Berat (kg)</label>
-                            <input type="number" step="0.1" name="weight" className="input" placeholder="Misal: 8.5" value={formData.weight} onChange={handleInputChange} required />
+                            <input type="number" step="0.1" name="weight" className="input" placeholder="0.0" value={formData.weight} onChange={handleInputChange} required />
                         </div>
-                        <div className="input-group" style={{ marginBottom: '8px' }}>
+                        <div className="input-group">
                             <label><Activity size={14} style={{ marginRight: '6px' }} /> Tinggi (cm)</label>
-                            <input type="number" step="0.1" name="height" className="input" placeholder="Misal: 75" value={formData.height} onChange={handleInputChange} required />
+                            <input type="number" step="0.1" name="height" className="input" placeholder="0.0" value={formData.height} onChange={handleInputChange} required />
                         </div>
                     </div>
-                    <button type="submit" className="btn btn-primary" style={{ marginTop: '16px', gap: '8px' }}>
-                        <Calculator size={18} /> Hitung Kondisi Gizi
+
+                    {/* Measurement Position Switch */}
+                    <div style={{
+                        background: '#f1f5f9',
+                        padding: '12px 16px',
+                        borderRadius: '16px',
+                        marginTop: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                    }}>
+                        <div>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', display: 'block' }}>Posisi Pengukuran</span>
+                            <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                                {formData.isLyingDown ? 'Telentang (Panjang Badan)' : 'Berdiri (Tinggi Badan)'}
+                            </span>
+                        </div>
+                        <div style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
+                            <input
+                                type="checkbox"
+                                name="isLyingDown"
+                                checked={formData.isLyingDown}
+                                onChange={handleInputChange}
+                                style={{ opacity: 0, width: 0, height: 0 }}
+                                id="lying-switch"
+                            />
+                            <label htmlFor="lying-switch" style={{
+                                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                                background: formData.isLyingDown ? 'var(--primary)' : '#cbd5e1',
+                                transition: '.4s', borderRadius: '24px'
+                            }}>
+                                <span style={{
+                                    position: 'absolute', height: '18px', width: '18px', left: formData.isLyingDown ? '28px' : '4px',
+                                    bottom: '3px', background: 'white', transition: '.4s', borderRadius: '50%'
+                                }}></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" className="btn btn-primary" style={{ marginTop: '20px', width: '100%', gap: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Calculator size={18} /> Analisis Gizi (Permenkes RI)
                     </button>
                 </form>
             </div>
 
             {result && (
                 <div className="animate-slide-up" style={{ marginTop: '24px' }}>
-                    <div style={{ background: 'white', borderRadius: '24px', padding: '24px', border: '2.5px solid var(--primary)', position: 'relative', boxShadow: 'var(--shadow-lg)' }}>
-                        <div style={{ position: 'absolute', top: '-14px', left: '24px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <ActivitySquare size={14} /> LAPORAN ANALISIS GIZI
+                    <div style={{ background: 'white', borderRadius: '24px', padding: '24px', border: '2px solid var(--primary)', position: 'relative' }}>
+                        <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>HASIL ANALISIS GIZI</h3>
+                            <p style={{ fontSize: '0.75rem', color: '#64748b' }}>Usia: {result.ageMonths} Bulan ({(result.ageMonths / 12).toFixed(1)} Tahun)</p>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', marginTop: '16px', marginBottom: '24px' }}>
-                            <Speedometer title="BB/U (Berat/Umur)" zScore={result.bb_u.zScore} status={result.bb_u.status} />
-                            <Speedometer title="TB/U (Tinggi/Umur)" zScore={result.tb_u.zScore} status={result.tb_u.status} />
-                            <Speedometer title="BB/TB (Berat/Tinggi)" zScore={result.bb_tb.zScore} status={result.bb_tb.status} />
-                            <div style={{ position: 'relative' }}>
-                                <Speedometer title={`IMT/U (BMI: ${result.imt_u.imt})`} zScore={result.imt_u.zScore} status={result.imt_u.status} />
-                            </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                            {result.bb_u && <Speedometer title="BB/U (Berat/Umur)" zScore={result.bb_u.zScore} status={result.bb_u.status} />}
+                            {result.tb_u && <Speedometer title="TB/U (Tinggi/Umur)" zScore={result.tb_u.zScore} status={result.tb_u.status} />}
+                            {result.bb_tb && <Speedometer title="BB/TB (Berat/Tinggi)" zScore={result.bb_tb.zScore} status={result.bb_tb.status} />}
+                            {result.imt_u && <Speedometer title={`IMT/U (BMI: ${result.imt_u.imt})`} zScore={result.imt_u.zScore} status={result.imt_u.status} />}
                         </div>
 
-                        <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #f1f5f9', marginBottom: '20px' }}>
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                                <Info size={16} color="var(--primary)" style={{ marginTop: '2px', flexShrink: 0 }} />
-                                <div>
-                                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', margin: '0 0 4px 0' }}>Analisis Kondisi Gizi</h4>
-                                    <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
-                                        Berdasarkan perhitungan di atas, status gizi anak Anda adalah:
-                                        <ul style={{ paddingLeft: '20px', marginTop: '4px' }}>
-                                            <li>TB/U: <strong>{result.tb_u.status}</strong></li>
-                                            <li>BB/TB: <strong>{result.bb_tb.status}</strong></li>
-                                        </ul>
+                        <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '20px', marginBottom: '20px' }}>
+                            <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1e293b', marginBottom: '12px' }}>Edukasi Klinis (Sesuai Permenkes RI)</h4>
+                            <div style={{ display: 'grid', gap: '16px' }}>
+                                <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                    <h5 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0369a1', margin: '0 0 6px 0' }}>📏 TB/U: Status Pertumbuhan Linier</h5>
+                                    <p style={{ fontSize: '0.7rem', color: '#475569', margin: 0, lineHeight: 1.5 }}>
+                                        Digunakan untuk mendeteksi <strong>Stunting</strong>. Kondisi <em>Sangat Pendek</em> atau <em>Pendek</em> menunjukkan kekurangan gizi kronis atau infeksi berulang dalam jangka waktu lama.
+                                    </p>
+                                </div>
+                                <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                    <h5 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#b91c1c', margin: '0 0 6px 0' }}>⚖️ BB/TB: Kondisi Gizi Akut</h5>
+                                    <p style={{ fontSize: '0.7rem', color: '#475569', margin: 0, lineHeight: 1.5 }}>
+                                        Indikator paling baik untuk mendeteksi <strong>Gizi Buruk/Kurus</strong> (Wasting) yang sedang berlangsung dan memerlukan tindakan medis segera.
+                                    </p>
+                                </div>
+                                <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                    <h5 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ea580c', margin: '0 0 6px 0' }}>📋 IMT/U: Risiko Overweight/Obesitas</h5>
+                                    <p style={{ fontSize: '0.7rem', color: '#475569', margin: 0, lineHeight: 1.5 }}>
+                                        Mendeteksi tren kegemukan sejak dini. Sangat penting dipantau pada anak yang sudah mulai MPASI atau usia sekolah.
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Abnormal Result CTA */}
-                        {(result.tb_u.zScore < -2 || result.bb_tb.zScore < -2 || result.bb_tb.zScore > 2 || result.imt_u.zScore > 2) && (
-                            <div style={{ background: '#fff1f2', padding: '16px', borderRadius: '16px', border: '1px solid #fecdd3', marginBottom: '20px' }}>
-                                <p style={{ fontSize: '0.8rem', color: '#be123c', fontWeight: 700, margin: '0 0 8px 0', textAlign: 'center' }}>
-                                    ⚠️ Perhatian: Kondisi gizi terdeteksi tidak normal.
-                                </p>
-                                <button
-                                    onClick={() => window.location.href = 'https://wa.me/628123456789'} // Placeholder for Puskesmas contact
-                                    className="btn"
-                                    style={{ background: '#e11d48', color: 'white', width: '100%', fontSize: '0.85rem', padding: '10px' }}
-                                >
-                                    Segera Hubungi Puskesmas Terdekat
-                                </button>
-                                <p style={{ fontSize: '0.65rem', color: '#9f1239', marginTop: '6px', textAlign: 'center' }}>
-                                    Laporan Anda akan didata oleh petugas kesehatan untuk penanganan lebih lanjut.
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Prevention & Solution Section */}
-                        <div style={{ background: '#f0f9ff', padding: '20px', borderRadius: '20px', border: '1px solid #bae6fd', marginBottom: '24px' }}>
-                            <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0369a1', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <ActivitySquare size={18} /> Pencegahan & Solusi (Kemenkes RI)
-                            </h4>
-                            <div style={{ display: 'grid', gap: '12px' }}>
-                                <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #e0f2fe' }}>
-                                    <h5 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0c4a6e', margin: '0 0 4px 0' }}>🛡️ Pencegahan Stunting</h5>
-                                    <p style={{ fontSize: '0.7rem', color: '#334155', margin: 0, lineHeight: 1.4 }}>
-                                        ASI Eksklusif 6 bulan, MPASI bergizi tinggi protein hewani, dan rutin cek pertumbuhan di Posyandu/Puskesmas.
-                                    </p>
-                                </div>
-                                <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #e0f2fe' }}>
-                                    <h5 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0c4a6e', margin: '0 0 4px 0' }}>🥗 Solusi Wasting</h5>
-                                    <p style={{ fontSize: '0.7rem', color: '#334155', margin: 0, lineHeight: 1.4 }}>
-                                        Pemberian makanan tambahan (PMT), asupan kalori tercukupi, dan penanganan penyakit infeksi segera.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button onClick={exportPDF} className="btn" style={{ border: 'none', color: 'white', background: '#10b981', width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }}>
-                            <FileText size={18} /> Cetak Laporan Analisis Gizi
+                        <button onClick={exportPDF} className="btn" style={{ background: '#10b981', color: 'white', width: '100%', borderRadius: '16px', gap: '8px', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Download size={18} /> Unduh Laporan Resmi (PDF)
                         </button>
                     </div>
                 </div>

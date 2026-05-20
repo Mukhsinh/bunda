@@ -56,7 +56,7 @@ const PrayerTimesWidget = () => {
     }, [prayerTimes, now]);
 
     if (loading) return (
-        <div style={{ margin: '0 16px', marginTop: '12px', height: '56px', background: 'rgba(255,255,255,0.4)', borderRadius: '16px' }} />
+        <div style={{ marginLeft: '16px', marginRight: '16px', marginTop: '12px', height: '56px', background: 'rgba(255,255,255,0.4)', borderRadius: '16px' }} />
     );
     if (!prayerTimes || !nextPrayer) return null;
 
@@ -69,7 +69,7 @@ const PrayerTimesWidget = () => {
     ];
 
     return (
-        <div style={{ margin: '0 4px', marginTop: '12px' }}>
+        <div style={{ marginLeft: '4px', marginRight: '4px', marginTop: '12px' }}>
             <div style={{
                 background: 'linear-gradient(135deg, #f97316, #ea580c)',
                 borderRadius: '16px',
