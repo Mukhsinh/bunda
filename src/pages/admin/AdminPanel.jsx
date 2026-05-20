@@ -125,7 +125,7 @@ function generatePDF(data, title, periodLabel, columns, colKeys) {
         theme: 'grid',
         didDrawPage: function (data) {
             doc.setFontSize(8); doc.setFont(undefined, 'italic'); doc.setTextColor(120, 120, 120);
-            doc.text('Aplikasi Sakpore @2026 Mukhsin Hadi All rights reserved', doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+            doc.text('Aplikasi sahabatbunda @2026 Mukhsin Hadi All rights reserved', doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
         }
     });
 
@@ -159,7 +159,7 @@ function generateExcel(data, title, sheetName, periodLabel, columns, colKeys) {
     });
 
     wsData.push(['']);
-    wsData.push(['Aplikasi Sakpore @2026 Mukhsin Hadi All rights reserved']);
+    wsData.push(['Aplikasi sahabatbunda @2026 Mukhsin Hadi All rights reserved']);
 
     const ws = XLSX.utils.aoa_to_sheet(wsData);
     ws['!merges'] = [
@@ -203,12 +203,12 @@ const styles = `
 }
 .admin-hero-curve { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; overflow: hidden; }
 .admin-hero-curve svg { position: absolute; bottom: 0; left: 0; width: 100%; }
-.sakpore-floating {
+.sahabatbunda-floating {
     font-family: 'Playfair Display', serif; font-style: italic; font-weight: 700; font-size: 2.6rem;
     letter-spacing: 3px; color: rgba(255,255,255,0.08); position: absolute; top: 8px; right: 16px; z-index: 1;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.15); animation: sakporeFloat 4s ease-in-out infinite; user-select: none;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.15); animation: sahabatbundaFloat 4s ease-in-out infinite; user-select: none;
 }
-@keyframes sakporeFloat { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(0deg); } }
+@keyframes sahabatbundaFloat { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(0deg); } }
 
 .admin-tabs-modern { display: flex; gap: 0; background: #f1f5f9; border-radius: 14px; padding: 4px; margin-bottom: 20px; }
 .admin-tab-modern {
@@ -500,7 +500,7 @@ export default function AdminPanel() {
             if (error) throw error;
             fetchData();
             if (s === 'completed' && doc?.phone_number) {
-                const msg = `Halo ${doc.applicant_name}, layanan RAMAH (Registrasi Akta Mudah Antar sampai Rumah) Anda telah selesai diproses. Dokumen sudah bisa diambil atau sedang dalam pengiriman. Terima kasih telah menggunakan SAKPORE RSUD Bendan!`;
+                const msg = `Halo ${doc.applicant_name}, layanan RAMAH (Registrasi Akta Mudah Antar sampai Rumah) Anda telah selesai diproses. Dokumen sudah bisa diambil atau sedang dalam pengiriman. Terima kasih telah menggunakan sahabatbunda RSUD Bendan!`;
                 openWhatsApp(doc.phone_number, msg);
             }
         } catch (e) { alert('Gagal: ' + e.message); }
@@ -512,7 +512,7 @@ export default function AdminPanel() {
             if (error) throw error;
             fetchData();
             if (s === 'completed' && req?.phone_number) {
-                const msg = `Halo ${req.patient_name}, layanan SANTUN (Saya Antar sampai Tujuan) Anda telah selesai dan pesien sudah diantar sampai tujuan. Terima kasih telah menggunakan SAKPORE RSUD Bendan!`;
+                const msg = `Halo ${req.patient_name}, layanan SANTUN (Saya Antar sampai Tujuan) Anda telah selesai dan pesien sudah diantar sampai tujuan. Terima kasih telah menggunakan sahabatbunda RSUD Bendan!`;
                 openWhatsApp(req.phone_number, msg);
             } else if (s === 'in_progress' && req?.phone_number) {
                 const msg = `Halo ${req.patient_name}, armada layanan SANTUN saat ini sedang menuju ke lokasi Anda. Mohon bersiap.`;
@@ -735,14 +735,14 @@ export default function AdminPanel() {
         ctx.fillText(title, 20, 40);
         ctx.fillStyle = '#64748b';
         ctx.font = '14px Outfit, sans-serif';
-        ctx.fillText('Laporan Grafik SAKPORE - RSUD Bendan', 20, 65);
+        ctx.fillText('Laporan Grafik sahabatbunda - RSUD Bendan', 20, 65);
 
         ctx.drawImage(srcCanvas, 20, 80);
 
         ctx.fillStyle = '#94a3b8';
         ctx.font = 'italic 12px Outfit, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Aplikasi Sakpore @2026 Mukhsin Hadi All rights reserved', destCanvas.width / 2, destCanvas.height - 15);
+        ctx.fillText('Aplikasi sahabatbunda @2026 Mukhsin Hadi All rights reserved', destCanvas.width / 2, destCanvas.height - 15);
 
         const url = destCanvas.toDataURL('image/png');
         const link = document.createElement('a');
@@ -904,7 +904,7 @@ export default function AdminPanel() {
                     <svg viewBox="0 0 500 60" fill="none"><path d="M0 60 C125 0,375 0,500 60" fill="rgba(255,255,255,0.04)" /><path d="M0 60 C150 20,350 20,500 60" fill="rgba(255,255,255,0.03)" /></svg>
                     <div style={{ position: 'absolute', top: '30%', left: '60%', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(255,255,255,0.06)' }}></div>
                 </div>
-                <div className="sakpore-floating">SAKPORE</div>
+                <div className="sahabatbunda-floating">sahabatbunda</div>
                 <div style={{ position: 'relative', zIndex: 2 }}>
                     <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: '1.6rem', fontWeight: 800, margin: 0, letterSpacing: '-0.5px', lineHeight: 1.2, color: 'white' }}>Dashboard Admin</h2>
                     <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
@@ -986,7 +986,7 @@ export default function AdminPanel() {
                                         <p style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             📞 {doc.phone_number || '-'}
                                             {doc.phone_number && (
-                                                <button className="wa-btn" onClick={() => openWhatsApp(doc.phone_number, `Halo ${doc.applicant_name}, kami dari Admin SAKPORE RSUD Bendan. Terkait pengajuan layanan RAMAH Anda...`)}>
+                                                <button className="wa-btn" onClick={() => openWhatsApp(doc.phone_number, `Halo ${doc.applicant_name}, kami dari Admin sahabatbunda RSUD Bendan. Terkait pengajuan layanan RAMAH Anda...`)}>
                                                     <MessageCircle size={12} /> Hubungi
                                                 </button>
                                             )}
@@ -1036,7 +1036,7 @@ export default function AdminPanel() {
                                         <p style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             📞 {req.phone_number || '-'}
                                             {req.phone_number && (
-                                                <button className="wa-btn" onClick={() => openWhatsApp(req.phone_number, `Halo ${req.patient_name}, kami dari Admin SAKPORE RSUD Bendan. Terkait permohonan layanan SANTUN Anda...`)}>
+                                                <button className="wa-btn" onClick={() => openWhatsApp(req.phone_number, `Halo ${req.patient_name}, kami dari Admin sahabatbunda RSUD Bendan. Terkait permohonan layanan SANTUN Anda...`)}>
                                                     <MessageCircle size={12} /> Hubungi
                                                 </button>
                                             )}
@@ -1745,7 +1745,7 @@ export default function AdminPanel() {
                     <div className="toast-container">
                         {notifications.map(n => (
                             <div key={n.id} className={`toast-item ${n.type}`} onClick={() => {
-                                const msg = `Halo ${n.name}, kami dari Admin SAKPORE RSUD Bendan mengonfirmasi bahwa pengajuan layanan ${n.type.toUpperCase()} Anda telah kami terima dan sedang ditindaklanjuti.`;
+                                const msg = `Halo ${n.name}, kami dari Admin sahabatbunda RSUD Bendan mengonfirmasi bahwa pengajuan layanan ${n.type.toUpperCase()} Anda telah kami terima dan sedang ditindaklanjuti.`;
                                 openWhatsApp(n.phone, msg);
                                 setNotifications(prev => prev.filter(x => x.id !== n.id));
                             }}>

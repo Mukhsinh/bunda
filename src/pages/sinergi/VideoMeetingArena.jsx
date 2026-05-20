@@ -148,8 +148,8 @@ const VideoMeetingArena = () => {
                     disableKick: !isNarasumber,
                     disableGrantModerator: !isNarasumber
                 },
-                lobbyModeEnabled: true,
-                enableLobby: true,
+                lobbyModeEnabled: false,
+                enableLobby: false,
                 disableModeratorIndicator: false,
                 requireDisplayName: true
             },
