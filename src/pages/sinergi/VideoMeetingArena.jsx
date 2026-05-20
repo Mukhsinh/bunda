@@ -138,7 +138,11 @@ const VideoMeetingArena = () => {
                 remoteVideoMenu: {
                     disableKick: !isNarasumber,
                     disableGrantModerator: !isNarasumber
-                }
+                },
+                lobbyModeEnabled: true,
+                enableLobby: true,
+                disableModeratorIndicator: false,
+                requireDisplayName: true
             },
             interfaceConfigOverwrite: {
                 TOOLBAR_BUTTONS: isNarasumber ? [
@@ -154,13 +158,6 @@ const VideoMeetingArena = () => {
                 GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
                 DISPLAY_WELCOME_PAGE_CONTENT: false,
                 ENABLE_LOBBY_BY_DEFAULT: true
-            },
-            configOverwrite: {
-                ...options?.configOverwrite,
-                lobbyModeEnabled: true,
-                enableLobby: true,
-                disableModeratorIndicator: false,
-                requireDisplayName: true
             }
         };
 
