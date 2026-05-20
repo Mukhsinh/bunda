@@ -6,7 +6,7 @@ import {
     LogOut, FileText, Truck, CheckCircle, PackageCheck, Navigation,
     Eye, ClipboardList, Download, Square, Archive, Search, Bell, X, MessageCircle,
     Monitor, Smartphone, Video, Calendar, Clock, MessageSquare,
-    Users, ChevronDown, ChevronUp, Trash2, UserPlus
+    Users, ChevronDown, ChevronUp, Trash2, UserPlus, Edit
 } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import {
@@ -387,6 +387,8 @@ export default function AdminPanel() {
     const [collectiveForm, setCollectiveForm] = useState({ title: '', date: '', time: '', jitsi: '' });
     const [narasumberForm, setNarasumberForm] = useState({ name: '', whatsapp: '' });
     const [expandedSessions, setExpandedSessions] = useState([]);
+    const [editParticipantModal, setEditParticipantModal] = useState(false);
+    const [editParticipantForm, setEditParticipantForm] = useState({ id: '', name: '', whatsapp: '' });
 
     const handleCreateManualSession = async (e) => {
         e.preventDefault();
@@ -1086,10 +1088,25 @@ export default function AdminPanel() {
                                                 <div style={{ marginTop: '8px' }}>
                                                     <details style={{ fontSize: '0.8rem', color: '#334155', background: '#f8fafc', padding: '8px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                                                         <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Lihat Peserta ({participants.length})</summary>
-                                                        <ul style={{ paddingLeft: '20px', marginTop: '6px', listStyleType: 'disc', color: '#475569' }}>
+                                                        <ul style={{ paddingLeft: '15px', marginTop: '6px', listStyleType: 'none', color: '#475569' }}>
                                                             {participants.map(p => (
-                                                                <li key={p.id}>
-                                                                    <span style={{ fontWeight: 500 }}>{p.name}</span> <span style={{ color: '#94a3b8' }}>- {p.whatsapp}</span>
+                                                                <li key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>
+                                                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                                                        <span style={{ fontWeight: 600, display: 'block', fontSize: '0.75rem' }}>{p.name}</span>
+                                                                        <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>{p.whatsapp}</span>
+                                                                    </div>
+                                                                    <div style={{ display: 'flex', gap: '4px' }}>
+                                                                        <button onClick={() => {
+                                                                            setEditParticipantForm({ id: p.id, name: p.name, whatsapp: p.whatsapp });
+                                                                            setEditParticipantModal(true);
+                                                                        }} style={{ background: 'none', border: 'none', color: '#0284c7', cursor: 'pointer', padding: '4px' }}><Edit size={14} /></button>
+                                                                        <button onClick={async () => {
+                                                                            if (window.confirm(`Hapus ${p.name} dari sesi ini?`)) {
+                                                                                await supabase.from('sinergi_requests').update({ session_id: null, status: 'Pending' }).eq('id', p.id);
+                                                                                fetchData();
+                                                                            }
+                                                                        }} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}><Trash2 size={14} /></button>
+                                                                    </div>
                                                                 </li>
                                                             ))}
                                                         </ul>
@@ -1470,10 +1487,32 @@ export default function AdminPanel() {
                                     </h3>
                                     <form onSubmit={async (e) => {
                                         e.preventDefault();
-                                        const scheduledAt = `${editSessionForm.date}T${editSessionForm.time}:00`;
-                                        await supabase.from('sinergi_sessions').update({ scheduled_at: scheduledAt }).eq('id', editSessionForm.id);
-                                        setEditSessionModal(false);
-                                        fetchData();
+                                        const scheduledAt = new Date(`${editSessionForm.date}T${editSessionForm.time}`).toISOString();
+                                        const { error } = await supabase.from('sinergi_sessions').update({ scheduled_at: scheduledAt }).eq('id', editSessionForm.id);
+
+                                        if (!error) {
+                                            // Broadcast to participants
+                                            const participants = sinergiCons.filter(c => c.session_id === editSessionForm.id);
+                                            const session = sinergiSessions.find(s => s.id === editSessionForm.id);
+
+                                            if (window.confirm(`Reschedule berhasil. Kirim pesan WhatsApp massal ke ${participants.length} peserta?`)) {
+                                                const newTimeStr = new Date(scheduledAt).toLocaleString('id-ID', {
+                                                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                });
+
+                                                for (let i = 0; i < participants.length; i++) {
+                                                    const p = participants[i];
+                                                    const msg = `Halo ${p.name}, kami menginformasikan perubahan jadwal sesi ${session?.title || 'Konsultasi Gizi'}. Jadwal terbaru adalah: *${newTimeStr} WIB*. Silakan masuk arena menggunakan ID Akses Anda pada jam tersebut. Terima kasih.`;
+                                                    openWhatsApp(p.whatsapp, msg);
+                                                    if (i < participants.length - 1) await new Promise(r => setTimeout(r, 1500));
+                                                }
+                                            }
+
+                                            setEditSessionModal(false);
+                                            fetchData();
+                                        } else {
+                                            alert('Gagal memperbarui waktu sesi: ' + error.message);
+                                        }
                                     }}>
                                         <div style={{ marginBottom: '12px' }}>
                                             <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Tanggal Baru</label>
@@ -1582,6 +1621,52 @@ export default function AdminPanel() {
                             </div>
                         </div>
                     </div>)}
+                    {/* Edit Participant Modal */}
+                    {editParticipantModal && (
+                        <div className="modal-overlay" onClick={() => setEditParticipantModal(false)}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+                                <button className="modal-close" onClick={() => setEditParticipantModal(false)}><X size={18} /></button>
+                                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b', marginBottom: '20px', fontFamily: "'Outfit', sans-serif" }}>
+                                    Edit Data Peserta
+                                </h3>
+                                <form onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    const { error } = await supabase.from('sinergi_requests').update({
+                                        name: editParticipantForm.name,
+                                        whatsapp: editParticipantForm.whatsapp
+                                    }).eq('id', editParticipantForm.id);
+
+                                    if (!error) {
+                                        setEditParticipantModal(false);
+                                        fetchData();
+                                    } else {
+                                        alert('Gagal mengupdate data: ' + error.message);
+                                    }
+                                }}>
+                                    <div style={{ marginBottom: '12px' }}>
+                                        <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Nama Peserta</label>
+                                        <input
+                                            type="text" required className="filter-dd"
+                                            style={{ width: '100%', appearance: 'auto', backgroundImage: 'none' }}
+                                            value={editParticipantForm.name}
+                                            onChange={e => setEditParticipantForm({ ...editParticipantForm, name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Nomor WhatsApp</label>
+                                        <input
+                                            type="text" required className="filter-dd"
+                                            style={{ width: '100%', appearance: 'auto', backgroundImage: 'none' }}
+                                            value={editParticipantForm.whatsapp}
+                                            onChange={e => setEditParticipantForm({ ...editParticipantForm, whatsapp: e.target.value })}
+                                        />
+                                    </div>
+                                    <button type="submit" className="btn-m btn-success btn-full">Simpan Perubahan</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
                     {/* ── TOAST NOTIFICATIONS ── */}
                     <div className="toast-container">
                         {notifications.map(n => (

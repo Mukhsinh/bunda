@@ -37,11 +37,12 @@ const VideoMeetingArena = () => {
         fetchSessionDetails();
 
         // Subscription for session updates (to detect "Completed" status)
+        const targetTable = sessionType === 'manual' ? 'sinergi_requests' : 'sinergi_sessions';
         const sessionChannel = supabase.channel(`session_updates_${sessionId}`)
             .on('postgres_changes', {
                 event: 'UPDATE',
                 schema: 'public',
-                table: 'sinergi_sessions',
+                table: targetTable,
                 filter: `id=eq.${sessionId}`
             }, (payload) => {
                 if (payload.new.status === 'Completed') {

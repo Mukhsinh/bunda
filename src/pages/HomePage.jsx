@@ -581,12 +581,12 @@ export default function HomePage() {
 
                                         // Verify logic
                                         const sessionToJoin = targetSession || null;
-                                        const inputCode = inputVideoId.toUpperCase();
+                                        const inputCode = inputVideoId.trim().toUpperCase();
 
                                         if (sessionToJoin) {
                                             // Specific session click
-                                            if ((sessionToJoin.access_id && sessionToJoin.access_id.toUpperCase() === inputCode) || inputCode === 'ADMIN') {
-                                                navigate(`/sinergi/video?sessionId=${sessionToJoin.id}`);
+                                            if ((sessionToJoin.access_id && sessionToJoin.access_id.trim().toUpperCase() === inputCode) || inputCode === 'ADMIN') {
+                                                navigate(`/sinergi/video?sessionId=${sessionToJoin.id}&type=group`);
                                                 setShowVideoIdModal(false);
                                                 setTargetSession(null);
                                                 setInputVideoId('');
@@ -595,9 +595,9 @@ export default function HomePage() {
                                             }
                                         } else {
                                             // Direct access button - we need to find the session
-                                            const found = liveSessions.find(s => s.access_id && s.access_id.toUpperCase() === inputCode);
+                                            const found = liveSessions.find(s => s.access_id && s.access_id.trim().toUpperCase() === inputCode);
                                             if (found) {
-                                                navigate(`/sinergi/video?sessionId=${found.id}`);
+                                                navigate(`/sinergi/video?sessionId=${found.id}&type=group`);
                                                 setShowVideoIdModal(false);
                                                 setInputVideoId('');
                                             } else {
