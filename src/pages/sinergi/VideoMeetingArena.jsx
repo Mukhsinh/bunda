@@ -101,7 +101,7 @@ const VideoMeetingArena = () => {
                     ...data,
                     title: sessionType === 'manual' ? `Konsultasi: ${data.name}` : data.title,
                     narasumber_name: sessionType === 'manual' ? (data.narasumber_name || 'Ahli Gizi RSUD Bendan') : data.narasumber_name,
-                    jitsi_room: data.jitsi_room || data.jitsi_link || `SAKPORE-SINERGI-${data.id}`
+                    jitsi_room: data.jitsi_room || data.jitsi_link || `sahabatbunda-sinergi-${data.id}`
                 };
                 setSession(normalizedData);
                 initJitsi(normalizedData);
@@ -118,7 +118,7 @@ const VideoMeetingArena = () => {
 
     const initJitsi = (sessionData) => {
         const domain = "meet.jit.si";
-        const roomName = sessionData.jitsi_room || `SAKPORE-SINERGI-${sessionData.id}`;
+        const roomName = sessionData.jitsi_room || `sahabatbunda-sinergi-${sessionData.id}`;
 
         const options = {
             roomName: roomName,
@@ -153,12 +153,14 @@ const VideoMeetingArena = () => {
                 SHOW_WATERMARK_FOR_GUESTS: false,
                 GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
                 DISPLAY_WELCOME_PAGE_CONTENT: false,
-                ENABLE_LOBBY_BY_DEFAULT: isNarasumber
+                ENABLE_LOBBY_BY_DEFAULT: false
             },
             configOverwrite: {
                 ...options.configOverwrite,
-                lobbyModeEnabled: isNarasumber,
-                enableLobby: isNarasumber
+                lobbyModeEnabled: false,
+                enableLobby: false,
+                disableModeratorIndicator: false,
+                requireDisplayName: true
             }
         };
 

@@ -106,7 +106,7 @@ const Sinergi = () => {
             if (roomName.includes('meet.jit.si/')) {
                 roomName = roomName.split('meet.jit.si/')[1];
             } else {
-                roomName = 'SAKPORE-Consultation-' + consultation.id;
+                roomName = 'sahabatbunda-sinergi-' + consultation.id;
             }
 
             const initJitsi = () => {

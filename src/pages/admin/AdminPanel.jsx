@@ -398,7 +398,7 @@ export default function AdminPanel() {
             link = `https://meet.jit.si/${link}`;
         }
         if (!link) {
-            link = `https://meet.jit.si/SAKPORE-Gizi-${manualSessionForm.full_name.replace(/\s+/g, '-')}-${Math.random().toString(36).substring(7)}`;
+            link = `https://meet.jit.si/sahabatbunda-sinergi-${manualSessionForm.full_name.replace(/\s+/g, '-')}-${Math.random().toString(36).substring(7)}`;
         }
 
         const insertData = {
@@ -557,7 +557,8 @@ export default function AdminPanel() {
             }).eq('id', schedulingSinergi.id);
             if (rError) throw rError;
 
-            const msg = `Halo ${schedulingSinergi.name}, sesi *Konsultasi Online SINERGI* Anda telah dijadwalkan pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${scheduleForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
+            const jitsiLink = scheduleForm.jitsi + (scheduleForm.jitsi.includes('#') ? '&' : '#') + 'config.disableDeepLinking=true&config.prejoinPageEnabled=false&config.p2p.enabled=false';
+            const msg = `Halo ${schedulingSinergi.name}, sesi *Konsultasi Online SINERGI* Anda telah dijadwalkan pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${jitsiLink}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda sahabatbunda. Terima kasih.`;
             openWhatsApp(schedulingSinergi.whatsapp, msg);
             setSchedulingSinergi(null);
             fetchData();
@@ -604,7 +605,8 @@ export default function AdminPanel() {
             if (selectedData.length > 0) {
                 selectedData.forEach((item, index) => {
                     setTimeout(() => {
-                        const msg = `Halo ${item.name}, Anda telah dijadwalkan untuk *Konsultasi Online SINERGI Kolektif* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda SAKPORE. Terima kasih.`;
+                        const jitsiLink = collectiveForm.jitsi + (collectiveForm.jitsi.includes('#') ? '&' : '#') + 'config.disableDeepLinking=true&config.prejoinPageEnabled=false&config.p2p.enabled=false';
+                        const msg = `Halo ${item.name}, Anda telah dijadwalkan untuk *Konsultasi Online SINERGI Kolektif* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${jitsiLink}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda sahabatbunda. Terima kasih.`;
                         openWhatsApp(item.whatsapp, msg);
                     }, index * 1500);
                 });
@@ -613,7 +615,8 @@ export default function AdminPanel() {
             // 4. Send WA to Narasumber
             if (narasumberForm.whatsapp) {
                 setTimeout(() => {
-                    const nMsg = `Halo ${narasumberForm.name}, Anda ditugaskan sebagai Narasumber untuk *Konsultasi Online SINERGI* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${collectiveForm.jitsi}\n\nTerima kasih.`;
+                    const jitsiLink = collectiveForm.jitsi + (collectiveForm.jitsi.includes('#') ? '&' : '#') + 'config.disableDeepLinking=true&config.prejoinPageEnabled=false&config.p2p.enabled=false';
+                    const nMsg = `Halo ${narasumberForm.name}, Anda ditugaskan sebagai Narasumber untuk *Konsultasi Online SINERGI* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${jitsiLink}\n\nTerima kasih.`;
                     openWhatsApp(narasumberForm.whatsapp, nMsg);
                 }, (selectedData.length + 1) * 1500);
             }
@@ -1073,7 +1076,7 @@ export default function AdminPanel() {
                                             title: 'Konsultasi Grup Gizi',
                                             date: d.toISOString().split('T')[0],
                                             time: '10:00',
-                                            jitsi: `https://meet.jit.si/SAKPORE-Group-Gizi-${Math.random().toString(36).substring(7)}`
+                                            jitsi: `https://meet.jit.si/sahabatbunda-Group-sinergi-${Math.random().toString(36).substring(7)}`
                                         });
                                     }}>Jadwalkan Kolektif ({sinergiSelectedReqs.length})</button>
                                 )}
@@ -1195,7 +1198,7 @@ export default function AdminPanel() {
                                     <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '12px' }}>
                                         <p style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                                             📞 {item.whatsapp}
-                                            <button className="wa-btn" onClick={() => openWhatsApp(item.whatsapp, `Halo ${item.name}, kami dari Admin SAKPORE. Terkait pengajuan konsultasi gizi Anda...`)}>
+                                            <button className="wa-btn" onClick={() => openWhatsApp(item.whatsapp, `Halo ${item.name}, kami dari Admin sahabatbunda. Terkait pengajuan konsultasi gizi Anda...`)}>
                                                 <MessageCircle size={12} /> Hubungi
                                             </button>
                                         </p>
@@ -1218,7 +1221,7 @@ export default function AdminPanel() {
                                                 setScheduleForm({
                                                     date: new Date().toISOString().split('T')[0],
                                                     time: '10:00',
-                                                    jitsi: `https://meet.jit.si/SAKPORE-Gizi-${item.name.replace(/\s+/g, '-')}-${Math.random().toString(36).substring(7)}`
+                                                    jitsi: `https://meet.jit.si/sahabatbunda-sinergi-${item.name.replace(/\s+/g, '-')}-${Math.random().toString(36).substring(7)}`
                                                 });
                                             }}>Jadwalkan</button>
                                         )}
@@ -1528,7 +1531,7 @@ export default function AdminPanel() {
                                                 // Mass broadcast via WA
                                                 participants.forEach((p, idx) => {
                                                     setTimeout(() => {
-                                                        const msg = `Halo ${p.name}, pemberitahuan dari SAKPORE RSUD Bendan. Jadwal sesi *${session?.title || 'Konsultasi Gizi'}* telah diubah. Jadwal terbaru: *${newTimeStr} WIB*.\n\nMohon hadir tepat waktu. Terima kasih.`;
+                                                        const msg = `Halo ${p.name}, pemberitahuan dari sahabatbunda. Jadwal sesi *${session?.title || 'Konsultasi Gizi'}* telah diubah. Jadwal terbaru: *${newTimeStr} WIB*.\n\nMohon hadir tepat waktu. Terima kasih.`;
                                                         openWhatsApp(p.whatsapp, msg);
                                                     }, idx * 2000); // 2s delay between messages
                                                 });
