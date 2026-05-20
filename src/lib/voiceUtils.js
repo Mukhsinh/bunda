@@ -21,40 +21,33 @@ export const speakGreeting = (text) => {
         // Find the best Indonesian female voice
         const voices = synth.getVoices();
 
-        // Prioritize Indonesian voices
+        // Filter Indonesian voices
         const idVoices = voices.filter(v =>
             v.lang.includes('id') || v.lang.includes('ID')
         );
 
-        // Also collect all female-sounding voices as fallback
-        const allFemaleVoices = voices.filter(v =>
-            v.name.toLowerCase().includes('female') ||
-            v.name.toLowerCase().includes('woman') ||
-            v.name.toLowerCase().includes('zira') ||    // Microsoft Zira (English female)
-            v.name.toLowerCase().includes('hazel') ||   // Microsoft Hazel
-            v.name.toLowerCase().includes('susan')      // Microsoft Susan
-        );
-
         if (idVoices.length > 0) {
             // Search for female Indonesian voice with expanded keywords
+            // Google Bahasa Indonesia is usually the best/friendliest one in Chrome
             const femaleKeywords = [
-                'female', 'google', 'gadis', 'damayanti',
-                'risma', 'siti', 'ayu', 'wanita', 'perempuan'
+                'google bahasa indonesia', 'gadis', 'damayanti',
+                'risma', 'siti', 'ayu', 'wanita', 'perempuan', 'female'
             ];
+
+            // Try to find the absolute best match first (Google Bahasa Indonesia)
             const bestVoice = idVoices.find(v =>
+                v.name.toLowerCase().includes('google bahasa indonesia')
+            ) || idVoices.find(v =>
                 femaleKeywords.some(key => v.name.toLowerCase().includes(key))
             ) || idVoices[0];
 
             utterance.voice = bestVoice;
-        } else if (allFemaleVoices.length > 0) {
-            // Fallback to any female voice
-            utterance.voice = allFemaleVoices[0];
         }
 
-        // === TUNING: Santai, Ceria, Tidak Kaku ===
-        utterance.pitch = 1.15;   // Sedikit lebih tinggi -> kesan ceria & semangat
-        utterance.rate = 1.0;     // Kecepatan normal -> tidak terburu-buru, santai
-        utterance.volume = 0.9;   // Volume sedikit dikurangi -> tidak mengejutkan
+        // === TUNING: Ramah, Ceria, dan Bersemangat ===
+        utterance.pitch = 1.25;   // Lebih tinggi sedikit dari 1.15 untuk kesan lebih ceria (cheerful)
+        utterance.rate = 1.05;    // Sedikit lebih cepat (tidak kaku) tapi tetap santai
+        utterance.volume = 1.0;   // Volume penuh
 
         synth.speak(utterance);
     };
