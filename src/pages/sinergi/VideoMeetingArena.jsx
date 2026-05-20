@@ -129,9 +129,14 @@ const VideoMeetingArena = () => {
         const domain = "meet.jit.si";
         let roomName = sessionData.jitsi_room || `sahabatbunda-sinergi-${sessionData.id}`;
 
-        // Normalize room name: if it's a full URL, extract the part after the domain
-        if (roomName.includes('meet.jit.si/')) {
-            roomName = roomName.split('meet.jit.si/')[1].split(/[#?]/)[0];
+        // Robust normalization: extract only the last part of the path if a URL is provided
+        // This handles https://meet.jit.si/room, meet.jit.si/room, or just room
+        if (roomName.includes('/')) {
+            const parts = roomName.split('/');
+            // Get the last non-empty part
+            roomName = parts.filter(part => part.length > 0).pop().split(/[#?]/)[0];
+        } else {
+            roomName = roomName.split(/[#?]/)[0];
         }
 
         const options = {
@@ -153,8 +158,8 @@ const VideoMeetingArena = () => {
                     disableKick: !isNarasumber,
                     disableGrantModerator: !isNarasumber
                 },
-                lobbyModeEnabled: false,
-                enableLobby: false,
+                lobbyModeEnabled: true,
+                enableLobby: true,
                 disableModeratorIndicator: false,
                 requireDisplayName: true
             },
@@ -171,7 +176,7 @@ const VideoMeetingArena = () => {
                 SHOW_WATERMARK_FOR_GUESTS: false,
                 GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
                 DISPLAY_WELCOME_PAGE_CONTENT: false,
-                ENABLE_LOBBY_BY_DEFAULT: false
+                ENABLE_LOBBY_BY_DEFAULT: true
             }
         };
 
