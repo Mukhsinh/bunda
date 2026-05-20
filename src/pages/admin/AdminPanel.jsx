@@ -359,6 +359,8 @@ export default function AdminPanel() {
     const [viewMode, setViewMode] = useState(() => {
         return localStorage.getItem('admin_view_mode') || 'mobile';
     });
+    const [arenaModal, setArenaModal] = useState({ show: false, session: null, type: null });
+    const [selectedNarasumber, setSelectedNarasumber] = useState('');
 
     // Dispatch event to App.jsx to toggle container width
     useEffect(() => {
@@ -1146,7 +1148,7 @@ export default function AdminPanel() {
                                                                 }
                                                             }}>Selesaikan Sesi</button>
                                                             <button className="btn-m btn-success btn-sm" style={{ flex: 1 }} onClick={() => {
-                                                                navigate(`/sinergi/video?sessionId=${session.id}&type=group`);
+                                                                setArenaModal({ show: true, session: session, type: 'group' });
                                                             }}>Masuk Arena</button>
                                                             <button className="btn-m btn-excel btn-sm" onClick={() => {
                                                                 setEditSessionModal(true);
@@ -1692,6 +1694,49 @@ export default function AdminPanel() {
                                     </div>
                                     <button type="submit" className="btn-m btn-success btn-full">Simpan Perubahan</button>
                                 </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL PILIH AHLI GIZI MASUK ARENA */}
+                    {arenaModal.show && (
+                        <div className="modal-overlay" onClick={() => setArenaModal({ show: false, session: null, type: null })}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                <button className="modal-close" onClick={() => setArenaModal({ show: false, session: null, type: null })}><X size={18} /></button>
+                                <div className="modal-header">Pilih Identitas Ahli Gizi</div>
+                                <div className="modal-body">
+                                    <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '16px' }}>
+                                        Pilih nama ahli gizi yang akan bergabung ke Arena Video Meeting untuk:
+                                        <strong style={{ display: 'block', color: '#1e293b', marginTop: '4px' }}>{arenaModal.session?.title || arenaModal.session?.name}</strong>
+                                    </p>
+                                    <div style={{ marginBottom: '24px' }}>
+                                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '8px' }}>Pilih Ahli Gizi</label>
+                                        <select
+                                            value={selectedNarasumber}
+                                            onChange={(e) => setSelectedNarasumber(e.target.value)}
+                                            style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '12px', fontFamily: 'Outfit', outline: 'none', background: '#f8fafc' }}
+                                        >
+                                            <option value="">Gunakan Identitas Default (Admin)</option>
+                                            {sinergiNutritionists.map(n => (
+                                                <option key={n.id} value={n.name}>{n.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <button
+                                        className="btn-m btn-success btn-full"
+                                        onClick={() => {
+                                            const urlParams = new URLSearchParams({
+                                                sessionId: arenaModal.session.id,
+                                                type: arenaModal.type
+                                            });
+                                            if (selectedNarasumber) {
+                                                urlParams.append('expertName', selectedNarasumber);
+                                            }
+                                            navigate(`/sinergi/video?${urlParams.toString()}`);
+                                            setArenaModal({ show: false, session: null, type: null });
+                                        }}
+                                    >Masuk ke Arena Video Meet</button>
+                                </div>
                             </div>
                         </div>
                     )}

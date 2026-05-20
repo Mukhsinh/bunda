@@ -126,7 +126,7 @@ const VideoMeetingArena = () => {
             height: '100%',
             parentNode: document.querySelector('#jitsi-arena'),
             userInfo: {
-                displayName: profile?.full_name || user?.email?.split('@')[0] || 'Peserta'
+                displayName: queryParams.get('expertName') || profile?.full_name || user?.email?.split('@')[0] || 'Peserta'
             },
             configOverwrite: {
                 startWithAudioMuted: true,
@@ -146,19 +146,19 @@ const VideoMeetingArena = () => {
                     'fodeviceselection', 'hangup', 'profile', 'chat', 'settings', 'raisehand',
                     'videoquality', 'tileview', 'videobackgroundblur'
                 ] : [
-                    'closedcaptions', 'fullscreen', 'chat', 'settings', 'tileview'
+                    'microphone', 'camera', 'closedcaptions', 'fullscreen', 'hangup', 'chat', 'settings', 'raisehand', 'tileview'
                 ],
                 SETTINGS_SECTIONS: ['devices', 'language', 'moderator', 'profile'],
                 SHOW_JITSI_WATERMARK: false,
                 SHOW_WATERMARK_FOR_GUESTS: false,
                 GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
                 DISPLAY_WELCOME_PAGE_CONTENT: false,
-                ENABLE_LOBBY_BY_DEFAULT: false
+                ENABLE_LOBBY_BY_DEFAULT: true
             },
             configOverwrite: {
-                ...options.configOverwrite,
-                lobbyModeEnabled: false,
-                enableLobby: false,
+                ...options?.configOverwrite,
+                lobbyModeEnabled: true,
+                enableLobby: true,
                 disableModeratorIndicator: false,
                 requireDisplayName: true
             }
