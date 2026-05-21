@@ -5,8 +5,9 @@ import {
     HelpCircle, CheckCircle, Zap, Calculator,
     BookOpen, User, MessageCircle, Edit3,
     FileText, Navigation, Heart, Activity, ShieldPlus,
-    Video, MonitorPlay, ClipboardList, Info
+    Video, MonitorPlay, ClipboardList, Info, Ambulance, ChevronRight
 } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import PrayerTimesWidget from '../components/PrayerTimesWidget';
 
@@ -19,7 +20,7 @@ function FAQSection({ inlineMode = false }) {
         {
             icon: '📋',
             q: 'Apa itu layanan Sahabat Bunda?',
-            a: 'Sahabat Bunda adalah ekosistem layanan inovatif RSUD Bendan yang mendampingi Bunda sejak masa persalinan hingga pemulihan.\n\n✨ Fitur Unggulan:\n• 🟢 RAMAH: Registrasi Akta Mudah (Gratis & Tuntas)\n• 🟢 SANTUN: Layanan Antar-Jemput Pasien (Gratis)\n• 🟢 EMPATI: Edukasi Video Medis Profesional\n• 🟢 SEHATI: Deteksi Gizi Balita (Standar Kemenkes)\n• 🟢 VAKSIN: Penjadwalan Imunisasi Otomatis\n• 🟢 AL-QUR\'AN: Support Ketenangan Spiritual'
+            a: 'Sahabat Bunda adalah ekosistem layanan inovatif RSUD Bendan yang mendampingi Bunda sejak masa persalinan hingga pemulihan.\n\n✨ Fitur Unggulan:\n• 🟢 RAMAH: Registrasi Akta Mudah (Gratis & Tuntas)\n• 🟢 SANTUN: Layanan Antar-Jemput Pasien (Gratis)\n• 🟢 SINERGI: Konsultasi Online Ahli Gizi\n• 🟢 BEMBI: Emergency Ambulance 24 Jam\n• 🟢 EMPATI: Edukasi Video Medis Profesional\n• 🟢 SEHATI: Deteksi Gizi Balita (Standar Kemenkes)\n• 🟢 VAKSIN: Penjadwalan Imunisasi Otomatis\n• 🟢 AL-QUR\'AN: Support Ketenangan Spiritual'
         },
         {
             icon: '🎁',
@@ -40,6 +41,16 @@ function FAQSection({ inlineMode = false }) {
             icon: '💬',
             q: 'Bagaimana jika saya bingung?',
             a: 'Bunda dapat langsung menghubungi Admin melalui tombol WhatsApp di halaman utama untuk mendapatkan panduan atau bantuan langsung dari petugas kami.'
+        },
+        {
+            icon: '📽️',
+            q: 'Apa itu layanan SINERGI?',
+            a: 'SINERGI adalah layanan Konsultasi Online melalui Video Call eksklusif dengan Ahli Gizi RSUD Bendan. Layanan ini memudahkan Bunda untuk berkonsultasi mengenai asupan gizi bunda, buah hati, dan lainnya tanpa harus datang ke rumah sakit.'
+        },
+        {
+            icon: '🚑',
+            q: 'Apa itu layanan BEMBI?',
+            a: 'BEMBI (Bendan Emergency Mobile) adalah layanan ambulance panggil cepat RSUD Bendan untuk kondisi kegawatdaruratan Pasien (termasuk Ibu dan Bayi). Layanan ini siaga 24 jam untuk menjamin kecepatan penanganan medis.'
         }
     ];
 
@@ -330,8 +341,8 @@ export default function HomePage() {
                     <Link to="/ramah/submit" style={{ textDecoration: 'none' }}>
                         <div className="grid-card-interactive" style={{
                             background: 'white', borderRadius: '24px', padding: '24px 16px 20px',
-                            textAlign: 'left', boxShadow: '0 10px 25px rgba(37, 99, 235, 0.08)',
-                            border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                            textAlign: 'center', boxShadow: '0 10px 25px rgba(37, 99, 235, 0.08)',
+                            border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center',
                             position: 'relative', overflow: 'hidden'
                         }}>
                             <div style={{
@@ -344,17 +355,14 @@ export default function HomePage() {
                                 <FileText size={32} color="white" strokeWidth={2.5} />
                             </div>
                             <h3 style={{ fontSize: '1rem', fontWeight: 900, color: '#1e293b', margin: 0, fontFamily: "'Outfit', sans-serif" }}>RAMAH</h3>
-                            <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px', lineHeight: 1.3, fontWeight: 600 }}>
-                                Registrasi Akta Mudah <span style={{ color: '#2563eb' }}>Antar Sampai Rumah.</span>
-                            </p>
                         </div>
                     </Link>
 
                     <Link to="/santun/submit" style={{ textDecoration: 'none' }}>
                         <div className="grid-card-interactive" style={{
                             background: 'white', borderRadius: '24px', padding: '24px 16px 20px',
-                            textAlign: 'left', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.08)',
-                            border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                            textAlign: 'center', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.08)',
+                            border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center',
                             position: 'relative', overflow: 'hidden'
                         }}>
                             <div style={{
@@ -367,9 +375,6 @@ export default function HomePage() {
                                 <Navigation size={32} color="white" strokeWidth={2.5} />
                             </div>
                             <h3 style={{ fontSize: '1rem', fontWeight: 900, color: '#1e293b', margin: 0, fontFamily: "'Outfit', sans-serif" }}>SANTUN</h3>
-                            <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px', lineHeight: 1.3, fontWeight: 600 }}>
-                                Saya <span style={{ color: '#10b981' }}>Antar Sampai Tujuan.</span>
-                            </p>
                         </div>
                     </Link>
                 </div>
@@ -387,10 +392,19 @@ export default function HomePage() {
                         {[
                             { to: '/empati', label: 'EMPATI', Icon: Heart, color: '#0ea5e9' },
                             { to: '/sehati', label: 'SEHATI', Icon: Activity, color: '#f59e0b' },
-                            { to: '/vaksinasi', label: 'VAKSIN', Icon: ShieldPlus, color: '#10b981' },
-                            { to: '/quran', label: 'AL-QUR\'AN', Icon: BookOpen, color: '#8b5cf6' },
+                            { to: '/sinergi', label: 'SINERGI', Icon: Video, color: '#10b981' },
+                            { to: '/bembi', label: 'BEMBI', Icon: Ambulance, color: '#ef4444' },
+                            { to: '/vaksinasi', label: 'VAKSIN', Icon: ShieldPlus, color: '#8b5cf6' },
+                            { to: '/quran', label: 'AL-QUR\'AN', Icon: BookOpen, color: '#6366f1' },
                         ].map((m, i) => (
-                            <Link key={i} to={m.to} style={{ textDecoration: 'none' }}>
+                            <div key={i} onClick={() => {
+                                if (m.to === '/bembi') {
+                                    const message = encodeURIComponent('Halo BEMBI RSUD Bendan, saya membutuhkan layanan ambulance. Berikut lokasi saya:');
+                                    window.open(`https://wa.me/628152321122?text=${message}`, '_blank');
+                                } else {
+                                    navigate(m.to);
+                                }
+                            }} style={{ textDecoration: 'none', cursor: 'pointer' }}>
                                 <div className="grid-card-interactive" style={{
                                     background: 'white', borderRadius: '20px', padding: '20px 12px',
                                     textAlign: 'center', border: '1px solid #f1f5f9', height: '100%',
@@ -408,12 +422,38 @@ export default function HomePage() {
                                     </div>
                                     <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569', fontFamily: "'Outfit', sans-serif" }}>{m.label}</span>
                                 </div>
-                            </Link>
+                            </div>
                         ))}
                     </div>
 
                     {/* Right: Info Card & FAQ */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+                        {/* ═══ MENU LACAK (NEW) ═══ */}
+                        <div
+                            onClick={() => navigate('/lacak')}
+                            style={{
+                                background: 'white', borderRadius: '24px', padding: '20px',
+                                border: '1px solid #f1f5f9', boxShadow: '0 10px 20px rgba(0,0,0,0.02)',
+                                cursor: 'pointer', transition: 'all 0.2s ease'
+                            }}
+                            className="grid-card-interactive"
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(79, 70, 229, 0.3)' }}>
+                                        <Search size={20} color="white" strokeWidth={2.5} />
+                                    </div>
+                                    <div>
+                                        <h4 style={{ fontSize: '0.95rem', fontWeight: 900, color: '#1e293b', margin: 0, fontFamily: "'Outfit', sans-serif" }}>Lacak Status Layanan</h4>
+                                        <p style={{ fontSize: '0.7rem', color: '#64748b', margin: '2px 0 0', fontWeight: 600 }}>Cek progres layanan Sahabat Bunda</p>
+                                    </div>
+                                </div>
+                                <div style={{ color: '#6366f1' }}>
+                                    <ChevronRight size={20} />
+                                </div>
+                            </div>
+                        </div>
 
                         {/* ═══ KONSULTASI ONLINE SINERGI (REPOSITIONED & COMPACT) ═══ */}
                         <div style={{ background: 'white', borderRadius: '24px', padding: '20px', border: '1px solid #f1f5f9', boxShadow: '0 10px 20px rgba(0,0,0,0.02)' }}>

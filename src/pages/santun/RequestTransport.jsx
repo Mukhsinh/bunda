@@ -319,7 +319,7 @@ export default function RequestTransport() {
                         <div style={{ flex: 1, position: 'relative', zIndex: 10 }}>
                             <h2 style={{ color: 'white', margin: 0, fontSize: '1.6rem', lineHeight: '1.25', fontWeight: 800, fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.5px' }}>
                                 Permohonan <br />
-                                <span style={{ color: '#7dd3fc' }}>Layanan Transport</span>
+                                <span style={{ color: '#7dd3fc' }}>Layanan Transportasi Pulang</span>
                             </h2>
                             <p style={{ margin: '8px 0 0 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.9)', background: 'rgba(0,0,0,0.2)', display: 'inline-block', padding: '4px 10px', borderRadius: '12px', fontWeight: 500, letterSpacing: '0.3px' }}>
                                 (khusus domisili Kota Pekalongan)

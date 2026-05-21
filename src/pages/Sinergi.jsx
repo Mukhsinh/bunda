@@ -40,7 +40,7 @@ const Sinergi = () => {
             const { data, error } = await supabase
                 .from('sinergi_requests')
                 .select('*')
-                .or('status.eq.pending,status.eq.scheduled')
+                .in('status', ['Pending', 'Scheduled'])
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .single();

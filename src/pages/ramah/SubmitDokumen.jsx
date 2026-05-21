@@ -176,7 +176,7 @@ export default function SubmitDokumen() {
                         <div style={{ flex: 1, position: 'relative', zIndex: 10 }}>
                             <h2 style={{ color: 'white', margin: 0, fontSize: '1.6rem', lineHeight: '1.25', fontWeight: 800, fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.5px' }}>
                                 Pengajuan <br />
-                                <span style={{ color: '#bae6fd' }}>Layanan Akta</span>
+                                <span style={{ color: '#bae6fd' }}>Layanan Pengurusan Akta</span>
                             </h2>
                             <p style={{ margin: '8px 0 0 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.9)', background: 'rgba(0,0,0,0.2)', display: 'inline-block', padding: '4px 10px', borderRadius: '12px', fontWeight: 500, letterSpacing: '0.3px' }}>
                                 Khusus Warga Kota Pekalongan

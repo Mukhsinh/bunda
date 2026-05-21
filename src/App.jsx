@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Home, FileText, Truck, LogIn, Hospital, Search, Monitor } from 'lucide-react';
+import { Home, FileText, Truck, LogIn, Hospital, Search, Monitor, Ambulance, Heart, Syringe } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/useAuthStore';
 import { speakGreeting } from './lib/voiceUtils';
 
@@ -62,7 +63,10 @@ function App() {
 
   // Scroll to top on route change
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const mainContent = document.querySelector('.app-content');
+    if (mainContent) {
+      mainContent.scrollTo(0, 0);
+    }
   }, [location.pathname]);
 
   // Voice Greeting Logic
@@ -139,6 +143,7 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Toaster />
 
         {/* Global Footer */}
         <footer style={{
@@ -173,13 +178,44 @@ function App() {
             <Truck size={22} />
             <span>SANTUN</span>
           </Link>
+
+          {/* BEMBI CALL CENTER - AFTER SANTUN */}
+          <div
+            onClick={() => {
+              const message = encodeURIComponent('Halo BEMBI RSUD Bendan, saya membutuhkan layanan ambulance. Berikut lokasi saya:');
+              window.open(`https://wa.me/628152321122?text=${message}`, '_blank');
+            }}
+            className="nav-item"
+            style={{
+              marginTop: '-30px',
+              background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+              color: 'white',
+              borderRadius: '50%',
+              width: '56px',
+              height: '56px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              boxShadow: '0 8px 20px rgba(239, 68, 68, 0.4)',
+              border: '4px solid white',
+              padding: '0',
+              cursor: 'pointer'
+            }}
+          >
+            <Ambulance size={26} color="white" />
+          </div>
+
           <Link to="/sinergi" className={`nav-item ${location.pathname === '/sinergi' ? 'active' : ''}`}>
             <Monitor size={22} />
             <span>SINERGI</span>
           </Link>
-          <Link to="/lacak" className={`nav-item ${location.pathname === '/lacak' ? 'active' : ''}`}>
-            <Search size={22} />
-            <span>Lacak</span>
+          <Link to="/sehati" className={`nav-item ${location.pathname.startsWith('/sehati') ? 'active' : ''}`}>
+            <Heart size={22} />
+            <span>SEHATI</span>
+          </Link>
+          <Link to="/vaksin" className={`nav-item ${location.pathname.startsWith('/vaksin') ? 'active' : ''}`}>
+            <Syringe size={22} />
+            <span>VAKSIN</span>
           </Link>
         </nav>
       )}
