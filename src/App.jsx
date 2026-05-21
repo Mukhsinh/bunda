@@ -174,12 +174,8 @@ function App() {
             <FileText size={22} />
             <span>RAMAH</span>
           </Link>
-          <Link to="/santun/submit" className={`nav-item ${location.pathname.startsWith('/santun') ? 'active' : ''}`}>
-            <Truck size={22} />
-            <span>SANTUN</span>
-          </Link>
 
-          {/* BEMBI CALL CENTER - AFTER SANTUN */}
+          {/* BEMBI CALL CENTER - CENTER ICON */}
           <div
             onClick={() => {
               const message = encodeURIComponent('Halo BEMBI RSUD Bendan, saya membutuhkan layanan ambulance. Berikut lokasi saya:');
@@ -205,17 +201,14 @@ function App() {
             <Ambulance size={26} color="white" />
           </div>
 
+          <Link to="/santun/submit" className={`nav-item ${location.pathname.startsWith('/santun') ? 'active' : ''}`}>
+            <Truck size={22} />
+            <span>SANTUN</span>
+          </Link>
+
           <Link to="/sinergi" className={`nav-item ${location.pathname === '/sinergi' ? 'active' : ''}`}>
             <Monitor size={22} />
             <span>SINERGI</span>
-          </Link>
-          <Link to="/sehati" className={`nav-item ${location.pathname.startsWith('/sehati') ? 'active' : ''}`}>
-            <Heart size={22} />
-            <span>SEHATI</span>
-          </Link>
-          <Link to="/vaksin" className={`nav-item ${location.pathname.startsWith('/vaksin') ? 'active' : ''}`}>
-            <Syringe size={22} />
-            <span>VAKSIN</span>
           </Link>
         </nav>
       )}
