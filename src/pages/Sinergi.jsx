@@ -485,11 +485,11 @@ const Sinergi = () => {
                                     <div style={{ textAlign: 'center' }}>
                                         <p style={{ fontSize: '0.82rem', color: '#94a3b8', margin: '0 0 6px 0' }}>Ingin membatalkan atau mengubah jadwal?</p>
                                         <a
-                                            href={`https://wa.me/6281234567890?text=Halo%20Admin%20SINERGI,%20saya%20ingin%20mengubah%20jadwal%20konsultasi%20atas%20nama%20${consultation.name}`}
+                                            href={`https://wa.me/6285726112001?text=Halo%20Admin%20SINERGI,%20saya%20ingin%20mengubah%20jadwal%20konsultasi%20atas%20nama%20${consultation.name}`}
                                             target="_blank" rel="noopener noreferrer"
                                             style={{ color: '#2563eb', fontWeight: 700, fontSize: '0.85rem' }}
                                         >
-                                            Hubungi Admin via WhatsApp
+                                            Hubungi Admin Gizi via WhatsApp
                                         </a>
                                     </div>
                                 </div>

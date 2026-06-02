@@ -4,13 +4,23 @@ import { useNavigate } from 'react-router-dom';
 
 const topics = [
     {
+        id: 0,
+        title: 'Inovasi Ramah dan Santun',
+        icon: <Shield size={24} />,
+        color: '#84cc16',
+        bgColor: '#f7fee7',
+        description: 'Mengenal program inovasi pelayanan yang ramah dan santun bagi bunda.',
+        videoSrc: 'xXFjC3qGt-Y',
+        imageSrc: '/images/empati/empati_hygiene_1778754878193.png'
+    },
+    {
         id: 1,
         title: 'Teknik Menyusui Bayi',
         icon: <Baby size={24} />,
         color: '#0ea5e9',
         bgColor: '#e0f2fe',
         description: 'Panduan lengkap posisi dan pelekatan yang benar agar menyusui nyaman.',
-        videoSrc: '1B7IjRHiT9dTSzUnQPfqWxi01yli8zsDp',
+        videoSrc: 'O49Fxu_xX90',
         imageSrc: '/images/empati/empati_breastfeeding_1778761557180.png'
     },
     {
@@ -20,7 +30,7 @@ const topics = [
         color: '#16a34a',
         bgColor: '#dcfce7',
         description: 'Cara merawat kebersihan dan kesehatan bayi baru lahir dengan benar.',
-        videoSrc: '1B7mC3jqUWhPbYNiraU360ntkzEDDNTjy',
+        videoSrc: 'nxr_diz0jFA',
         imageSrc: '/images/empati/empati_hygiene_1778754878193.png'
     },
     {
@@ -30,38 +40,38 @@ const topics = [
         color: '#f59e0b',
         bgColor: '#fef3c7',
         description: 'Daftar makanan bergizi untuk mempercepat pemulihan dan kualitas ASI ibu.',
-        videoSrc: '1ejlnpyA60rPVzb5e0tkvJmC_VAueIMxD',
+        videoSrc: 'zIf0dFjkUBA',
         imageSrc: '/images/empati/empati_nutrition_1778755013806.png'
     },
     {
         id: 4,
-        title: 'Alat Kontrasepsi Pasca Melahirkan',
-        icon: <Heart size={24} />,
-        color: '#ec4899',
-        bgColor: '#fdf2f8',
-        description: 'Informasi mengenai pilihan alat kontrasepsi yang aman pasca melahirkan.',
-        videoSrc: '18bSkypN92uuj5ZkCyqkGY-Z7NSLs4p2Y',
-        imageSrc: '/images/empati/empati_bonding_1778755126025.png'
-    },
-    {
-        id: 5,
         title: 'Kesehatan Mental Pasca Melahirkan',
         icon: <Brain size={24} />,
         color: '#8b5cf6',
         bgColor: '#f5f3ff',
         description: 'Pentingnya menjaga psikologis ibu, mencegah baby blues, dan istirahat cukup.',
-        videoSrc: '1lN9mzQ9tOCAyHE5Ia5mo6Edtpc6AOKZo',
+        videoSrc: '2adz76-pxDE',
         imageSrc: '/images/empati/empati_mentalhealth_1778755087234.png'
     },
     {
-        id: 6,
+        id: 5,
         title: 'Gangguan Psikotis Pasca Melahirkan',
         icon: <Brain size={24} />,
         color: '#ef4444',
         bgColor: '#fee2e2',
         description: 'Mengenali gejala dan penanganan gangguan psikotis pasca melahirkan.',
-        videoSrc: '1L5GXzunq_7tiZzOTVxCCm1g5_T8I-33k',
+        videoSrc: 'Ivp7z6IhQaA',
         imageSrc: '/images/empati/empati_mentalhealth_1778755087234.png'
+    },
+    {
+        id: 6,
+        title: 'Alat Kontrasepsi Pasca Melahirkan',
+        icon: <Heart size={24} />,
+        color: '#ec4899',
+        bgColor: '#fdf2f8',
+        description: 'Informasi mengenai pilihan alat kontrasepsi yang aman pasca melahirkan.',
+        videoSrc: 'ZUgT76bWG9Q',
+        imageSrc: '/images/empati/empati_bonding_1778755126025.png'
     }
 ];
 
@@ -122,35 +132,25 @@ export default function Empati() {
             </div>
 
             {/* Video Player */}
-            {/* 
-              Analisa: Google Drive /preview menambahkan toolbar bawaan 
-              (timeline di atas + kontrol di bawah) di dalam iframe.
-              Ini menyebabkan video terlihat lebih kecil dari container, 
-              menghasilkan area hitam di sekitar video.
-              
-              Solusi: Scale iframe 20% lebih besar dari container, sehingga
-              toolbar GDrive terpotong oleh overflow:hidden pada container.
-              Hasilnya: yang terlihat hanya konten video saja.
-            */}
             <div style={{
                 borderRadius: '24px',
                 overflow: 'hidden',
                 position: 'relative',
                 width: '100%',
-                paddingBottom: '56.25%', /* Strict 16:9 Aspect Ratio */
+                paddingBottom: '56.25%', /* 16:9 Aspect Ratio */
                 marginBottom: '20px',
                 boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
                 background: '#000',
                 border: '4px solid white'
             }}>
-                {/* Premium Loading overlay with backdrop blur */}
+                {/* Premium Loading overlay */}
                 {isLoading && (
                     <div style={{
                         position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
                         background: 'rgba(255, 255, 255, 0.9)',
                         backdropFilter: 'blur(12px)',
                         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 10, transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                        zIndex: 10, transition: 'opacity 0.6s'
                     }}>
                         <div style={{
                             width: '40px', height: '40px', borderRadius: '50%',
@@ -163,31 +163,22 @@ export default function Empati() {
                     </div>
                 )}
 
-                {/* 
-                  Refinement: Scaling to 1.3 (30% zoom) to aggressively crop 
-                  Google Drive's player toolbars and any intrinsic black bars 
-                  in the video source, ensuring a truly edge-to-edge "clear" feel.
-                */}
                 <iframe
                     key={selectedVideo.id}
-                    src={`https://drive.google.com/file/d/${selectedVideo.videoSrc}/preview?autoplay=1`}
+                    src={`https://www.youtube.com/embed/${selectedVideo.videoSrc}?autoplay=1&rel=0&modestbranding=1`}
                     style={{
                         border: 'none',
                         position: 'absolute',
-                        top: '50%',
-                        left: '50%',
+                        top: 0,
+                        left: 0,
                         width: '100%',
                         height: '100%',
-                        transform: 'translate(-50%, -50%) scale(1.3)',
                         pointerEvents: 'auto'
                     }}
-                    allow="autoplay; fullscreen"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                     title={selectedVideo.title}
-                    onLoad={() => {
-                        // Longer delay (2s) to ensure the player is ready
-                        setTimeout(() => setIsLoading(false), 2000);
-                    }}
+                    onLoad={() => setIsLoading(false)}
                 />
             </div>
 

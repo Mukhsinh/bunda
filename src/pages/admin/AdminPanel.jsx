@@ -340,6 +340,8 @@ const styles = `
 .wa-btn:hover { background: #1ebc5a; transform: translateY(-1px); }
 `;
 
+const ADMIN_GIZI_WHATSAPP = '085726112001';
+
 /* ──────────────────── COMPONENT ──────────────────── */
 export default function AdminPanel() {
     const { user, signOut } = useAuthStore();
@@ -526,14 +528,14 @@ export default function AdminPanel() {
             const { error } = await supabase.from('sinergi_requests').update({ status: s }).eq('id', id);
             if (error) throw error;
             fetchData();
-            if (s === 'completed' && item?.whatsapp) {
-                const msg = `Halo ${item.name}, sesi konsultasi SINERGI Anda telah selesai. Semoga bermanfaat untuk tumbuh kembang ananda. Terima kasih!`;
+            if (s === 'Completed' && item?.whatsapp) {
+                const msg = `Halo ${item.name}, sesi konsultasi SINERGI Anda telah selesai. Semoga bermanfaat untuk tumbuh kembang ananda. Jika ada pertanyaan lebih lanjut, silakan hubungi Admin Gizi: ${ADMIN_GIZI_WHATSAPP}\n\nTerima kasih!`;
                 openWhatsApp(item.whatsapp, msg);
             }
         } catch (e) { alert('Gagal: ' + e.message); }
     };
     const [schedulingSinergi, setSchedulingSinergi] = useState(null);
-    const [scheduleForm, setScheduleForm] = useState({ date: '', time: '', jitsi: '' });
+    const [scheduleForm, setScheduleForm] = useState({ date: '', time: '', jitsi: '', nutritionist_id: '', nutritionist_name: '', nutritionist_whatsapp: '' });
     const handleScheduleSinergi = async (e) => {
         e.preventDefault();
         try {
@@ -546,7 +548,10 @@ export default function AdminPanel() {
                 scheduled_at: scheduledAt,
                 jitsi_room: scheduleForm.jitsi,
                 status: 'Scheduled',
-                access_id: accessId
+                access_id: accessId,
+                nutritionist_id: scheduleForm.nutritionist_id || null,
+                narasumber_name: scheduleForm.nutritionist_name || 'Ahli Gizi RSUD Bendan',
+                narasumber_whatsapp: scheduleForm.nutritionist_whatsapp || ''
             }]).select().single();
             if (sError) throw sError;
 
@@ -560,8 +565,20 @@ export default function AdminPanel() {
             if (rError) throw rError;
 
             const jitsiLink = scheduleForm.jitsi + (scheduleForm.jitsi.includes('#') ? '&' : '#') + 'config.disableDeepLinking=true&config.prejoinPageEnabled=false&config.p2p.enabled=false';
-            const msg = `Halo ${schedulingSinergi.name}, sesi *Konsultasi Online SINERGI* Anda telah dijadwalkan pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${jitsiLink}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda sahabatbunda. Terima kasih.`;
+            const scheduledDateStr = new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':');
+
+            // Message for Participant
+            const msg = `Halo ${schedulingSinergi.name}, sesi *Konsultasi Online SINERGI* Anda telah dijadwalkan pada ${scheduledDateStr} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${jitsiLink}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda sahabatbunda. \n\nInformasi lebih lanjut hubungi Admin Gizi: ${ADMIN_GIZI_WHATSAPP}\nTerima kasih.`;
             openWhatsApp(schedulingSinergi.whatsapp, msg);
+
+            // Message for Nutritionist (if selected)
+            if (scheduleForm.nutritionist_whatsapp) {
+                setTimeout(() => {
+                    const nMsg = `Halo ${scheduleForm.nutritionist_name}, Anda ditugaskan untuk *Konsultasi Online SINERGI* (Individu) dengan:\n\n*Nama:* ${schedulingSinergi.name}\n*Waktu:* ${scheduledDateStr} WIB\n*ID Akses:* ${accessId}\n*Link:* ${jitsiLink}\n\nTerima kasih.`;
+                    openWhatsApp(scheduleForm.nutritionist_whatsapp, nMsg);
+                }, 2000);
+            }
+
             setSchedulingSinergi(null);
             fetchData();
         } catch (e) { alert('Gagal: ' + e.message); }
@@ -608,7 +625,7 @@ export default function AdminPanel() {
                 selectedData.forEach((item, index) => {
                     setTimeout(() => {
                         const jitsiLink = collectiveForm.jitsi + (collectiveForm.jitsi.includes('#') ? '&' : '#') + 'config.disableDeepLinking=true&config.prejoinPageEnabled=false&config.p2p.enabled=false';
-                        const msg = `Halo ${item.name}, Anda telah dijadwalkan untuk *Konsultasi Online SINERGI Kolektif* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${jitsiLink}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda sahabatbunda. Terima kasih.`;
+                        const msg = `Halo ${item.name}, Anda telah dijadwalkan untuk *Konsultasi Online SINERGI Kolektif* "${collectiveForm.title}" pada ${new Date(scheduledAt).toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB.\n\n*ID Akses:* ${accessId}\n*Link:* ${jitsiLink}\n\nMohon masukkan ID Akses tersebut saat bergabung di halaman Beranda sahabatbunda.\n\nInformasi lebih lanjut hubungi Admin Gizi: ${ADMIN_GIZI_WHATSAPP}\nTerima kasih.`;
                         openWhatsApp(item.whatsapp, msg);
                     }, index * 1500);
                 });
@@ -1223,7 +1240,10 @@ export default function AdminPanel() {
                                                 setScheduleForm({
                                                     date: new Date().toISOString().split('T')[0],
                                                     time: '10:00',
-                                                    jitsi: `https://meet.ffmuc.net/sahabatbunda-sinergi-${item.name.replace(/\s+/g, '-')}-${Math.random().toString(36).substring(7)}`
+                                                    jitsi: `https://meet.ffmuc.net/sahabatbunda-sinergi-${item.name.replace(/\s+/g, '-')}-${Math.random().toString(36).substring(7)}`,
+                                                    nutritionist_id: '',
+                                                    nutritionist_name: '',
+                                                    nutritionist_whatsapp: ''
                                                 });
                                             }}>Jadwalkan</button>
                                         )}
@@ -1232,10 +1252,14 @@ export default function AdminPanel() {
                                                 <button className="btn-m btn-chart btn-sm" onClick={() => {
                                                     setSchedulingSinergi(item);
                                                     const d = new Date(item.scheduled_at);
+                                                    const session = sinergiSessions.find(s => s.id === item.session_id);
                                                     setScheduleForm({
                                                         date: d.toISOString().split('T')[0],
                                                         time: d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':'),
-                                                        jitsi: item.jitsi_room
+                                                        jitsi: item.jitsi_room || '',
+                                                        nutritionist_id: session?.nutritionist_id || '',
+                                                        nutritionist_name: session?.narasumber_name || '',
+                                                        nutritionist_whatsapp: session?.narasumber_whatsapp || ''
                                                     });
                                                 }}>Ubah Jadwal</button>
                                                 <button className="btn-m btn-success btn-sm" onClick={() => updateSinergiStatus(item.id, 'Completed', item)}>Selesai</button>
@@ -1286,6 +1310,38 @@ export default function AdminPanel() {
                                                     value={scheduleForm.jitsi}
                                                     onChange={e => setScheduleForm({ ...scheduleForm, jitsi: e.target.value })}
                                                 />
+                                            </div>
+                                            <div>
+                                                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>Ahli Gizi Ditugaskan</label>
+                                                <select
+                                                    className="filter-dd"
+                                                    required
+                                                    style={{ width: '100%', paddingRight: '14px', backgroundImage: 'none', appearance: 'auto' }}
+                                                    value={scheduleForm.nutritionist_id}
+                                                    onChange={e => {
+                                                        const expert = sinergiNutritionists.find(n => n.id === e.target.value);
+                                                        if (expert) {
+                                                            setScheduleForm({
+                                                                ...scheduleForm,
+                                                                nutritionist_id: expert.id,
+                                                                nutritionist_name: expert.name,
+                                                                nutritionist_whatsapp: expert.whatsapp
+                                                            });
+                                                        } else {
+                                                            setScheduleForm({
+                                                                ...scheduleForm,
+                                                                nutritionist_id: '',
+                                                                nutritionist_name: '',
+                                                                nutritionist_whatsapp: ''
+                                                            });
+                                                        }
+                                                    }}
+                                                >
+                                                    <option value="">Pilih Ahli Gizi...</option>
+                                                    {sinergiNutritionists.map(n => (
+                                                        <option key={n.id} value={n.id}>{n.name}</option>
+                                                    ))}
+                                                </select>
                                             </div>
                                             <button type="submit" className="btn-m btn-excel btn-full" style={{ marginTop: '10px' }}>Simpan Jadwal & Kirim WA</button>
                                         </form>
@@ -1358,59 +1414,61 @@ export default function AdminPanel() {
                             <div className="modal-overlay" onClick={() => setNutritionistModal(false)}>
                                 <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px' }}>
                                     <button className="modal-close" onClick={() => setNutritionistModal(false)}><X size={18} /></button>
-                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#1e293b', marginBottom: '24px', fontFamily: "'Outfit', sans-serif" }}>
-                                        Kelola Database Ahli Gizi
-                                    </h3>
+                                    <div className="modal-header">
+                                        <Users size={20} color="#f97316" /> Kelola Ahli Gizi
+                                    </div>
 
-                                    <form onSubmit={handleAddNutritionist} style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', marginBottom: '24px', border: '1px solid #e2e8f0' }}>
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'end' }}>
-                                            <div style={{ flex: '1 1 200px' }}>
-                                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Nama Lengkap</label>
-                                                <input
-                                                    type="text" required
-                                                    value={nutritionistForm.name}
-                                                    onChange={e => setNutritionistForm({ ...nutritionistForm, name: e.target.value })}
-                                                    placeholder="Contoh: Sarah Jones"
-                                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                                                />
+                                    <div className="modal-body">
+                                        <form onSubmit={handleAddNutritionist} style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', marginBottom: '24px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'end' }}>
+                                                <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+                                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Nama Lengkap</label>
+                                                    <input
+                                                        type="text" required
+                                                        value={nutritionistForm.name}
+                                                        onChange={e => setNutritionistForm({ ...nutritionistForm, name: e.target.value })}
+                                                        placeholder="Contoh: Sarah Jones"
+                                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}
+                                                    />
+                                                </div>
+                                                <div style={{ flex: '1 1 150px', minWidth: 0 }}>
+                                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>WhatsApp</label>
+                                                    <input
+                                                        type="text" required
+                                                        value={nutritionistForm.whatsapp}
+                                                        onChange={e => setNutritionistForm({ ...nutritionistForm, whatsapp: e.target.value })}
+                                                        placeholder="0812..."
+                                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}
+                                                    />
+                                                </div>
+                                                <button type="submit" className="btn-m btn-chart btn-sm" style={{ flex: '1 1 100px', height: '42px', whiteSpace: 'nowrap' }}>Simpan</button>
                                             </div>
-                                            <div style={{ flex: '1 1 150px' }}>
-                                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>WhatsApp</label>
-                                                <input
-                                                    type="text" required
-                                                    value={nutritionistForm.whatsapp}
-                                                    onChange={e => setNutritionistForm({ ...nutritionistForm, whatsapp: e.target.value })}
-                                                    placeholder="0812..."
-                                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                                                />
-                                            </div>
-                                            <button type="submit" className="btn-m btn-chart btn-sm" style={{ flex: '1 1 100px', height: '42px' }}>Simpan</button>
-                                        </div>
-                                    </form>
+                                        </form>
 
-                                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                            <thead>
-                                                <tr style={{ textAlign: 'left', borderBottom: '2px solid #f1f5f9' }}>
-                                                    <th style={{ padding: '12px', fontSize: '0.75rem', color: '#64748b' }}>NAMA</th>
-                                                    <th style={{ padding: '12px', fontSize: '0.75rem', color: '#64748b' }}>WHATSAPP</th>
-                                                    <th style={{ padding: '12px', textAlign: 'right' }}>AKSI</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {sinergiNutritionists.map(nut => (
-                                                    <tr key={nut.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                        <td style={{ padding: '12px', fontSize: '0.85rem', fontWeight: 600 }}>{nut.name}</td>
-                                                        <td style={{ padding: '12px', fontSize: '0.85rem' }}>{nut.whatsapp}</td>
-                                                        <td style={{ padding: '12px', textAlign: 'right' }}>
-                                                            <button onClick={() => handleDeleteNutritionist(nut.id)} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}>
-                                                                Hapus
-                                                            </button>
-                                                        </td>
+                                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                                <thead>
+                                                    <tr style={{ textAlign: 'left', borderBottom: '2px solid #f1f5f9' }}>
+                                                        <th style={{ padding: '12px', fontSize: '0.75rem', color: '#64748b' }}>NAMA</th>
+                                                        <th style={{ padding: '12px', fontSize: '0.75rem', color: '#64748b' }}>WHATSAPP</th>
+                                                        <th style={{ padding: '12px', textAlign: 'right' }}>AKSI</th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody>
+                                                    {sinergiNutritionists.map(nut => (
+                                                        <tr key={nut.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                            <td style={{ padding: '12px', fontSize: '0.85rem', fontWeight: 600 }}>{nut.name}</td>
+                                                            <td style={{ padding: '12px', fontSize: '0.85rem' }}>{nut.whatsapp}</td>
+                                                            <td style={{ padding: '12px', textAlign: 'right' }}>
+                                                                <button onClick={() => handleDeleteNutritionist(nut.id)} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}>
+                                                                    Hapus
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
