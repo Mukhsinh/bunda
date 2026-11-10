@@ -166,7 +166,8 @@ export default function MenuMakanan() {
     const [orderForm, setOrderForm] = useState({
         customerName: '',
         phoneNumber: '',
-        roomName: 'Ruang Nifas VK',
+        roomName: 'Ruang Terang Bulan',
+        customRoomName: '',
         notes: '',
         paymentMethod: 'qris' // 'qris' | 'va' | 'cod'
     });
@@ -254,6 +255,15 @@ export default function MenuMakanan() {
             return;
         }
 
+        if (orderForm.roomName === 'Ruang lainnya' && !orderForm.customRoomName?.trim()) {
+            toast.error('Harap sebutkan nama ruangan / lokasi Anda!');
+            return;
+        }
+
+        const effectiveRoomName = orderForm.roomName === 'Ruang lainnya'
+            ? `Ruang Lainnya (${orderForm.customRoomName.trim()})`
+            : orderForm.roomName;
+
         setIsSubmitting(true);
         const orderCode = 'GZ-' + Math.floor(10000 + Math.random() * 90000);
         const orderItems = cartItemIds.map(id => {
@@ -273,7 +283,7 @@ export default function MenuMakanan() {
             order_code: orderCode,
             customer_name: orderForm.customerName,
             phone_number: orderForm.phoneNumber,
-            room_name: orderForm.roomName,
+            room_name: effectiveRoomName,
             notes: orderForm.notes || '',
             payment_method: orderForm.paymentMethod,
             payment_status: paymentStatus,
@@ -310,7 +320,7 @@ export default function MenuMakanan() {
             orderCode,
             customerName: orderForm.customerName,
             phoneNumber: orderForm.phoneNumber,
-            roomName: orderForm.roomName,
+            roomName: effectiveRoomName,
             paymentMethod: orderForm.paymentMethod,
             paymentStatus: paymentStatus,
             totalPrice,
@@ -360,7 +370,7 @@ export default function MenuMakanan() {
                 </div>
 
                 <div style={{ position: 'relative', zIndex: 10 }}>
-                    <h1 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#ffffff' }}>
                         Dapur Gizi Sehat Bendan
                     </h1>
                     <p style={{ margin: '4px 0 12px', fontSize: '0.8rem', color: '#ffedd5', lineHeight: 1.4 }}>
@@ -657,14 +667,36 @@ export default function MenuMakanan() {
                                         onChange={e => setOrderForm(p => ({ ...p, roomName: e.target.value }))}
                                         style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '0.82rem', outline: 'none', background: 'white' }}
                                     >
-                                        <option value="Ruang Nifas VK (Lantai 2)">Ruang Nifas VK (Lantai 2)</option>
-                                        <option value="Ruang Melati (Lantai 2)">Ruang Melati (Lantai 2)</option>
-                                        <option value="Ruang Flamboyan (Lantai 3)">Ruang Flamboyan (Lantai 3)</option>
-                                        <option value="Ruang Bougenville (Lantai 3)">Ruang Bougenville (Lantai 3)</option>
-                                        <option value="Ruang Perinatologi (Bayi)">Ruang Perinatologi (Bayi)</option>
-                                        <option value="Lobby Utama / Penunggu Pasien">Lobby Utama / Penunggu Pasien</option>
+                                        <option value="Ruang Terang Bulan">Ruang Terang Bulan</option>
+                                        <option value="Ruang Truntum">Ruang Truntum</option>
+                                        <option value="Ruang Sekarjagat">Ruang Sekarjagat</option>
+                                        <option value="Ruang Jlamprang">Ruang Jlamprang</option>
+                                        <option value="Ruang Nifas">Ruang Nifas</option>
+                                        <option value="Ruang ICU">Ruang ICU</option>
+                                        <option value="Ruang lainnya">Ruang lainnya (Isi manual)</option>
                                     </select>
                                 </div>
+
+                                {/* Input Tambahan Otomatis Jika Memilih Ruang Lainnya */}
+                                {orderForm.roomName === 'Ruang lainnya' && (
+                                    <div style={{ animation: 'fadeIn 0.2s ease-in' }}>
+                                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#ea580c', marginBottom: '4px' }}>
+                                            Sebutkan Ruang / Unit RSUD Bendan
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            placeholder="Contoh: Klinik Mata, Ruang Keuangan, Radiologi, dll"
+                                            value={orderForm.customRoomName}
+                                            onChange={e => setOrderForm(p => ({ ...p, customRoomName: e.target.value }))}
+                                            style={{
+                                                width: '100%', padding: '10px 14px', borderRadius: '12px',
+                                                border: '1.5px solid #ea580c', fontSize: '0.82rem', outline: 'none',
+                                                background: '#fff7ed'
+                                            }}
+                                        />
+                                    </div>
+                                )}
 
                                 <div>
                                     <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>

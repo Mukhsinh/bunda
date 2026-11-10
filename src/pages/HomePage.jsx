@@ -351,208 +351,104 @@ export default function HomePage() {
     return (
         <div style={{ minHeight: '100vh', background: '#f8fafc', paddingBottom: '30px' }} className="animate-slide-up">
             {/* ══════════════════════════════════════════════════════════
-                1. STYLISH HEADER BACKDROP (Deep Royal Purple Gradient)
+                1. STYLISH HEADER BACKDROP (Foto Cerah RSUD Bendan Murni)
             ══════════════════════════════════════════════════════════ */}
             <div style={{
-                background: 'linear-gradient(170deg, #3b0764 0%, #581c87 30%, #6b21a8 60%, #7e22ce 100%)',
-                padding: '24px 20px 84px',
                 position: 'relative',
+                padding: '28px 20px 96px',
                 overflow: 'hidden',
-                color: 'white'
+                color: 'white',
+                borderBottomLeftRadius: '32px',
+                borderBottomRightRadius: '32px',
+                boxShadow: '0 16px 36px rgba(15, 23, 42, 0.15)'
             }}>
-                {/* Decorative Landmark & Mosque / Hospital Skyline Silhouette */}
+                {/* Background Image Murni RSUD Bendan - Dibuat Lebih Terang, Segar, dan Jernih */}
                 <div style={{
-                    position: 'absolute', bottom: 0, left: 0, right: 0, height: '100%',
-                    opacity: 0.12,
-                    pointerEvents: 'none',
-                    backgroundImage: `radial-gradient(circle at 80% 20%, rgba(255,255,255,0.4) 0%, transparent 40%),
-                                      radial-gradient(circle at 20% 80%, rgba(216,180,254,0.3) 0%, transparent 50%)`
-                }}></div>
+                    position: 'absolute', inset: 0,
+                    backgroundImage: `url('/Gambar%20rsud%20bendan.jpg')`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    filter: 'brightness(1.18) contrast(1.08)'
+                }} />
 
-                {/* Subtle City / Building Skyline vector overlay */}
-                <svg viewBox="0 0 500 150" preserveAspectRatio="none" style={{
-                    position: 'absolute', bottom: 0, left: 0, width: '100%', height: '80px',
-                    opacity: 0.15, pointerEvents: 'none'
-                }}>
-                    <path fill="#ffffff" d="M0,150 L0,90 L25,90 L25,70 L35,70 L35,50 L45,30 L55,50 L55,70 L65,70 L65,90 L90,90 L90,110 L120,110 L120,60 L140,60 L140,80 L160,80 L160,110 L200,110 L200,45 L220,45 L220,70 L240,70 L240,110 L270,110 L270,85 L300,85 L300,110 L340,110 L340,55 L360,55 L360,75 L380,75 L380,110 L410,110 L410,70 L430,70 L430,95 L460,95 L460,110 L500,110 L500,150 Z"></path>
-                </svg>
+                {/* Minimalist Soft Vignette di bagian atas & bawah agar teks tetap terbaca tajam */}
+                <div style={{
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.05) 40%, rgba(15, 23, 42, 0.45) 100%)'
+                }} />
 
-                {/* Top Status Bar: Greeting + Action Pills (Cart/Emergency, Mail/Chat, Flag) */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 10 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        {logoUrl ? (
-                            <img
-                                src={logoUrl}
-                                alt="Logo Sahabat Bunda"
-                                style={{
-                                    width: '46px',
-                                    height: '46px',
-                                    objectFit: 'contain',
-                                    borderRadius: '12px',
-                                    background: 'rgba(255, 255, 255, 0.95)',
-                                    padding: '3px',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)'
-                                }}
-                            />
-                        ) : (
-                            <div style={{
-                                width: '42px',
-                                height: '42px',
-                                borderRadius: '12px',
-                                background: 'linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1))',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontWeight: 900,
-                                fontSize: '1rem',
-                                border: '1px solid rgba(255,255,255,0.3)',
-                                backdropFilter: 'blur(6px)'
-                            }}>
-                                SB
-                            </div>
-                        )}
-                        <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: '#e9d5ff', fontWeight: 800 }}>
-                                    RSUD BENDAN
-                                </span>
-                                <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#a855f7' }}></span>
-                                <span style={{ fontSize: '0.72rem', color: '#c084fc', fontWeight: 600 }}>Pekalongan</span>
-                            </div>
-                            <h2 style={{
-                                margin: '2px 0 0', fontSize: '1.25rem', fontWeight: 800, color: 'white',
-                                fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.3px'
-                            }}>
-                                {getGreeting()}, Bunda
-                            </h2>
-                        </div>
-                    </div>
-
-                    {/* Right Action Icons (like Access by KAI: cart, mail, flag pill) */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {/* Emergency Hotline Button */}
-                        <div
-                            onClick={() => {
-                                const message = encodeURIComponent('Halo BEMBI RSUD Bendan, saya membutuhkan layanan ambulance darurat:');
-                                window.open(`https://wa.me/628152321122?text=${message}`, '_blank');
-                            }}
-                            title="Emergency Call Center"
-                            style={{
-                                width: '38px', height: '38px', borderRadius: '50%',
-                                background: 'rgba(255, 255, 255, 0.18)',
-                                backdropFilter: 'blur(8px)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer', border: '1px solid rgba(255, 255, 255, 0.25)',
-                                transition: 'all 0.2s ease'
-                            }}
-                        >
-                            <Ambulance size={18} color="white" />
-                        </div>
-
-                        {/* WhatsApp Admin Button */}
-                        <div
-                            onClick={() => window.open('https://wa.me/6282324408910', '_blank')}
-                            title="Chat WhatsApp Petugas"
-                            style={{
-                                width: '38px', height: '38px', borderRadius: '50%',
-                                background: 'rgba(255, 255, 255, 0.18)',
-                                backdropFilter: 'blur(8px)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer', border: '1px solid rgba(255, 255, 255, 0.25)',
-                                transition: 'all 0.2s ease'
-                            }}
-                        >
-                            <MessageSquare size={18} color="white" />
-                        </div>
-
-                        {/* Language / Region Pill Badge */}
-                        <div style={{
-                            background: 'rgba(255, 255, 255, 0.18)',
-                            backdropFilter: 'blur(8px)',
-                            padding: '6px 12px',
-                            borderRadius: '20px',
-                            display: 'flex', alignItems: 'center', gap: '6px',
-                            border: '1px solid rgba(255, 255, 255, 0.25)',
-                            fontSize: '0.75rem', fontWeight: 700, color: 'white',
-                            cursor: 'pointer'
+                {/* Top Status Bar: Bersih & Clean (Tanpa icon BEMBI, chat, ID) */}
+                <div style={{ position: 'relative', zIndex: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{
+                            fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1.4px',
+                            color: '#ffffff', fontWeight: 900, textShadow: '0 2px 6px rgba(0,0,0,0.9)'
                         }}>
-                            <span>🇮🇩</span>
-                            <span>ID</span>
-                            <ChevronDown size={12} />
-                        </div>
+                            RSUD BENDAN
+                        </span>
+                        <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#38bdf8' }}></span>
+                        <span style={{ fontSize: '0.78rem', color: '#f1f5f9', fontWeight: 700, textShadow: '0 2px 6px rgba(0,0,0,0.9)' }}>Kota Pekalongan</span>
                     </div>
+                    <h2 style={{
+                        margin: '4px 0 0', fontSize: '1.45rem', fontWeight: 900, color: '#ffffff',
+                        fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.3px',
+                        textShadow: '0 2px 8px rgba(0,0,0,0.9)'
+                    }}>
+                        {getGreeting()}, Bunda
+                    </h2>
                 </div>
             </div>
 
             {/* ══════════════════════════════════════════════════════════
-                2. FLOATING "HUB" CARD (Equivalent to KAIPay card)
+                2. FLOATING "HUB" CARD (Logo Sahabat Bunda Lebih Jelas di Depan)
             ══════════════════════════════════════════════════════════ */}
-            <div style={{ padding: '0 16px', marginTop: '-58px', position: 'relative', zIndex: 20 }}>
+            <div style={{ padding: '0 16px', marginTop: '-54px', position: 'relative', zIndex: 20 }}>
                 <div style={{
                     background: '#ffffff',
-                    borderRadius: '24px',
-                    padding: '18px 20px',
-                    boxShadow: '0 14px 35px -8px rgba(76, 29, 149, 0.18), 0 4px 12px rgba(0,0,0,0.04)',
-                    border: '1px solid rgba(243, 232, 255, 0.8)'
+                    borderRadius: '26px',
+                    padding: '20px 22px',
+                    boxShadow: '0 18px 45px -10px rgba(15, 23, 42, 0.12), 0 4px 14px rgba(0,0,0,0.04)',
+                    border: '1px solid #e2e8f0',
+                    position: 'relative',
+                    overflow: 'hidden'
                 }}>
-                    {/* Top Row: Brand & Status on Left | Quick Action Badges on Right */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '14px' }}>
-                        {/* Brand info */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div style={{
-                                    width: '28px', height: '28px', borderRadius: '8px',
-                                    background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    color: 'white', fontWeight: 900, fontSize: '0.75rem'
-                                }}>
-                                    SB
-                                </div>
-                                <span style={{ fontWeight: 900, fontSize: '1rem', color: '#1e1b4b', fontFamily: "'Outfit', sans-serif" }}>
-                                    SahabatBunda
-                                </span>
-                            </div>
-
-                            <button
-                                onClick={() => navigate('/lacak')}
+                    {/* Top Row: Logo Sahabat Bunda di Depan & Jelas | Quick Action Badges on Right */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px' }}>
+                        {/* Kiri: Logo Sahabat Bunda Lebih Besar & Terlihat Jelas di Depan */}
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <img
+                                src="/logo%20sahabat%20bunda.png"
+                                alt="Logo Sahabat Bunda"
                                 style={{
-                                    border: '1.5px solid #4f46e5',
-                                    background: '#eff6ff',
-                                    color: '#4338ca',
-                                    fontSize: '0.72rem',
-                                    fontWeight: 800,
-                                    padding: '5px 12px',
-                                    borderRadius: '16px',
-                                    cursor: 'pointer',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    width: 'fit-content',
-                                    transition: 'all 0.2s'
+                                    height: '68px',
+                                    maxWidth: '175px',
+                                    objectFit: 'contain',
+                                    objectPosition: 'left center',
+                                    display: 'block',
+                                    filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.06))'
                                 }}
-                            >
-                                <Search size={12} strokeWidth={2.5} /> Lacak Layanan
-                            </button>
+                            />
                         </div>
 
-                        {/* Quick action buttons (Scan/Lacak, Top Up/BEMBI, Riwayat/Sinergi) */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        {/* Kanan: Quick Action Buttons (Icon Lebih Besar, Rapi & Proporsional) */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                             {/* Action 1: Lacak */}
                             <div
                                 onClick={() => navigate('/lacak')}
-                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
                             >
                                 <div style={{
-                                    width: '42px', height: '42px', borderRadius: '14px',
-                                    background: '#f5f3ff', border: '1px solid #ede9fe',
+                                    width: '52px', height: '52px', borderRadius: '16px',
+                                    background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                                    border: '1.5px solid #86efac',
+                                    boxShadow: '0 4px 12px rgba(22, 163, 74, 0.16)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    color: '#6d28d9', transition: 'all 0.2s ease'
+                                    color: '#16a34a', transition: 'all 0.2s ease'
                                 }}>
-                                    <QrCode size={20} strokeWidth={2.2} />
+                                    <QrCode size={24} strokeWidth={2.4} />
                                 </div>
-                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569' }}>Lacak</span>
+                                <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#334155' }}>Lacak</span>
                             </div>
 
                             {/* Action 2: Darurat BEMBI */}
@@ -561,33 +457,37 @@ export default function HomePage() {
                                     const message = encodeURIComponent('Halo BEMBI RSUD Bendan, saya membutuhkan layanan ambulance darurat:');
                                     window.open(`https://wa.me/628152321122?text=${message}`, '_blank');
                                 }}
-                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
                             >
                                 <div style={{
-                                    width: '42px', height: '42px', borderRadius: '14px',
-                                    background: '#fef2f2', border: '1px solid #fee2e2',
+                                    width: '52px', height: '52px', borderRadius: '16px',
+                                    background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                                    border: '1.5px solid #fca5a5',
+                                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.16)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     color: '#ef4444', transition: 'all 0.2s ease'
                                 }}>
-                                    <Ambulance size={20} strokeWidth={2.2} />
+                                    <Ambulance size={24} strokeWidth={2.4} />
                                 </div>
-                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569' }}>BEMBI</span>
+                                <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#334155' }}>BEMBI</span>
                             </div>
 
                             {/* Action 3: Riwayat / Sinergi */}
                             <div
                                 onClick={() => navigate('/sinergi')}
-                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
                             >
                                 <div style={{
-                                    width: '42px', height: '42px', borderRadius: '14px',
-                                    background: '#ecfdf5', border: '1px solid #d1fae5',
+                                    width: '52px', height: '52px', borderRadius: '16px',
+                                    background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                                    border: '1.5px solid #93c5fd',
+                                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.16)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    color: '#059669', transition: 'all 0.2s ease'
+                                    color: '#2563eb', transition: 'all 0.2s ease'
                                 }}>
-                                    <Calendar size={20} strokeWidth={2.2} />
+                                    <Calendar size={24} strokeWidth={2.4} />
                                 </div>
-                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569' }}>Jadwal</span>
+                                <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#334155' }}>Jadwal</span>
                             </div>
                         </div>
                     </div>
