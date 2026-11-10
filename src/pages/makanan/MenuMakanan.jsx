@@ -6,6 +6,7 @@ import {
     AlertCircle, Sparkles, Clock, Utensils, Info, Share2, ChevronRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { supabase } from '../../lib/supabase';
 
 // Titik Koordinat Resmi RSUD Bendan Kota Pekalongan
 const RSUD_BENDAN_COORDS = {
@@ -159,6 +160,7 @@ export default function MenuMakanan() {
     const [cart, setCart] = useState({}); // { [id]: quantity }
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
     const [orderSuccess, setOrderSuccess] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Form Checkout
     const [orderForm, setOrderForm] = useState({
@@ -245,33 +247,78 @@ export default function MenuMakanan() {
     }, 0);
 
     // Submit Pesanan
-    const handleProcessOrder = (e) => {
+    const handleProcessOrder = async (e) => {
         e.preventDefault();
         if (!orderForm.customerName || !orderForm.phoneNumber) {
             toast.error('Harap isi nama dan nomor WhatsApp Anda!');
             return;
         }
 
+        setIsSubmitting(true);
         const orderCode = 'GZ-' + Math.floor(10000 + Math.random() * 90000);
+        const orderItems = cartItemIds.map(id => {
+            const item = MENU_ITEMS.find(m => m.id === parseInt(id));
+            return {
+                id: item.id,
+                name: item.name,
+                qty: cart[id],
+                price: item.price
+            };
+        });
+
+        // Status bayar: QRIS & VA disimulasikan langsung lunas, COD belum_lunas
+        const paymentStatus = (orderForm.paymentMethod === 'qris' || orderForm.paymentMethod === 'va') ? 'lunas' : 'belum_lunas';
+
+        const orderData = {
+            order_code: orderCode,
+            customer_name: orderForm.customerName,
+            phone_number: orderForm.phoneNumber,
+            room_name: orderForm.roomName,
+            notes: orderForm.notes || '',
+            payment_method: orderForm.paymentMethod,
+            payment_status: paymentStatus,
+            order_status: 'pending',
+            items: orderItems,
+            total_price: totalPrice
+        };
+
+        try {
+            const { error } = await supabase.from('food_orders').insert([orderData]);
+            if (error) {
+                console.error('Supabase error inserting food order:', error);
+            }
+        } catch (err) {
+            console.error('Failed to save order to Supabase:', err);
+        }
+
+        // Simpan juga ke localStorage agar sinkron lokal & backup
+        try {
+            const existing = JSON.parse(localStorage.getItem('sahabatbunda_food_orders') || '[]');
+            existing.unshift({
+                ...orderData,
+                id: 'local_' + Date.now(),
+                created_at: new Date().toISOString()
+            });
+            localStorage.setItem('sahabatbunda_food_orders', JSON.stringify(existing));
+            window.dispatchEvent(new CustomEvent('food_order_created', { detail: orderData }));
+        } catch (e) {
+            console.error('Failed saving to localStorage:', e);
+        }
+
         const orderSummary = {
+            ...orderData,
             orderCode,
             customerName: orderForm.customerName,
             phoneNumber: orderForm.phoneNumber,
             roomName: orderForm.roomName,
-            notes: orderForm.notes,
             paymentMethod: orderForm.paymentMethod,
+            paymentStatus: paymentStatus,
             totalPrice,
-            items: cartItemIds.map(id => {
-                const item = MENU_ITEMS.find(m => m.id === parseInt(id));
-                return {
-                    name: item.name,
-                    qty: cart[id],
-                    price: item.price
-                };
-            }),
+            items: orderItems,
             orderedAt: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
         };
 
+        setIsSubmitting(false);
         setOrderSuccess(orderSummary);
         setShowCheckoutModal(false);
         setCart({});
@@ -331,7 +378,7 @@ export default function MenuMakanan() {
                 </div>
             </div>
 
-            {/* ── GEOFENCING STATUS BADGE ── */}
+            {/* ── INFO STATUS PENGANTARAN ── */}
             <div style={{ padding: '0 16px', marginTop: '-20px', position: 'relative', zIndex: 20, marginBottom: '16px' }}>
                 <div style={{
                     background: 'white', borderRadius: '18px', padding: '14px 18px',
@@ -341,8 +388,8 @@ export default function MenuMakanan() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{
                             width: '36px', height: '36px', borderRadius: '10px',
-                            background: geoStatus === 'inside' ? '#dcfce7' : '#fee2e2',
-                            color: geoStatus === 'inside' ? '#16a34a' : '#dc2626',
+                            background: '#dcfce7',
+                            color: '#16a34a',
                             display: 'flex', alignItems: 'center', justifyContent: 'center'
                         }}>
                             <MapPin size={20} />
@@ -350,56 +397,26 @@ export default function MenuMakanan() {
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <span style={{
-                                    fontSize: '0.75rem', fontWeight: 800,
-                                    color: geoStatus === 'inside' ? '#166534' : '#991b1b'
+                                    fontSize: '0.78rem', fontWeight: 800,
+                                    color: '#166534'
                                 }}>
-                                    {geoStatus === 'inside'
-                                        ? '🟢 Terverifikasi di Area RSUD Bendan'
-                                        : geoStatus === 'checking'
-                                            ? '⏳ Mendeteksi Koordinat Anda...'
-                                            : '🔴 Di Luar Jangkauan RSUD Bendan'}
+                                    🟢 Layanan Dapur Gizi Aktif
                                 </span>
                             </div>
-                            <p style={{ margin: 0, fontSize: '0.68rem', color: '#64748b' }}>
-                                {geoStatus === 'inside'
-                                    ? `Layanan kamar aktif (Jarak: ${userDistance || 0}m dari pusat RSUD)`
-                                    : `Pemesanan khusus pasien & penunggu di RSUD Bendan (Jarak Anda: ${userDistance ? Math.round(userDistance) + 'm' : 'di luar area'})`}
+                            <p style={{ margin: 0, fontSize: '0.7rem', color: '#64748b' }}>
+                                Siap diantar langsung ke seluruh kamar perawatan & nifas RSUD Bendan
                             </p>
                         </div>
                     </div>
 
-                    {/* Simulation Switch for Demo/Developer */}
-                    <button
-                        onClick={() => {
-                            setDemoSimulation(!demoSimulation);
-                            toast.success(!demoSimulation ? 'Mode Simulasi Area RSUD Bendan Diaktifkan!' : 'Kembali ke GPS perangkat.');
-                        }}
-                        style={{
-                            padding: '6px 12px', borderRadius: '12px', border: '1px solid #fed7aa',
-                            background: demoSimulation ? '#ea580c' : '#fff7ed',
-                            color: demoSimulation ? 'white' : '#c2410c',
-                            fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer'
-                        }}
-                    >
-                        {demoSimulation ? 'Matikan Simulasi' : '⚡ Simulasi di RSUD'}
-                    </button>
-                </div>
-            </div>
-
-            {/* Peringatan jika di luar area */}
-            {geoStatus === 'outside' && (
-                <div style={{ padding: '0 16px', marginBottom: '16px' }}>
                     <div style={{
-                        background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '16px',
-                        padding: '12px 16px', display: 'flex', alignItems: 'flex-start', gap: '10px'
+                        padding: '4px 10px', borderRadius: '10px', background: '#fff7ed',
+                        border: '1px solid #fed7aa', color: '#c2410c', fontSize: '0.68rem', fontWeight: 800
                     }}>
-                        <AlertCircle size={20} color="#dc2626" style={{ flexShrink: 0, marginTop: '2px' }} />
-                        <div style={{ fontSize: '0.75rem', color: '#991b1b', lineHeight: 1.45 }}>
-                            <strong>Informasi Geofencing:</strong> Pemesanan menu makanan hanya diproses saat berada di wilayah RSUD Bendan Pekalongan untuk memastikan kesegaran hidangan yang diantar ke kamar. Anda dapat menekan tombol <strong>"⚡ Simulasi di RSUD"</strong> di atas untuk mencoba fitur ini.
-                        </div>
+                        Pengantaran Cepat 15-25 Menit
                     </div>
                 </div>
-            )}
+            </div>
 
             {/* ── KATEGORI MENU (GoFood Pill Style) ── */}
             <div style={{
@@ -479,13 +496,12 @@ export default function MenuMakanan() {
                                     {qtyInCart === 0 ? (
                                         <button
                                             onClick={() => addToCart(item.id)}
-                                            disabled={geoStatus === 'outside'}
                                             style={{
                                                 padding: '6px 16px', borderRadius: '14px',
-                                                background: geoStatus === 'outside' ? '#cbd5e1' : '#ea580c',
+                                                background: '#ea580c',
                                                 color: 'white', border: 'none', fontWeight: 800,
-                                                fontSize: '0.78rem', cursor: geoStatus === 'outside' ? 'not-allowed' : 'pointer',
-                                                boxShadow: geoStatus === 'outside' ? 'none' : '0 3px 10px rgba(234, 88, 12, 0.3)'
+                                                fontSize: '0.78rem', cursor: 'pointer',
+                                                boxShadow: '0 3px 10px rgba(234, 88, 12, 0.3)'
                                             }}
                                         >
                                             + Tambah
@@ -762,8 +778,12 @@ export default function MenuMakanan() {
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                 <span style={{ color: '#64748b' }}>Metode Bayar:</span>
-                                <span style={{ fontWeight: 800, color: '#16a34a', textTransform: 'uppercase' }}>
-                                    {orderSuccess.paymentMethod} (Lunas)
+                                <span style={{
+                                    fontWeight: 800,
+                                    color: orderSuccess.paymentStatus === 'lunas' ? '#16a34a' : '#ea580c',
+                                    textTransform: 'uppercase'
+                                }}>
+                                    {orderSuccess.paymentMethod} ({orderSuccess.paymentStatus === 'lunas' ? 'LUNAS' : 'BAYAR DI TEMPAT'})
                                 </span>
                             </div>
                             <div style={{ borderTop: '1px dashed #cbd5e1', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', fontWeight: 900, color: '#0f172a' }}>

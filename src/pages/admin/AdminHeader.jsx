@@ -24,6 +24,7 @@ export default function AdminHeader({
         ramah: { title: 'Manajemen Layanan RAMAH', desc: 'Pengurusan Akta Kelahiran, KIA, dan Kartu Keluarga Baru' },
         santun: { title: 'Manajemen Layanan SANTUN', desc: 'Pemulangan Pasien Nifas & Penugasan Armada Transportasi' },
         sinergi: { title: 'Manajemen Konsultasi SINERGI', desc: 'Jadwal Telekonsultasi Video Call Tatap Muka & Ahli Gizi' },
+        gizi: { title: 'Admin Gizi — Pesanan Menu Makanan', desc: 'Manajemen Pesanan Makanan Pasien, Ruang Perawatan, dan Pembayaran' },
         arsip: { title: 'Arsip Berkas Digital', desc: 'Database Historis Pengajuan dan Berkas Pasien' },
         spj: { title: 'Rekapitulasi Laporan SPJ', desc: 'Pertanggungjawaban Perjalanan Dinas & Verifikasi Biaya' },
         dokumentasi: { title: 'Dokumentasi Sistem & Master Plan', desc: 'Buku Panduan Teknis, Konsep Flowchart, dan Analisis Manfaat' },

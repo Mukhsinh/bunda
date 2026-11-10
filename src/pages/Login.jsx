@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
+import { useAppLogo } from '../hooks/useAppLogo';
 import { Hospital, Lock, Mail, Home } from 'lucide-react';
 
 export default function Login() {
@@ -8,6 +9,7 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
     const { signIn, loading, user } = useAuthStore();
+    const logoUrl = useAppLogo();
     const navigate = useNavigate();
 
     // If already signed in, redirect to admin dashboard
@@ -31,19 +33,33 @@ export default function Login() {
         <div className="page-content animate-slide-up" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 'calc(100vh - 140px)' }}>
             <div className="card" style={{ padding: '32px 24px', textAlign: 'center' }}>
                 {/* Logo */}
-                <div style={{
-                    width: '64px',
-                    height: '64px',
-                    background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-                    borderRadius: 'var(--radius-xl)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 20px',
-                    boxShadow: 'var(--shadow-green)'
-                }}>
-                    <Hospital size={32} color="white" />
-                </div>
+                {logoUrl ? (
+                    <img
+                        src={logoUrl}
+                        alt="Logo Sahabat Bunda"
+                        style={{
+                            maxWidth: '120px',
+                            maxHeight: '70px',
+                            objectFit: 'contain',
+                            margin: '0 auto 16px',
+                            display: 'block'
+                        }}
+                    />
+                ) : (
+                    <div style={{
+                        width: '64px',
+                        height: '64px',
+                        background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+                        borderRadius: 'var(--radius-xl)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 20px',
+                        boxShadow: 'var(--shadow-green)'
+                    }}>
+                        <Hospital size={32} color="white" />
+                    </div>
+                )}
 
                 <h2 style={{ fontSize: '1.4rem', marginBottom: '4px' }}>Admin Login</h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '24px' }}>

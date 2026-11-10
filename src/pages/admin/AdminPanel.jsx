@@ -13,6 +13,7 @@ import AdminHeader from './AdminHeader';
 import DashboardTab from './tabs/DashboardTab';
 import SettingsTab from './tabs/SettingsTab';
 import DocumentationTab from './tabs/DocumentationTab';
+import AdminGiziTab from './tabs/AdminGiziTab';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement,
@@ -411,6 +412,7 @@ const styles = `
 .toast-item:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
 .toast-item.ramah { border-left-color: #2563eb; }
 .toast-item.santun { border-left-color: #16a34a; }
+.toast-item.gizi { border-left-color: #ea580c; }
 .toast-title { font-weight: 700; font-size: 0.9rem; color: #1e293b; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
 .toast-msg { font-size: 0.8rem; color: #64748b; }
 .toast-close { position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: #cbd5e1; padding: 0; display: flex; }
@@ -443,7 +445,7 @@ export default function AdminPanel() {
     const { user, signOut } = useAuthStore();
     const navigate = useNavigate();
     const { tab } = useParams();
-    const validTabs = ['dashboard', 'ramah', 'santun', 'sinergi', 'arsip', 'spj', 'dokumentasi', 'pengaturan'];
+    const validTabs = ['dashboard', 'ramah', 'santun', 'sinergi', 'gizi', 'arsip', 'spj', 'dokumentasi', 'pengaturan'];
     const initialTab = tab && validTabs.includes(tab) ? tab : 'dashboard';
     const [activeTab, setActiveTab] = useState(initialTab);
 
@@ -456,6 +458,7 @@ export default function AdminPanel() {
     }, [tab]);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+    const [foodOrders, setFoodOrders] = useState([]);
     const [ramahDocs, setRamahDocs] = useState([]);
     const [santunReqs, setSantunReqs] = useState([]);
     const [sinergiCons, setSinergiCons] = useState([]);
@@ -578,19 +581,49 @@ export default function AdminPanel() {
             })
             .subscribe();
 
+        const foodSub = supabase.channel('public:food_orders')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'food_orders' }, payload => {
+                setNotifications(prev => [...prev, {
+                    id: 'f_' + payload.new.id,
+                    type: 'gizi',
+                    title: `Pesanan Makanan Baru (${payload.new.room_name})`,
+                    name: payload.new.customer_name,
+                    phone: payload.new.phone_number
+                }]);
+                fetchData();
+            })
+            .subscribe();
+
+        const localFoodHandler = (e) => {
+            if (e?.detail) {
+                setNotifications(prev => [...prev, {
+                    id: 'f_loc_' + Date.now(),
+                    type: 'gizi',
+                    title: `Pesanan Makanan Baru (${e.detail.room_name})`,
+                    name: e.detail.customer_name,
+                    phone: e.detail.phone_number
+                }]);
+                fetchData();
+            }
+        };
+        window.addEventListener('food_order_created', localFoodHandler);
+
         return () => {
             supabase.removeChannel(ramahSub);
             supabase.removeChannel(santunSub);
+            supabase.removeChannel(foodSub);
+            window.removeEventListener('food_order_created', localFoodHandler);
         };
     }, []);
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [ramahRes, santunRes, sinergiRes] = await Promise.all([
+            const [ramahRes, santunRes, sinergiRes, foodRes] = await Promise.all([
                 supabase.from('ramah_documents').select('*').order('created_at', { ascending: false }),
                 supabase.from('santun_requests').select('*').order('created_at', { ascending: false }),
                 supabase.from('sinergi_requests').select('*').order('created_at', { ascending: false }),
+                supabase.from('food_orders').select('*').order('created_at', { ascending: false })
             ]);
             const sinergiSessionsRes = await supabase.from('sinergi_sessions').select('*').order('created_at', { ascending: false });
             const sinergiNutRes = await supabase.from('sinergi_nutritionists').select('*').order('name', { ascending: true });
@@ -600,8 +633,93 @@ export default function AdminPanel() {
             setSinergiCons(sinergiRes.data || []);
             setSinergiSessions(sinergiSessionsRes.data || []);
             setSinergiNutritionists(sinergiNutRes.data || []);
+
+            // Ambil dari Supabase, jika kosong padukan dengan localStorage
+            let orders = foodRes.data || [];
+            try {
+                const local = JSON.parse(localStorage.getItem('sahabatbunda_food_orders') || '[]');
+                if (local.length > 0) {
+                    const existingCodes = new Set(orders.map(o => o.order_code));
+                    const uniqueLocal = local.filter(l => !existingCodes.has(l.order_code));
+                    orders = [...orders, ...uniqueLocal].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            setFoodOrders(orders);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
+    };
+
+    const updateFoodOrderStatus = async (id, status, order) => {
+        const statusLabels = {
+            diproses: 'Sedang Dimasak',
+            diantar: 'Sedang Diantar ke Kamar',
+            diterima: 'Sudah Diterima Pasien'
+        };
+        const label = statusLabels[status] || status;
+        if (!window.confirm(`Update status pesanan ${order?.order_code || ''} ke "${label}"?`)) return;
+
+        try {
+            // Update Supabase
+            if (typeof id === 'string' && !id.startsWith('local_')) {
+                const { error } = await supabase.from('food_orders').update({
+                    order_status: status,
+                    updated_at: new Date().toISOString()
+                }).eq('id', id);
+                if (error) console.error(error);
+            }
+
+            // Update localStorage
+            try {
+                const local = JSON.parse(localStorage.getItem('sahabatbunda_food_orders') || '[]');
+                const updated = local.map(o => o.id === id || o.order_code === order?.order_code ? { ...o, order_status: status } : o);
+                localStorage.setItem('sahabatbunda_food_orders', JSON.stringify(updated));
+            } catch (e) {
+                console.error(e);
+            }
+
+            fetchData();
+
+            // WhatsApp Notification to Patient
+            if (order?.phone_number) {
+                let msg = '';
+                if (status === 'diproses') {
+                    msg = `Halo ${order.customer_name}, pesanan makanan Anda (${order.order_code}) sedang disiapkan oleh Dapur Gizi RSUD Bendan.`;
+                } else if (status === 'diantar') {
+                    msg = `Halo ${order.customer_name}, pesanan makanan Anda (${order.order_code}) saat ini SEDANG DIANTAR oleh petugas gizi menuju kamar: *${order.room_name}*. Mohon bersiap ya Bunda/Bpk.`;
+                } else if (status === 'diterima') {
+                    msg = `Halo ${order.customer_name}, pesanan makanan Anda (${order.order_code}) telah BERHASIL DITERIMA di ${order.room_name}. Selamat menikmati hidangan bergizi RSUD Bendan! Jika berkenan, silakan hubungi kami kembali jika membutuhkan layanan lainnya.`;
+                }
+                if (msg) openWhatsApp(order.phone_number, msg);
+            }
+        } catch (e) {
+            alert('Gagal update status pesanan: ' + e.message);
+        }
+    };
+
+    const updateFoodPaymentStatus = async (id, paymentStatus) => {
+        try {
+            if (typeof id === 'string' && !id.startsWith('local_')) {
+                const { error } = await supabase.from('food_orders').update({
+                    payment_status: paymentStatus,
+                    updated_at: new Date().toISOString()
+                }).eq('id', id);
+                if (error) console.error(error);
+            }
+
+            try {
+                const local = JSON.parse(localStorage.getItem('sahabatbunda_food_orders') || '[]');
+                const updated = local.map(o => o.id === id ? { ...o, payment_status: paymentStatus } : o);
+                localStorage.setItem('sahabatbunda_food_orders', JSON.stringify(updated));
+            } catch (e) {
+                console.error(e);
+            }
+
+            fetchData();
+        } catch (e) {
+            alert('Gagal update status pembayaran: ' + e.message);
+        }
     };
 
     const updateRamahStatus = async (id, s, doc) => {
@@ -1038,7 +1156,8 @@ export default function AdminPanel() {
                 onSignOut={handleSignOut}
                 pendingCounts={{
                     ramah: ramahDocs.filter(d => d.status === 'pending').length,
-                    santun: santunReqs.filter(r => r.status === 'requested').length
+                    santun: santunReqs.filter(r => r.status === 'requested').length,
+                    gizi: foodOrders.filter(o => o.order_status === 'pending' || o.order_status === 'diproses').length
                 }}
                 collapsed={sidebarCollapsed}
                 setCollapsed={setSidebarCollapsed}
@@ -1818,6 +1937,17 @@ export default function AdminPanel() {
                         </div>
                     </div>)}
 
+                    {/* ═══════ ADMIN GIZI & PESANAN MAKANAN ═══════ */}
+                    {activeTab === 'gizi' && (
+                        <AdminGiziTab
+                            orders={foodOrders}
+                            onUpdateStatus={updateFoodOrderStatus}
+                            onUpdatePayment={updateFoodPaymentStatus}
+                            onRefresh={fetchData}
+                            loading={loading}
+                        />
+                    )}
+
                     {/* ═══════ DOKUMENTASI SISTEM ═══════ */}
                     {activeTab === 'dokumentasi' && (
                         <DocumentationTab />
@@ -1920,7 +2050,9 @@ export default function AdminPanel() {
                     <div className="toast-container">
                         {notifications.map(n => (
                             <div key={n.id} className={`toast-item ${n.type}`} onClick={() => {
-                                const msg = `Halo ${n.name}, kami dari Admin sahabatbunda RSUD Bendan mengonfirmasi bahwa pengajuan layanan ${n.type.toUpperCase()} Anda telah kami terima dan sedang ditindaklanjuti.`;
+                                const msg = n.type === 'gizi'
+                                    ? `Halo ${n.name}, kami dari Instalasi Gizi RSUD Bendan mengonfirmasi bahwa pesanan makanan Anda telah kami terima dan sedang disiapkan.`
+                                    : `Halo ${n.name}, kami dari Admin sahabatbunda RSUD Bendan mengonfirmasi bahwa pengajuan layanan ${n.type.toUpperCase()} Anda telah kami terima dan sedang ditindaklanjuti.`;
                                 openWhatsApp(n.phone, msg);
                                 setNotifications(prev => prev.filter(x => x.id !== n.id));
                             }}>
@@ -1928,8 +2060,10 @@ export default function AdminPanel() {
                                     e.stopPropagation();
                                     setNotifications(prev => prev.filter(x => x.id !== n.id));
                                 }}><X size={16} /></button>
-                                <div className="toast-title"><Bell size={14} color={n.type === 'ramah' ? "#2563eb" : "#16a34a"} /> {n.title}</div>
-                                <div className="toast-msg"><b>{n.name}</b> mengirimkan permohonan baru. Klik untuk menindaklanjuti via WhatsApp.</div>
+                                <div className="toast-title">
+                                    <Bell size={14} color={n.type === 'ramah' ? "#2563eb" : n.type === 'gizi' ? "#ea580c" : "#16a34a"} /> {n.title}
+                                </div>
+                                <div className="toast-msg"><b>{n.name}</b> mengirimkan {n.type === 'gizi' ? 'orderan makanan baru' : 'permohonan baru'}. Klik untuk menindaklanjuti via WhatsApp.</div>
                             </div>
                         ))}
                     </div>

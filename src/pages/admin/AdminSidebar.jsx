@@ -2,9 +2,11 @@ import React from 'react';
 import {
     FileText, Truck, Monitor, Archive, ClipboardList,
     BookOpen, Settings, LogOut, ChevronLeft, ChevronRight,
-    ExternalLink, ShieldCheck, Heart, User, Home, X, LayoutDashboard
+    ExternalLink, ShieldCheck, Heart, User, Home, X, LayoutDashboard,
+    Utensils
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAppLogo } from '../../hooks/useAppLogo';
 
 export default function AdminSidebar({
     activeTab,
@@ -18,6 +20,7 @@ export default function AdminSidebar({
     setMobileOpen
 }) {
     const navigate = useNavigate();
+    const logoUrl = useAppLogo();
     const isNutritionist = userProfile?.role === 'narasumber';
 
     const menuGroups = [
@@ -60,6 +63,14 @@ export default function AdminSidebar({
                     sub: 'Konsultasi Ahli Gizi',
                     icon: Monitor,
                     color: '#16a34a'
+                },
+                {
+                    key: 'gizi',
+                    label: 'Admin Gizi & Menu',
+                    sub: 'Pesanan Makanan Pasien',
+                    icon: Utensils,
+                    badge: pendingCounts.gizi,
+                    color: '#ea580c'
                 }
             ]
         },
@@ -159,15 +170,32 @@ export default function AdminSidebar({
                 }}>
                     {!collapsed && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
-                            <div style={{
-                                width: '38px', height: '38px', borderRadius: '12px',
-                                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                color: 'white', fontWeight: 900, fontSize: '1rem',
-                                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)', flexShrink: 0
-                            }}>
-                                SB
-                            </div>
+                            {logoUrl ? (
+                                <img
+                                    src={logoUrl}
+                                    alt="Logo Sahabat Bunda"
+                                    style={{
+                                        width: '38px',
+                                        height: '38px',
+                                        borderRadius: '12px',
+                                        objectFit: 'contain',
+                                        background: 'white',
+                                        padding: '2px',
+                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                                        flexShrink: 0
+                                    }}
+                                />
+                            ) : (
+                                <div style={{
+                                    width: '38px', height: '38px', borderRadius: '12px',
+                                    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: 'white', fontWeight: 900, fontSize: '1rem',
+                                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)', flexShrink: 0
+                                }}>
+                                    SB
+                                </div>
+                            )}
                             <div style={{ minWidth: 0 }}>
                                 <h3 style={{
                                     margin: 0, fontSize: '0.95rem', fontWeight: 900, color: 'white',
@@ -187,15 +215,31 @@ export default function AdminSidebar({
                     )}
 
                     {collapsed && (
-                        <div style={{
-                            width: '38px', height: '38px', borderRadius: '12px',
-                            background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', fontWeight: 900, fontSize: '1rem',
-                            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)'
-                        }}>
-                            SB
-                        </div>
+                        logoUrl ? (
+                            <img
+                                src={logoUrl}
+                                alt="Logo Sahabat Bunda"
+                                style={{
+                                    width: '38px',
+                                    height: '38px',
+                                    borderRadius: '12px',
+                                    objectFit: 'contain',
+                                    background: 'white',
+                                    padding: '2px',
+                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                                }}
+                            />
+                        ) : (
+                            <div style={{
+                                width: '38px', height: '38px', borderRadius: '12px',
+                                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: 'white', fontWeight: 900, fontSize: '1rem',
+                                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)'
+                            }}>
+                                SB
+                            </div>
+                        )
                     )}
 
                     {/* Desktop Collapse Toggle */}

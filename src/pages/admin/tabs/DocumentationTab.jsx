@@ -43,7 +43,7 @@ export default function DocumentationTab() {
 
             // Ambil pengaturan sistem terkini dari LocalStorage
             let settings = {
-                appName: 'Sahabat Bunda (SAKPORE)',
+                appName: 'Sahabat Bunda',
                 hospitalName: 'RSUD Bendan Kota Pekalongan',
                 address: 'Jl. Sriwijaya No. 2, Kota Pekalongan, Jawa Tengah 51111',
                 footerText: 'SahabatBunda @ 2026. RSUD Bendan Kota Pekalongan. All rights reserved.',
@@ -117,7 +117,7 @@ export default function DocumentationTab() {
                 startY: 33,
                 head: [['DOKUMEN RESMI SPESIFIKASI SISTEM & MASTER PLAN INOVASI DAERAH']],
                 body: [
-                    ['Nama Inovasi: SAKPORE (Sahabat Bunda - Sahabat Pasca Melahirkan Paripurna)'],
+                    ['Nama Inovasi: Sahabat Bunda (Sahabat Pasca Melahirkan Paripurna)'],
                     ['Unit Penyelenggara: ' + settings.hospitalName],
                     ['Klasifikasi / Bentuk: Pelayanan Publik Digital & Non-Digital'],
                     ['Urusan Pemerintahan: Kesehatan & Administrasi Kependudukan'],
@@ -135,7 +135,7 @@ export default function DocumentationTab() {
                 startY: doc.lastAutoTable.finalY + 8,
                 head: [['1. GAMBARAN APLIKASI & SELURUH FITUR MENU']],
                 body: [
-                    ['Sahabat Bunda (SAKPORE) adalah platform inovasi pelayanan kesehatan dan administrasi kependudukan terpadu RSUD Bendan Kota Pekalongan yang mendampingi ibu nifas secara holistik pasca persalinan, mencegah stunting, dan menghapus hambatan birokrasi kependudukan.']
+                    ['Sahabat Bunda adalah platform inovasi pelayanan kesehatan dan administrasi kependudukan terpadu RSUD Bendan Kota Pekalongan yang mendampingi ibu nifas secara holistik pasca persalinan, mencegah stunting, dan menghapus hambatan birokrasi kependudukan.']
                 ],
                 headStyles: { fillColor: [67, 56, 202], textColor: 255, fontStyle: 'bold', fontSize: 10 },
                 styles: { fontSize: 8.5, cellPadding: 3.5 },
@@ -170,7 +170,7 @@ export default function DocumentationTab() {
                 startY: doc.lastAutoTable.finalY + 8,
                 head: [['2. SIAPAKAH PENERIMA MANFAAT INOVASI']],
                 body: [
-                    ['Inovasi SAKPORE menyasar multi-pihak secara inklusif mulai dari masyarakat lapisan bawah hingga tata kelola pemerintahan daerah.']
+                    ['Inovasi Sahabat Bunda menyasar multi-pihak secara inklusif mulai dari masyarakat lapisan bawah hingga tata kelola pemerintahan daerah.']
                 ],
                 headStyles: { fillColor: [13, 148, 136], textColor: 255, fontStyle: 'bold', fontSize: 10 },
                 styles: { fontSize: 8.5, cellPadding: 3.5 },
@@ -200,7 +200,7 @@ export default function DocumentationTab() {
                 startY: doc.lastAutoTable.finalY + 8,
                 head: [['3. LATAR BELAKANG & GAMBARAN KONDISI SAAT INI']],
                 body: [
-                    ['Munculnya inovasi SAKPORE dipicu oleh kesenjangan nyata antara kebutuhan perawatan ibu nifas dengan kendala birokrasi dan keterbatasan transportasi di Kota Pekalongan.']
+                    ['Munculnya inovasi Sahabat Bunda dipicu oleh kesenjangan nyata antara kebutuhan perawatan ibu nifas dengan kendala birokrasi dan keterbatasan transportasi di Kota Pekalongan.']
                 ],
                 headStyles: { fillColor: [225, 29, 72], textColor: 255, fontStyle: 'bold', fontSize: 10 },
                 styles: { fontSize: 8.5, cellPadding: 3.5 },
@@ -210,7 +210,7 @@ export default function DocumentationTab() {
 
             autoTable(doc, {
                 startY: doc.lastAutoTable.finalY + 2,
-                head: [['Aspek Masalah', 'Kondisi Eksisting (Sebelum Inovasi)', 'Solusi Terintegrasi SAKPORE']],
+                head: [['Aspek Masalah', 'Kondisi Eksisting (Sebelum Inovasi)', 'Solusi Terintegrasi Sahabat Bunda']],
                 body: [
                     ['Administrasi Bayi', 'Keluarga harus antre ke Disdukcapil berhari-hari setelah keluar RS, banyak bayi terlambat memiliki NIK.', 'Semua berkas diunggah via form online; Akta Lahir & KK diantar kurir ke rumah 100% gratis.'],
                     ['Transportasi Pulang', 'Pasien nifas pulang naik sepeda motor di tengah cuaca panas/hujan, membahayakan jahitan caesar.', 'Disediakan armada mobil resmi RSUD Bendan ber-AC menjemput dan mengantar sampai depan pintu rumah.'],
@@ -230,7 +230,7 @@ export default function DocumentationTab() {
                 startY: doc.lastAutoTable.finalY + 8,
                 head: [['4. GAMBARAN KONSEP INOVASI & ALUR FLOWCHART']],
                 body: [
-                    ['Arsitektur SAKPORE menggabungkan sistem digital (web app realtime) dengan pelayanan lapangan (armada pengantaran & kurir dokumen).']
+                    ['Arsitektur Sahabat Bunda menggabungkan sistem digital (web app realtime) dengan pelayanan lapangan (armada pengantaran & kurir dokumen).']
                 ],
                 headStyles: { fillColor: [2, 132, 199], textColor: 255, fontStyle: 'bold', fontSize: 10 },
                 styles: { fontSize: 8.5, cellPadding: 3.5 },
@@ -242,7 +242,7 @@ export default function DocumentationTab() {
                 startY: doc.lastAutoTable.finalY + 2,
                 head: [['Tahap', 'Pelaku', 'Deskripsi Alur Tindakan']],
                 body: [
-                    ['1. Pengajuan', 'Pasien / Keluarga', 'Mengakses aplikasi portal SAKPORE tanpa login rumit, memilih menu RAMAH/SANTUN, mengisi data & upload berkas.'],
+                    ['1. Pengajuan', 'Pasien / Keluarga', 'Mengakses aplikasi portal Sahabat Bunda tanpa login rumit, memilih menu RAMAH/SANTUN, mengisi data & upload berkas.'],
                     ['2. Verifikasi', 'Admin RSUD Bendan', 'Memvalidasi kelengkapan berkas kependudukan dan mengecek kelayakan medis untuk jadwal penjemputan armada.'],
                     ['3. Integrasi Disdukcapil', 'Sistem & Disdukcapil', 'Data diteruskan secara otomatis ke Disdukcapil untuk penerbitan Akta Lahir, KIA, dan pembaruan KK baru.'],
                     ['4. Penugasan Driver', 'Admin & Pengemudi', 'Driver menerima disposisi titik penjemputan, menjemput Bunda dan bayi, dan mengantarkan dengan nyaman.'],
@@ -294,7 +294,7 @@ export default function DocumentationTab() {
                 startY: doc.lastAutoTable.finalY + 8,
                 head: [['6. MANFAAT APLIKASI PER MENU & FITUR DALAM FORMAT PROFESIONAL']],
                 body: [
-                    ['Kemanfaatan inovasi SAKPORE terbukti memberikan dampak positif langsung pada efisiensi anggaran warga dan peningkatan tata kelola RSUD Bendan.']
+                    ['Kemanfaatan inovasi Sahabat Bunda terbukti memberikan dampak positif langsung pada efisiensi anggaran warga dan peningkatan tata kelola RSUD Bendan.']
                 ],
                 headStyles: { fillColor: [22, 163, 74], textColor: 255, fontStyle: 'bold', fontSize: 10 },
                 styles: { fontSize: 8.5, cellPadding: 3.5 },
@@ -321,7 +321,7 @@ export default function DocumentationTab() {
             });
 
             // Simpan Dokumen PDF
-            const fileName = `Dokumentasi_Sistem_SAKPORE_${settings.hospitalName.replace(/\s+/g, '_')}_2026.pdf`;
+            const fileName = `Dokumentasi_Sistem_Sahabat_Bunda_${settings.hospitalName.replace(/\s+/g, '_')}_2026.pdf`;
             doc.save(fileName);
 
             toast.dismiss(loadingToast);
@@ -386,7 +386,7 @@ export default function DocumentationTab() {
                 </div>
 
                 <h1 style={{ fontSize: '1.8rem', fontWeight: 900, margin: '14px 0 8px', fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.5px' }}>
-                    Sahabat Bunda (SAKPORE) RSUD Bendan
+                    Sahabat Bunda RSUD Bendan
                 </h1>
                 <p style={{ margin: 0, fontSize: '0.9rem', color: '#e0e7ff', lineHeight: 1.6, maxWidth: '850px' }}>
                     Sistem Terpadu Pelayanan Pasca Persalinan, Administrasi Kependudukan Terintegrasi, Transportasi Pulang Nifas Gratis, Konsultasi Gizi Virtual, dan Edukasi Kesehatan Ibu-Bayi Kota Pekalongan.
@@ -449,7 +449,7 @@ export default function DocumentationTab() {
 
                     <div style={{ fontSize: '0.9rem', lineHeight: 1.7, color: '#334155', marginBottom: '20px' }}>
                         <p>
-                            <strong>Sahabat Bunda (SAKPORE)</strong> adalah inovasi platform pelayanan kesehatan dan administrasi digital terintegrasi yang digagas oleh <strong>RSUD Bendan Kota Pekalongan</strong>. Aplikasi ini dirancang untuk mendampingi ibu bersalin (Bunda) mulai dari kepulangan rawat inap, pengurusan identitas hukum bayi baru lahir tanpa repot, pendampingan nutrisi berkelanjutan, hingga pemantauan imunisasi dan evaluasi tumbuh kembang anak secara mandiri.
+                            <strong>Sahabat Bunda</strong> adalah inovasi platform pelayanan kesehatan dan administrasi digital terintegrasi yang digagas oleh <strong>RSUD Bendan Kota Pekalongan</strong>. Aplikasi ini dirancang untuk mendampingi ibu bersalin (Bunda) mulai dari kepulangan rawat inap, pengurusan identitas hukum bayi baru lahir tanpa repot, pendampingan nutrisi berkelanjutan, hingga pemantauan imunisasi dan evaluasi tumbuh kembang anak secara mandiri.
                         </p>
                     </div>
 

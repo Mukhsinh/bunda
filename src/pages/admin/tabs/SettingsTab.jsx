@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { supabase } from '../../../lib/supabase';
 
 const DEFAULT_SETTINGS = {
-    appName: 'Sahabat Bunda (SAKPORE)',
+    appName: 'Sahabat Bunda',
     hospitalName: 'RSUD Bendan Kota Pekalongan',
     address: 'Jl. Sriwijaya No. 2, Kota Pekalongan, Jawa Tengah 51111',
     hotline: '0815-2321-122',
@@ -134,6 +134,7 @@ export default function SettingsTab({ currentAdminUser }) {
         setSavingSettings(true);
         try {
             localStorage.setItem('sahabatbunda_app_settings', JSON.stringify(settings));
+            window.dispatchEvent(new CustomEvent('sahabatbunda_settings_updated', { detail: settings }));
             setTimeout(() => {
                 setSavingSettings(false);
                 toast.success('Pengaturan aplikasi berhasil disimpan!');
@@ -148,6 +149,7 @@ export default function SettingsTab({ currentAdminUser }) {
     const handleResetSettings = () => {
         if (!window.confirm('Kembalikan seluruh pengaturan ke default pabrik?')) return;
         localStorage.removeItem('sahabatbunda_app_settings');
+        window.dispatchEvent(new CustomEvent('sahabatbunda_settings_updated', { detail: DEFAULT_SETTINGS }));
         setSettings(DEFAULT_SETTINGS);
         setLogoPreview(null);
         setKopPreview(null);

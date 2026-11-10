@@ -11,6 +11,7 @@ import {
 import toast, { Toaster } from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import PrayerTimesWidget from '../components/PrayerTimesWidget';
+import { useAppLogo } from '../hooks/useAppLogo';
 
 /* ════════════════ FAQ SECTION ════════════════ */
 function FAQSection({ inlineMode = false }) {
@@ -233,6 +234,7 @@ function TestimonialSection() {
 /* ════════════════ MAIN PAGE ════════════════ */
 export default function HomePage() {
     const navigate = useNavigate();
+    const logoUrl = useAppLogo();
     const [liveSessions, setLiveSessions] = useState([]);
     const [loadingSessions, setLoadingSessions] = useState(true);
     const [showVideoIdModal, setShowVideoIdModal] = useState(false);
@@ -377,20 +379,55 @@ export default function HomePage() {
 
                 {/* Top Status Bar: Greeting + Action Pills (Cart/Emergency, Mail/Chat, Flag) */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 10 }}>
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: '#e9d5ff', fontWeight: 800 }}>
-                                RSUD BENDAN
-                            </span>
-                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#a855f7' }}></span>
-                            <span style={{ fontSize: '0.72rem', color: '#c084fc', fontWeight: 600 }}>Pekalongan</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {logoUrl ? (
+                            <img
+                                src={logoUrl}
+                                alt="Logo Sahabat Bunda"
+                                style={{
+                                    width: '46px',
+                                    height: '46px',
+                                    objectFit: 'contain',
+                                    borderRadius: '12px',
+                                    background: 'rgba(255, 255, 255, 0.95)',
+                                    padding: '3px',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                                }}
+                            />
+                        ) : (
+                            <div style={{
+                                width: '42px',
+                                height: '42px',
+                                borderRadius: '12px',
+                                background: 'linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1))',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontWeight: 900,
+                                fontSize: '1rem',
+                                border: '1px solid rgba(255,255,255,0.3)',
+                                backdropFilter: 'blur(6px)'
+                            }}>
+                                SB
+                            </div>
+                        )}
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: '#e9d5ff', fontWeight: 800 }}>
+                                    RSUD BENDAN
+                                </span>
+                                <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#a855f7' }}></span>
+                                <span style={{ fontSize: '0.72rem', color: '#c084fc', fontWeight: 600 }}>Pekalongan</span>
+                            </div>
+                            <h2 style={{
+                                margin: '2px 0 0', fontSize: '1.25rem', fontWeight: 800, color: 'white',
+                                fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.3px'
+                            }}>
+                                {getGreeting()}, Bunda
+                            </h2>
                         </div>
-                        <h2 style={{
-                            margin: '2px 0 0', fontSize: '1.25rem', fontWeight: 800, color: 'white',
-                            fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.3px'
-                        }}>
-                            {getGreeting()}, Bunda
-                        </h2>
                     </div>
 
                     {/* Right Action Icons (like Access by KAI: cart, mail, flag pill) */}
