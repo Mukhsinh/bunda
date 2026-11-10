@@ -1,13 +1,18 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/useAuthStore';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import {
     LogOut, FileText, Truck, CheckCircle, PackageCheck, Navigation,
     Eye, ClipboardList, Download, Square, Archive, Search, Bell, X, MessageCircle,
     Monitor, Smartphone, Video, Calendar, Clock, MessageSquare,
-    Users, ChevronDown, ChevronUp, Trash2, UserPlus, Edit
+    Users, ChevronDown, ChevronUp, Trash2, UserPlus, Edit, BookOpen, Settings
 } from 'lucide-react';
+import AdminSidebar from './AdminSidebar';
+import AdminHeader from './AdminHeader';
+import DashboardTab from './tabs/DashboardTab';
+import SettingsTab from './tabs/SettingsTab';
+import DocumentationTab from './tabs/DocumentationTab';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement,
@@ -219,24 +224,103 @@ const styles = `
 }
 .admin-tab-modern.active { background: white; color: #0284c7; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
-/* ─── FRESH SCORECARDS ─── */
-.sc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+/* ─── FRESH ENTERPRISE SCORECARDS ─── */
+.sc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+@media (min-width: 1024px) {
+    .sc-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
 .sc-card {
-    position: relative; padding: 18px 16px; border-radius: 18px; overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(8px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    position: relative;
+    padding: 22px 20px;
+    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justifyContent: space-between;
+}
+.sc-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px -4px rgba(15, 23, 42, 0.09), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+    border-color: #cbd5e1;
 }
 .sc-card .sc-emoji {
-    position: absolute; top: -4px; right: -2px; font-size: 2.4rem; opacity: 0.18;
-    animation: scFloat 3.5s ease-in-out infinite; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.15));
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    transition: transform 0.3s ease;
 }
-@keyframes scFloat { 0%,100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-6px) rotate(5deg); } }
-.sc-val { font-size: 2rem; font-weight: 800; font-family: 'Outfit',sans-serif; line-height: 1; margin-bottom: 2px; }
-.sc-lbl { font-size: 0.7rem; font-weight: 500; opacity: 0.8; }
-.sc-blue { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e3a8a; }
-.sc-green { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #14532d; }
-.sc-amber { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #78350f; }
-.sc-rose { background: linear-gradient(135deg, #ffe4e6, #fecdd3); color: #881337; }
+.sc-card:hover .sc-emoji {
+    transform: scale(1.08) rotate(4deg);
+}
+.sc-val {
+    font-size: 2.35rem;
+    font-weight: 900;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.1;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+}
+.sc-lbl {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+/* Color accents for cards: crisp borders and soft icon badges */
+.sc-blue {
+    border-top: 4px solid #3b82f6;
+}
+.sc-blue .sc-emoji {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #2563eb;
+}
+.sc-green {
+    border-top: 4px solid #10b981;
+}
+.sc-green .sc-emoji {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #059669;
+}
+.sc-amber {
+    border-top: 4px solid #f59e0b;
+}
+.sc-amber .sc-emoji {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #d97706;
+}
+.sc-rose {
+    border-top: 4px solid #f43f5e;
+}
+.sc-rose .sc-emoji {
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    color: #e11d48;
+}
 
 /* ─── FILTER ─── */
 .filter-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
@@ -281,7 +365,19 @@ const styles = `
 /* ─── MISC ─── */
 .admin-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
 .admin-card-title { font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 16px; font-family: 'Outfit',sans-serif; }
-.chart-container { background: white; border-radius: 16px; padding: 20px 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+.chart-container {
+    background: white;
+    border-radius: 20px;
+    padding: 24px 22px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.03);
+    transition: all 0.3s ease;
+}
+.chart-container:hover {
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    border-color: #cbd5e1;
+}
 .doc-checklist { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .doc-check-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; transition: all 0.2s; }
 .doc-check-item:hover { background: #f0f9ff; border-color: #bae6fd; }
@@ -346,7 +442,20 @@ const ADMIN_GIZI_WHATSAPP = '085726112001';
 export default function AdminPanel() {
     const { user, signOut } = useAuthStore();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('sinergi');
+    const { tab } = useParams();
+    const validTabs = ['dashboard', 'ramah', 'santun', 'sinergi', 'arsip', 'spj', 'dokumentasi', 'pengaturan'];
+    const initialTab = tab && validTabs.includes(tab) ? tab : 'dashboard';
+    const [activeTab, setActiveTab] = useState(initialTab);
+
+    useEffect(() => {
+        if (tab && validTabs.includes(tab) && tab !== activeTab) {
+            setActiveTab(tab);
+        } else if (!tab && activeTab !== 'dashboard') {
+            setActiveTab('dashboard');
+        }
+    }, [tab]);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [ramahDocs, setRamahDocs] = useState([]);
     const [santunReqs, setSantunReqs] = useState([]);
     const [sinergiCons, setSinergiCons] = useState([]);
@@ -877,24 +986,38 @@ export default function AdminPanel() {
 
     const ChartBlock = ({ chartData, color, label, chartRef }) => (
         <div className="chart-container">
-            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '12px', color: '#1e293b', fontFamily: "'Outfit',sans-serif" }}>
-                📈 Tren {label}
-            </h4>
-            <Line ref={chartRef}
-                data={{
-                    labels: chartData.labels,
-                    datasets: [{
-                        label, data: chartData.data, borderColor: color, backgroundColor: color + '18',
-                        fill: true, tension: 0.4, pointRadius: 5, pointBackgroundColor: color,
-                        pointBorderColor: '#fff', pointBorderWidth: 2, borderWidth: 3,
-                    }]
-                }}
-                options={{
-                    responsive: true, animation: { duration: 600, easing: 'easeOutQuart' },
-                    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', cornerRadius: 8, titleFont: { family: "'Outfit'" }, bodyFont: { family: "'Outfit'" } } },
-                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: '#f1f5f9' } }, x: { ticks: { font: { size: 10 } }, grid: { display: false } } }
-                }}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div>
+                    <h4 style={{ fontSize: '0.98rem', fontWeight: 800, margin: 0, color: '#0f172a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                        📈 Tren Perkembangan {label}
+                    </h4>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#64748b' }}>
+                        Dinamika volume pelayanan per periode waktu aktif
+                    </p>
+                </div>
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '4px 10px', borderRadius: '10px', background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0' }}>
+                    Data Statistik
+                </span>
+            </div>
+            <div style={{ height: '230px' }}>
+                <Line ref={chartRef}
+                    data={{
+                        labels: chartData.labels,
+                        datasets: [{
+                            label, data: chartData.data, borderColor: color, backgroundColor: color + '15',
+                            fill: true, tension: 0.4, pointRadius: 5, pointBackgroundColor: color,
+                            pointBorderColor: '#fff', pointBorderWidth: 2, borderWidth: 3,
+                        }]
+                    }}
+                    options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: 600, easing: 'easeOutQuart' },
+                        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', cornerRadius: 10, padding: 10, titleFont: { family: "'Plus Jakarta Sans'", weight: '700' }, bodyFont: { family: "'Plus Jakarta Sans'" } } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: "'Plus Jakarta Sans'", size: 10 } }, grid: { color: '#f1f5f9' } }, x: { ticks: { font: { family: "'Plus Jakarta Sans'", size: 10, weight: '600' } }, grid: { display: false } } }
+                    }}
+                />
+            </div>
         </div>
     );
 
@@ -903,77 +1026,61 @@ export default function AdminPanel() {
     const santunCols = ['Nama', 'NIK', 'HP', 'Jemput', 'Tujuan', 'Consent', 'Status', 'Tracking', 'Tanggal'];
     const santunKeys = ['patient_name', 'patient_nik', 'phone_number', 'pickup_address', 'dropoff_address', 'consent_signed', 'status', 'tracking_code', 'created_at'];
 
-    const tabs = [
-        { key: 'ramah', label: 'RAMAH', icon: FileText },
-        { key: 'santun', label: 'SANTUN', icon: Truck },
-        { key: 'sinergi', label: 'SINERGI', icon: Monitor },
-        { key: 'arsip', label: 'ARSIP', icon: Archive },
-        { key: 'spj', label: 'SPJ', icon: ClipboardList },
-    ];
-
     return (
-        <div className="animate-slide-up">
+        <div className="admin-web-layout animate-slide-up">
             <style>{styles}</style>
 
-            {/* ── HEADER ── */}
-            <div className="admin-hero-header">
-                <div className="admin-hero-curve">
-                    <svg viewBox="0 0 500 60" fill="none"><path d="M0 60 C125 0,375 0,500 60" fill="rgba(255,255,255,0.04)" /><path d="M0 60 C150 20,350 20,500 60" fill="rgba(255,255,255,0.03)" /></svg>
-                    <div style={{ position: 'absolute', top: '30%', left: '60%', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(255,255,255,0.06)' }}></div>
-                </div>
-                <div className="sahabatbunda-floating">sahabatbunda</div>
-                <div style={{ position: 'relative', zIndex: 2 }}>
-                    <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: '1.6rem', fontWeight: 800, margin: 0, letterSpacing: '-0.5px', lineHeight: 1.2, color: 'white' }}>Dashboard Admin</h2>
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
-                        {/* View Mode Toggle */}
-                        <div style={{ display: 'inline-flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.25)' }}>
-                            <button onClick={() => setViewMode('mobile')} style={{
-                                background: viewMode === 'mobile' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.08)',
-                                border: 'none', color: 'white', cursor: 'pointer',
-                                display: 'inline-flex', alignItems: 'center', gap: '5px',
-                                padding: '6px 12px', fontSize: '0.75rem', fontFamily: "'Outfit',sans-serif",
-                                fontWeight: viewMode === 'mobile' ? 700 : 500,
-                                backdropFilter: 'blur(4px)', transition: 'all 0.2s'
-                            }}>
-                                <Smartphone size={13} /> Mobile
-                            </button>
-                            <button onClick={() => setViewMode('web')} style={{
-                                background: viewMode === 'web' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.08)',
-                                border: 'none', color: 'white', cursor: 'pointer',
-                                display: 'inline-flex', alignItems: 'center', gap: '5px',
-                                padding: '6px 12px', fontSize: '0.75rem', fontFamily: "'Outfit',sans-serif",
-                                fontWeight: viewMode === 'web' ? 700 : 500,
-                                backdropFilter: 'blur(4px)', transition: 'all 0.2s'
-                            }}>
-                                <Monitor size={13} /> Web
-                            </button>
+            {/* ── SIDEBAR NAVIGASI WEB APP ── */}
+            <AdminSidebar
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                userProfile={userProfile}
+                onSignOut={handleSignOut}
+                pendingCounts={{
+                    ramah: ramahDocs.filter(d => d.status === 'pending').length,
+                    santun: santunReqs.filter(r => r.status === 'requested').length
+                }}
+                collapsed={sidebarCollapsed}
+                setCollapsed={setSidebarCollapsed}
+                mobileOpen={mobileSidebarOpen}
+                setMobileOpen={setMobileSidebarOpen}
+            />
+
+            {/* ── MAIN CONTENT VIEWPORT ── */}
+            <div className="admin-main-viewport">
+                <AdminHeader
+                    activeTab={activeTab}
+                    userProfile={userProfile}
+                    onSignOut={handleSignOut}
+                    onToggleMobileSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                    notifications={notifications}
+                    onClearNotifications={() => setNotifications([])}
+                    onRefreshData={fetchData}
+                    viewMode={viewMode}
+                    onToggleViewMode={setViewMode}
+                />
+
+                <div className="page-content" style={{ padding: '24px 28px', maxWidth: '1440px', width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                            <div className="loading-spinner" style={{ margin: '0 auto 12px' }}></div>
+                            <p style={{ color: '#94a3b8', fontSize: '0.85rem', fontWeight: 600 }}>Memuat data dashboard...</p>
                         </div>
-                        <button onClick={handleSignOut} style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '6px 14px', color: 'rgba(255,255,255,0.9)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontFamily: "'Outfit',sans-serif", fontWeight: 600, backdropFilter: 'blur(4px)' }}>
-                            <LogOut size={14} /> Keluar
-                        </button>
-                    </div>
-                </div>
-            </div>
+                    ) : (<>
+                    {/* ═══════ DASHBOARD UTAMA (OVERVIEW) ═══════ */}
+                    {activeTab === 'dashboard' && (
+                        <DashboardTab
+                            ramahDocs={ramahDocs}
+                            santunReqs={santunReqs}
+                            sinergiCons={sinergiCons}
+                            onNavigateTab={(targetTab) => {
+                                setActiveTab(targetTab);
+                                navigate(`/admin/${targetTab}`);
+                            }}
+                            userProfile={userProfile}
+                        />
+                    )}
 
-            <div className="page-content" style={{ padding: '16px 16px 32px' }}>
-                <div className="admin-tabs-modern">
-                    {tabs.filter(t => userProfile?.role !== 'narasumber' || t.key === 'sinergi').map(t => {
-                        const I = t.icon;
-                        let badgeCount = 0;
-                        if (t.key === 'ramah') badgeCount = ramahDocs.filter(d => d.status === 'pending').length;
-                        if (t.key === 'santun') badgeCount = santunReqs.filter(r => r.status === 'requested').length;
-                        return (
-                            <button key={t.key} className={`admin-tab-modern ${activeTab === t.key ? 'active' : ''}`} onClick={() => setActiveTab(t.key)} style={{ position: 'relative' }}>
-                                <I size={14} />{t.label}
-                                {badgeCount > 0 && <span style={{ position: 'absolute', top: '2px', right: '4px', background: '#ef4444', color: 'white', fontSize: '0.65rem', fontWeight: 800, padding: '1px 5px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(239, 68, 68, 0.4)' }}>{badgeCount}</span>}
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {loading ? (
-                    <div style={{ textAlign: 'center', padding: '40px 0' }}><div className="loading-spinner" style={{ margin: '0 auto 12px' }}></div><p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Memuat data...</p></div>
-                ) : (<>
                     {/* ═══════ RAMAH ═══════ */}
                     {activeTab === 'ramah' && (<div>
                         <div className="sc-grid">
@@ -1710,6 +1817,16 @@ export default function AdminPanel() {
                             </div>
                         </div>
                     </div>)}
+
+                    {/* ═══════ DOKUMENTASI SISTEM ═══════ */}
+                    {activeTab === 'dokumentasi' && (
+                        <DocumentationTab />
+                    )}
+
+                    {/* ═══════ PENGATURAN APLIKASI & PENGGUNA ═══════ */}
+                    {activeTab === 'pengaturan' && (
+                        <SettingsTab currentAdminUser={user} />
+                    )}
                     {/* Edit Participant Modal */}
                     {editParticipantModal && (
                         <div className="modal-overlay" onClick={() => setEditParticipantModal(false)}>
@@ -1883,6 +2000,7 @@ export default function AdminPanel() {
                         </div>
                     )}
                 </>)}
+                </div>
             </div>
         </div>
     );

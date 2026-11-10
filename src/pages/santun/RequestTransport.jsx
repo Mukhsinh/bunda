@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { supabase } from '../../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Upload, Camera, FileText, X, CheckCircle, MapPin, User, Contact, Phone, Edit3, Radio, UploadCloud, ClipboardList, Car } from 'lucide-react';
+import { ArrowLeft, Upload, Camera, FileText, X, CheckCircle, MapPin, User, Contact, Phone, Edit3, Radio, UploadCloud, ClipboardList, Car, LocateFixed, Compass } from 'lucide-react';
 
 // Fix Leaflet marker icon issue in React
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -20,21 +20,21 @@ L.Icon.Default.mergeOptions({
 
 // Custom Stylish SVG Markers
 const pickupIcon = L.divIcon({
-    html: `<div style="background: #16a34a; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+    html: `<div style="background: #16a34a; width: 26px; height: 26px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.4);">
             <div style="width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
            </div>`,
     className: 'custom-pin',
-    iconSize: [24, 24],
-    iconAnchor: [12, 24]
+    iconSize: [26, 26],
+    iconAnchor: [13, 26]
 });
 
 const dropoffIcon = L.divIcon({
-    html: `<div style="background: #ef4444; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+    html: `<div style="background: #ef4444; width: 26px; height: 26px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);">
             <div style="width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
            </div>`,
     className: 'custom-pin',
-    iconSize: [24, 24],
-    iconAnchor: [12, 24]
+    iconSize: [26, 26],
+    iconAnchor: [13, 26]
 });
 
 function MapUpdater({ center, zoom }) {
@@ -44,6 +44,15 @@ function MapUpdater({ center, zoom }) {
             map.setView(center, zoom);
         }
     }, [center, zoom, map]);
+    return null;
+}
+
+function MapClickHandler({ onLocationSelect }) {
+    useMapEvents({
+        click(e) {
+            onLocationSelect(e.latlng.lat, e.latlng.lng);
+        }
+    });
     return null;
 }
 
@@ -71,19 +80,74 @@ export default function RequestTransport() {
     const [distance, setDistance] = useState('');
     const [duration, setDuration] = useState('');
 
+    const fetchRouteForCoords = useCallback(async (dropLat, dropLng) => {
+        try {
+            setDuration('Menghitung rute...');
+            const pickupLat = -6.89147;
+            const pickupLng = 109.66152;
+            const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${pickupLng},${pickupLat};${dropLng},${dropLat}?overview=full&geometries=geojson`);
+            const osrmData = await osrmRes.json();
+
+            if (osrmData.code === 'Ok') {
+                const route = osrmData.routes[0];
+                const coords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                setRouteCoordinates(coords);
+
+                const distanceMeters = route.distance;
+                const durationSeconds = route.duration;
+
+                let finalDistKm = distanceMeters / 1000;
+                const finalDurationMins = Math.max(Math.ceil(durationSeconds / 60) + 3, Math.ceil(finalDistKm * 3.5));
+
+                setDistance(finalDistKm.toFixed(1) + ' km');
+                setDuration(finalDurationMins + ' Menit');
+            }
+        } catch (e) {
+            console.error('Routing error:', e);
+            setDistance('Estimasi...');
+            setDuration('Menghitung...');
+        }
+    }, []);
+
+    const handleMapClick = async (lat, lng) => {
+        setDropoffCoords([lat, lng]);
+        setDuration('Mengambil alamat...');
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+                headers: {
+                    'Accept-Language': 'id'
+                }
+            });
+            const data = await res.json();
+            if (data && data.address) {
+                const a = data.address;
+                const pointName = a.road || a.pedestrian || a.suburb || a.neighbourhood || a.village || 'Pekalongan';
+                const area = a.city || a.town || a.county || 'Kota Pekalongan';
+                const formatted = `${pointName}, ${area}`;
+                setFormData(prev => ({ ...prev, dropoff_address: formatted }));
+            } else if (data && data.display_name) {
+                setFormData(prev => ({ ...prev, dropoff_address: data.display_name.split(',').slice(0, 3).join(',') }));
+            }
+        } catch (err) {
+            console.error('Reverse geocode error:', err);
+        }
+        await fetchRouteForCoords(lat, lng);
+    };
+
     useEffect(() => {
         if (!formData.dropoff_address || formData.dropoff_address.length < 5) return;
 
         const timeoutId = setTimeout(async () => {
             try {
                 setDuration('Mencari rute...');
-                let pickupLat = -6.89147; // RSUD Bendan Jl. Sriwijaya No. 2 (Corrected)
+                let pickupLat = -6.89147;
                 let pickupLng = 109.66152;
 
                 const query = encodeURIComponent(formData.dropoff_address + ', Kota Pekalongan, Jawa Tengah');
-                // Use viewbox to bias results towards Pekalongan region (approx bounds)
                 const viewbox = '109.6100,-6.9500,109.7300,-6.8500';
-                const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1&viewbox=${viewbox}&bounded=0`);
+                const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1&viewbox=${viewbox}&bounded=0`, {
+                    headers: { 'Accept-Language': 'id' }
+                });
                 let geoData = await geoRes.json();
 
                 let dropLat, dropLng;
@@ -92,7 +156,6 @@ export default function RequestTransport() {
                     dropLat = parseFloat(geoData[0].lat);
                     dropLng = parseFloat(geoData[0].lon);
                 } else {
-                    // Intelligent Fallback
                     let hash = 0;
                     for (let i = 0; i < formData.dropoff_address.length; i++) {
                         hash = formData.dropoff_address.charCodeAt(i) + ((hash << 5) - hash);
@@ -104,24 +167,7 @@ export default function RequestTransport() {
                 }
 
                 setDropoffCoords([dropLat, dropLng]);
-
-                const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${pickupLng},${pickupLat};${dropLng},${dropLat}?overview=full&geometries=geojson`);
-                const osrmData = await osrmRes.json();
-
-                if (osrmData.code === 'Ok') {
-                    const route = osrmData.routes[0];
-                    const coords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-                    setRouteCoordinates(coords);
-
-                    const distanceMeters = route.distance;
-                    const durationSeconds = route.duration;
-
-                    let finalDistKm = distanceMeters / 1000;
-                    const finalDurationMins = Math.max(Math.ceil(durationSeconds / 60) + 3, Math.ceil(finalDistKm * 3.5));
-
-                    setDistance(finalDistKm.toFixed(1) + ' km');
-                    setDuration(finalDurationMins + ' Menit');
-                }
+                await fetchRouteForCoords(dropLat, dropLng);
             } catch (e) {
                 console.error('Routing error:', e);
                 setDistance('Estimasi...');
@@ -130,7 +176,7 @@ export default function RequestTransport() {
         }, 1200);
 
         return () => clearTimeout(timeoutId);
-    }, [formData.dropoff_address]);
+    }, [formData.dropoff_address, fetchRouteForCoords]);
 
     const handleChange = (e) => {
         const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -430,66 +476,84 @@ export default function RequestTransport() {
                         </div>
                     </div>
 
-                    {/* Map Section */}
-                    {formData.pickup_address && formData.dropoff_address && formData.dropoff_address.length > 3 && (
-                        <div className="animate-slide-up" style={{ marginTop: '-4px', padding: '0 16px 24px' }}>
-                            <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)' }}>
-                                <div style={{ height: '240px', width: '100%', position: 'relative', zIndex: 1 }}>
-                                    <MapContainer
-                                        center={pickupCoords}
-                                        zoom={14}
-                                        style={{ height: '100%', width: '100%' }}
-                                        zoomControl={false}
-                                        attributionControl={false}
-                                    >
-                                        <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
-                                        <Marker position={pickupCoords} icon={pickupIcon}>
-                                            <Popup>Rumah Sakit Umum Daerah Bendan (Jl. Sriwijaya Nomor 2)</Popup>
+                    {/* Interactive OpenStreetMap Section */}
+                    <div className="animate-slide-up" style={{ marginTop: '0', padding: '0 16px 20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <span style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Compass size={14} /> OpenStreetMap API Terintegrasi
+                            </span>
+                            <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                                Ketuk peta untuk tentukan lokasi
+                            </span>
+                        </div>
+
+                        <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)' }}>
+                            <div style={{ height: '240px', width: '100%', position: 'relative', zIndex: 1 }}>
+                                <MapContainer
+                                    center={pickupCoords}
+                                    zoom={14}
+                                    style={{ height: '100%', width: '100%' }}
+                                    zoomControl={true}
+                                    attributionControl={true}
+                                >
+                                    <TileLayer
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        maxZoom={19}
+                                    />
+                                    <Marker position={pickupCoords} icon={pickupIcon}>
+                                        <Popup>Titik Jemput: RSUD Bendan (Jl. Sriwijaya No. 2)</Popup>
+                                    </Marker>
+                                    {dropoffCoords && (
+                                        <Marker position={dropoffCoords} icon={dropoffIcon}>
+                                            <Popup>Tujuan: {formData.dropoff_address || 'Titik Terpilih'}</Popup>
                                         </Marker>
-                                        {dropoffCoords && (
-                                            <Marker position={dropoffCoords} icon={dropoffIcon}>
-                                                <Popup>Tujuan: {formData.dropoff_address}</Popup>
-                                            </Marker>
-                                        )}
-                                        {routeCoordinates.length > 0 && (
-                                            <Polyline positions={routeCoordinates} color="#16a34a" weight={5} opacity={0.7} />
-                                        )}
-                                        <MapUpdater center={dropoffCoords || pickupCoords} zoom={13} />
-                                    </MapContainer>
-
-                                    {/* Loading Overlay if no coordinates yet */}
-                                    {routeCoordinates.length === 0 && (
-                                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                            <MapPin size={34} color="#16a34a" style={{ marginBottom: '12px', animation: 'floatAnim 2s infinite' }} />
-                                            <p style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Menghitung rute...</p>
-                                        </div>
                                     )}
-                                </div>
+                                    {routeCoordinates.length > 0 && (
+                                        <Polyline positions={routeCoordinates} color="#16a34a" weight={5} opacity={0.8} />
+                                    )}
+                                    <MapClickHandler onLocationSelect={handleMapClick} />
+                                    <MapUpdater center={dropoffCoords || pickupCoords} zoom={dropoffCoords ? 14 : 13} />
+                                </MapContainer>
 
-                                <div style={{ background: '#f0fdf4', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #dcfce7' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                                        <div style={{ width: '48px', height: '48px', background: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(22, 163, 74, 0.15)', border: '2px solid #bbf7d0' }}>
-                                            <img src="/fluent-suv.png" alt="car" style={{ width: '36px', transform: 'scaleX(-1)' }} />
-                                        </div>
-                                        <div>
-                                            <h5 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#16a34a', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: "'Outfit'" }}>
-                                                <Car size={16} /> Armada SANTUN
-                                            </h5>
-                                            <div style={{ margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 700 }}>{duration || '...'}</span>
-                                                <span style={{ width: '4px', height: '4px', background: '#cbd5e1', borderRadius: '50%' }}></span>
-                                                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>{distance || '...'}</span>
-                                            </div>
+                                {/* Instruction badge */}
+                                {!dropoffCoords && (
+                                    <div style={{
+                                        position: 'absolute', bottom: '12px', left: '12px', right: '12px',
+                                        background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(6px)',
+                                        padding: '8px 12px', borderRadius: '10px', zIndex: 1000,
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)', textAlign: 'center',
+                                        fontSize: '0.75rem', color: '#334155', fontWeight: 600, border: '1px solid #e2e8f0'
+                                    }}>
+                                        💡 Ketuk di peta atau ketik alamat tujuan Anda di atas
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Estimated route & cost bar */}
+                            <div style={{ background: '#f0fdf4', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #dcfce7' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                    <div style={{ width: '48px', height: '48px', background: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(22, 163, 74, 0.15)', border: '2px solid #bbf7d0' }}>
+                                        <img src="/fluent-suv.png" alt="car" style={{ width: '36px', transform: 'scaleX(-1)' }} />
+                                    </div>
+                                    <div>
+                                        <h5 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#16a34a', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: "'Outfit'" }}>
+                                            <Car size={16} /> Armada SANTUN
+                                        </h5>
+                                        <div style={{ margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 700 }}>{duration || 'Pilih Tujuan'}</span>
+                                            <span style={{ width: '4px', height: '4px', background: '#cbd5e1', borderRadius: '50%' }}></span>
+                                            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>{distance || 'Pekalongan'}</span>
                                         </div>
                                     </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                        <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#16a34a', fontFamily: "'Outfit'", lineHeight: 1 }}>Rp0</div>
-                                        <div style={{ fontSize: '0.65rem', background: '#16a34a', color: 'white', padding: '2px 6px', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.5px', marginTop: '4px', textTransform: 'uppercase' }}>Gratis</div>
-                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#16a34a', fontFamily: "'Outfit'", lineHeight: 1 }}>Rp0</div>
+                                    <div style={{ fontSize: '0.65rem', background: '#16a34a', color: 'white', padding: '2px 6px', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.5px', marginTop: '4px', textTransform: 'uppercase' }}>Gratis</div>
                                 </div>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 {/* Document Upload */}

@@ -25,6 +25,7 @@ import SurahDetail from './pages/quran/SurahDetail';
 
 import AdminPanel from './pages/admin/AdminPanel';
 import VideoMeetingArena from './pages/sinergi/VideoMeetingArena';
+import MenuMakanan from './pages/makanan/MenuMakanan';
 
 // Protected route wrapper for admin pages
 function AdminRoute({ children }) {
@@ -82,7 +83,8 @@ function App() {
       '/quran': 'Hai Bunda, bacalah alquran untuk ketenangan hati Bunda',
       '/ramah/submit': 'Hai Bunda, ajukan pengurusan akte dengan mudah dan gratis cukup isi form dan unggah dokumen yang diperlukan disini',
       '/santun/submit': 'Hai Bunda, ajukan pengantaran pulang ke rumah Bunda dengan nyaman dan gratis, silakan isi form disini',
-      '/lacak': 'Hai bunda, untuk melacak proses pengajuan silakan masukan kode registrasi Bunda saat pengajuan layanan'
+      '/lacak': 'Hai bunda, untuk melacak proses pengajuan silakan masukan kode registrasi Bunda saat pengajuan layanan',
+      '/makanan': 'Hai Bunda, silakan pesan hidangan lezat dan bernutrisi tinggi siap diantar ke kamar perawatan Bunda di RSUD Bendan'
     };
 
     const currentPath = location.pathname.toLowerCase();
@@ -101,8 +103,8 @@ function App() {
 
   // Check if we're on an admin page
   const isAdminPage = location.pathname.startsWith('/admin');
-  const isAdminDashboard = location.pathname === '/admin/dashboard';
-  const useWebMode = isAdminDashboard && adminViewMode === 'web';
+  const isAdminLogin = location.pathname === '/admin/login';
+  const useWebMode = isAdminPage && !isAdminLogin;
 
   return (
     <div className={`app-container ${useWebMode ? 'web-mode' : ''}`}>
@@ -126,6 +128,8 @@ function App() {
           <Route path="/sinergi" element={<Sinergi />} />
           <Route path="/sinergi/video" element={<VideoMeetingArena />} />
 
+          <Route path="/makanan" element={<MenuMakanan />} />
+
           <Route path="/lacak" element={<LacakSelection />} />
 
           <Route path="/quran" element={<QuranHome />} />
@@ -134,7 +138,7 @@ function App() {
           {/* Admin Routes */}
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/login" element={<Login />} />
-          <Route path="/admin/dashboard" element={
+          <Route path="/admin/:tab" element={
             <AdminRoute>
               <AdminPanel />
             </AdminRoute>
@@ -145,22 +149,24 @@ function App() {
         </Routes>
         <Toaster />
 
-        {/* Global Footer */}
-        <footer style={{
-          textAlign: 'center',
-          paddingTop: '24px',
-          paddingLeft: '12px',
-          paddingRight: '12px',
-          marginTop: '20px',
-          fontSize: '0.65rem',
-          color: 'var(--text-muted)',
-          borderTop: '1px solid rgba(0,0,0,0.05)',
-          paddingBottom: isAdminPage ? '24px' : '30px',
-          whiteSpace: 'nowrap',
-          letterSpacing: '0.2px',
-        }}>
-          SahabatBunda @ 2026. Mukhsin Hadi. All right Reserved
-        </footer>
+        {/* Global Footer - Patient Pages Only */}
+        {!isAdminPage && (
+          <footer style={{
+            textAlign: 'center',
+            paddingTop: '24px',
+            paddingLeft: '12px',
+            paddingRight: '12px',
+            marginTop: '20px',
+            fontSize: '0.65rem',
+            color: 'var(--text-muted)',
+            borderTop: '1px solid rgba(0,0,0,0.05)',
+            paddingBottom: '30px',
+            whiteSpace: 'nowrap',
+            letterSpacing: '0.2px',
+          }}>
+            SahabatBunda @ 2026. Mukhsin Hadi. All right Reserved
+          </footer>
+        )}
       </main>
 
       {/* Bottom Navigation - Only for patient pages */}

@@ -12,8 +12,8 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 
 async function main() {
     console.log("Creating/Updating user admin...");
-    const email = 'admin@sakpore.com';
-    const password = 'Admin123!@#';
+    const email = 'admin@bendanrs.com';
+    const password = 'Adminbendan123';
 
     let { data, error } = await supabase.auth.admin.createUser({
         email,

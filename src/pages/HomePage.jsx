@@ -5,7 +5,8 @@ import {
     HelpCircle, CheckCircle, Zap, Calculator,
     BookOpen, User, MessageCircle, Edit3,
     FileText, Navigation, Heart, Activity, ShieldPlus,
-    Video, MonitorPlay, ClipboardList, Info, Ambulance, ChevronRight
+    Video, MonitorPlay, ClipboardList, Info, Ambulance, ChevronRight,
+    Sparkles, ArrowRight, Bell, Calendar, MapPin, Truck, ExternalLink, QrCode, UtensilsCrossed
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
@@ -55,31 +56,31 @@ function FAQSection({ inlineMode = false }) {
     ];
 
     return (
-        <div style={{ marginTop: inlineMode ? '0' : '28px' }}>
+        <div style={{ marginTop: inlineMode ? '0' : '20px' }}>
             {!inlineMode && (
                 <button
                     onClick={() => setIsOpen(!isOpen)}
                     style={{
-                        width: '100%', padding: '16px 20px',
+                        width: '100%', padding: '16px 18px',
                         background: isOpen
-                            ? 'linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)'
-                            : 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-                        border: isOpen ? 'none' : '1px solid #bae6fd',
+                            ? 'linear-gradient(135deg, #4f46e5 0%, #3730a3 100%)'
+                            : 'white',
+                        border: '1px solid #e2e8f0',
                         borderRadius: '20px', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.3s ease',
-                        boxShadow: isOpen ? '0 10px 25px rgba(30, 64, 175, 0.2)' : '0 2px 10px rgba(0,0,0,0.03)',
+                        boxShadow: isOpen ? '0 10px 25px rgba(79, 70, 229, 0.2)' : '0 2px 10px rgba(0,0,0,0.03)',
                     }}
                 >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: isOpen ? 'rgba(255,255,255,0.2)' : '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <HelpCircle size={18} color={isOpen ? 'white' : '#1d4ed8'} />
+                        <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: isOpen ? 'rgba(255,255,255,0.2)' : '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <HelpCircle size={20} color={isOpen ? 'white' : '#4f46e5'} />
                         </div>
                         <div style={{ textAlign: 'left' }}>
-                            <h4 style={{ fontSize: '0.9rem', fontWeight: 800, margin: 0, color: isOpen ? 'white' : '#1e293b', fontFamily: "'Outfit', sans-serif" }}>FAQ Layanan</h4>
-                            <p style={{ fontSize: '0.7rem', margin: 0, color: isOpen ? 'rgba(255,255,255,0.8)' : '#64748b' }}>Bantuan cepat</p>
+                            <h4 style={{ fontSize: '0.92rem', fontWeight: 800, margin: 0, color: isOpen ? 'white' : '#1e293b', fontFamily: "'Outfit', sans-serif" }}>FAQ & Bantuan Layanan</h4>
+                            <p style={{ fontSize: '0.72rem', margin: 0, color: isOpen ? 'rgba(255,255,255,0.8)' : '#64748b' }}>Jawaban atas pertanyaan umum seputar Sahabat Bunda</p>
                         </div>
                     </div>
-                    <ChevronDown size={20} color={isOpen ? 'white' : '#1d4ed8'} style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: '0.3s' }} />
+                    <ChevronDown size={20} color={isOpen ? 'white' : '#4f46e5'} style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: '0.3s' }} />
                 </button>
             )}
             {(isOpen || inlineMode) && (
@@ -127,45 +128,49 @@ function TestimonialSection() {
             setText('');
             setRating(5);
             fetchTestimonials();
+            toast.success('Terima kasih atas ulasan Bunda!');
         }
         setIsSubmitting(false);
     };
 
     const display = testimonials.length > 0 ? testimonials : [
-        { id: 1, name: 'Budi Santoso', text: 'Layanan SANTUN sangat membantu istri saya. Sopir ramah!', rating: 5 },
-        { id: 2, name: 'Siti Aminah', text: 'RAMAH mempermudah akta lahir anak saya.', rating: 5 }
+        { id: 1, name: 'Budi Santoso & Istri', text: 'Layanan SANTUN sangat membantu istri saya pulang pasca salin. Sopir ramah dan mobil bersih ber-AC!', rating: 5 },
+        { id: 2, name: 'Siti Aminah', text: 'RAMAH mempermudah akta lahir anak saya tanpa ribet antri di Disdukcapil.', rating: 5 },
+        { id: 3, name: 'Dewi Lestari', text: 'Sesi konsultasi SINERGI video call dengan ahli gizi sangat jelas dan edukatif.', rating: 5 }
     ];
 
     return (
-        <div style={{ marginTop: '28px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div style={{ marginTop: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b', fontFamily: "'Outfit', sans-serif", margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Star size={18} fill="#f59e0b" color="#f59e0b" /> Testimoni Pengguna
+                    <Star size={18} fill="#f59e0b" color="#f59e0b" /> Testimoni Bunda
                 </h3>
-            </div>
-
-            {/* Moved Rating Badge */}
-            <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: '8px',
-                background: '#fef3c7', padding: '6px 12px', borderRadius: '12px',
-                marginBottom: '16px', border: '1px solid #fde68a'
-            }}>
-                <div style={{ display: 'flex', gap: '2px' }}>
-                    {[...Array(5)].map((_, i) => <Star key={i} size={12} fill="#f59e0b" color="#f59e0b" />)}
+                <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    background: '#fef3c7', padding: '4px 10px', borderRadius: '12px',
+                    border: '1px solid #fde68a'
+                }}>
+                    <Star size={12} fill="#f59e0b" color="#f59e0b" />
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#92400e', fontFamily: "'Outfit', sans-serif" }}>
+                        4.9/5 <span style={{ fontWeight: 600 }}>Kepuasan</span>
+                    </span>
                 </div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#92400e', fontFamily: "'Outfit', sans-serif" }}>
-                    4.9/5 <span style={{ fontWeight: 500 }}>Rating Kepuasan Bunda</span>
-                </span>
             </div>
 
-            <div className="marquee-wrapper" style={{ marginBottom: '24px' }}>
+            <div className="marquee-wrapper" style={{ marginBottom: '18px' }}>
                 <div className="marquee-content">
                     {[...display, ...display].map((t, i) => (
-                        <div key={i} className="testimonial-card">
+                        <div key={i} className="testimonial-card" style={{
+                            background: 'white', borderRadius: '18px', padding: '16px',
+                            border: '1px solid #f1f5f9', boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                            minWidth: '240px', maxWidth: '280px'
+                        }}>
                             <div style={{ display: 'flex', gap: '2px', marginBottom: '8px' }}>
-                                {[...Array(5)].map((_, j) => <Star key={j} size={12} fill={j < t.rating ? "#f59e0b" : "none"} color={j < t.rating ? "#f59e0b" : "#cbd5e1"} />)}
+                                {[...Array(5)].map((_, j) => (
+                                    <Star key={j} size={12} fill={j < t.rating ? "#f59e0b" : "none"} color={j < t.rating ? "#f59e0b" : "#cbd5e1"} />
+                                ))}
                             </div>
-                            <p style={{ fontSize: '0.78rem', color: '#475569', fontStyle: 'italic', margin: '0 0 4px' }}>"{t.text}"</p>
+                            <p style={{ fontSize: '0.78rem', color: '#475569', fontStyle: 'italic', margin: '0 0 6px', lineHeight: 1.5 }}>"{t.text}"</p>
                             <p style={{ fontSize: '0.72rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>— {t.name}</p>
                         </div>
                     ))}
@@ -173,32 +178,35 @@ function TestimonialSection() {
             </div>
 
             <div style={{
-                background: 'white', borderRadius: '24px', padding: '24px', border: '1px solid #e2e8f0',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.04)', position: 'relative'
+                background: 'white', borderRadius: '22px', padding: '20px', border: '1px solid #e2e8f0',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.03)', position: 'relative'
             }}>
-                <h4 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1e293b', margin: '0 0 16px', fontFamily: "'Outfit', sans-serif" }}>Beri Ulasan</h4>
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h4 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1e293b', margin: '0 0 14px', fontFamily: "'Outfit', sans-serif" }}>
+                    Beri Ulasan Layanan
+                </h4>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '6px', display: 'block' }}>Nama Lengkap</label>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: '4px', display: 'block' }}>Nama Bunda / Keluarga</label>
                         <input
                             type="text" value={name} onChange={(e) => setName(e.target.value)} required
-                            placeholder="Masukkan nama Anda"
-                            style={{ width: '100%', padding: '12px 16px', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.85rem', outline: 'none', background: '#f8fafc' }}
+                            placeholder="Contoh: Bunda Siti"
+                            style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '0.82rem', outline: 'none', background: '#f8fafc' }}
                         />
                     </div>
                     <div>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '6px', display: 'block' }}>Ulasan Anda</label>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: '4px', display: 'block' }}>Pengalaman Anda</label>
                         <textarea
                             value={text} onChange={(e) => setText(e.target.value)} required
-                            placeholder="Ceritakan pengalaman Anda..."
-                            style={{ width: '100%', padding: '12px 16px', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '0.85rem', outline: 'none', minHeight: '100px', resize: 'vertical', background: '#f8fafc' }}
+                            placeholder="Ceritakan pengalaman menggunakan layanan Sahabat Bunda..."
+                            rows={3}
+                            style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '0.82rem', outline: 'none', resize: 'vertical', background: '#f8fafc' }}
                         />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', gap: '6px' }}>
+                        <div style={{ display: 'flex', gap: '4px' }}>
                             {[1, 2, 3, 4, 5].map((s) => (
                                 <Star
-                                    key={s} size={22} cursor="pointer"
+                                    key={s} size={20} cursor="pointer"
                                     fill={s <= rating ? "#f59e0b" : "none"}
                                     color={s <= rating ? "#f59e0b" : "#cbd5e1"}
                                     onClick={() => setRating(s)}
@@ -208,9 +216,9 @@ function TestimonialSection() {
                         <button
                             type="submit" disabled={isSubmitting}
                             style={{
-                                padding: '12px 28px', borderRadius: '14px', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', color: 'white',
-                                border: 'none', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer',
-                                boxShadow: '0 8px 20px rgba(37, 99, 235, 0.2)'
+                                padding: '10px 22px', borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: 'white',
+                                border: 'none', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer',
+                                boxShadow: '0 6px 16px rgba(79, 70, 229, 0.25)', transition: 'all 0.2s ease'
                             }}
                         >
                             {isSubmitting ? 'Mengirim...' : 'Kirim Ulasan'}
@@ -230,6 +238,52 @@ export default function HomePage() {
     const [showVideoIdModal, setShowVideoIdModal] = useState(false);
     const [targetSession, setTargetSession] = useState(null);
     const [inputVideoId, setInputVideoId] = useState('');
+    const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
+
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 11) return 'Selamat Pagi';
+        if (hour < 15) return 'Selamat Siang';
+        if (hour < 18) return 'Selamat Sore';
+        return 'Selamat Malam';
+    };
+
+    const promoBanners = [
+        {
+            tag: 'Layanan RAMAH',
+            title: 'Akta Lahir, KIA & KK Baru Gratis',
+            desc: 'Pengurusan dokumen kependudukan tuntas tanpa antri, diantar langsung ke rumah Bunda.',
+            action: 'Ajukan RAMAH',
+            to: '/ramah/submit',
+            color: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)',
+            icon: FileText
+        },
+        {
+            tag: 'Layanan SANTUN',
+            title: 'Antar Pulang Pasien Pasca Salin',
+            desc: 'Fasilitas transportasi pulang ber-AC khusus warga Kota Pekalongan, 100% gratis.',
+            action: 'Pesan Transport',
+            to: '/santun/submit',
+            color: 'linear-gradient(135deg, #065f46 0%, #059669 100%)',
+            icon: Truck
+        },
+        {
+            tag: 'BEMBI 24 Jam',
+            title: 'Ambulance Emergency Siaga Cepat',
+            desc: 'Panggilan darurat terintegrasi dengan tim medis RSUD Bendan siap melayani 24 jam.',
+            action: 'Hubungi BEMBI',
+            to: '/bembi',
+            color: 'linear-gradient(135deg, #991b1b 0%, #dc2626 100%)',
+            icon: Ambulance
+        }
+    ];
+
+    useEffect(() => {
+        const promoTimer = setInterval(() => {
+            setCurrentPromoIndex(prev => (prev + 1) % promoBanners.length);
+        }, 5000);
+        return () => clearInterval(promoTimer);
+    }, [promoBanners.length]);
 
     useEffect(() => {
         const fetchSessions = async () => {
@@ -244,7 +298,7 @@ export default function HomePage() {
 
                 if (gError) throw gError;
 
-                // 2. Fetch individual scheduled requests that ARE NOT part of a group session
+                // 2. Fetch individual scheduled requests
                 const { data: indRequests, error: iError } = await supabase
                     .from('sinergi_requests')
                     .select('*')
@@ -254,12 +308,11 @@ export default function HomePage() {
 
                 if (iError) throw iError;
 
-                // Map individual requests to a similar format as sessions
                 const mappedInd = (indRequests || []).map(r => ({
                     ...r,
                     title: `Konsultasi: ${r.name}`,
                     is_group: false,
-                    access_id: r.tracking_code // Use tracking_code for individual sessions
+                    access_id: r.tracking_code
                 }));
 
                 const mappedGroup = (groupSessions || []).map(s => ({
@@ -267,7 +320,6 @@ export default function HomePage() {
                     is_group: true
                 }));
 
-                // Combine and sort by date
                 const combined = [...mappedGroup, ...mappedInd].sort((a, b) =>
                     new Date(a.scheduled_at) - new Date(b.scheduled_at)
                 );
@@ -281,7 +333,6 @@ export default function HomePage() {
         };
 
         fetchSessions();
-        // Set up real-time subscription for session updates
         const sessionSub = supabase
             .channel('sinergi_updates')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'sinergi_sessions' }, fetchSessions)
@@ -293,413 +344,820 @@ export default function HomePage() {
         };
     }, []);
 
-    return (
-        <div style={{ minHeight: '100vh', background: '#f8fafc' }} className="animate-slide-up">
-            {/* ═══ MODERN HERO BANNER ═══ */}
-            <div style={{
-                position: 'relative', height: '180px', overflow: 'hidden',
-                background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #0ea5e9 100%)',
-                borderRadius: '0 0 40px 40px', boxShadow: '0 10px 30px rgba(37, 99, 235, 0.15)',
-            }}>
-                {/* Abstract Wave Shapes at TOP */}
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', lineHeight: 0, zIndex: 1, transform: 'rotate(180deg)' }}>
-                    <svg viewBox="0 0 1440 320" style={{ width: '100%', height: 'auto', opacity: 0.15 }}>
-                        <path fill="#ffffff" fillOpacity="1" d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-                    </svg>
-                </div>
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', lineHeight: 0, zIndex: 1, transform: 'rotate(180deg) scaleX(-1)' }}>
-                    <svg viewBox="0 0 1440 320" style={{ width: '100%', height: 'auto', opacity: 0.1 }}>
-                        <path fill="#ffffff" fillOpacity="1" d="M0,128L60,144C120,160,240,192,360,186.7C480,181,600,139,720,122.7C840,107,960,117,1080,128C1200,139,1320,149,1380,154.7L1440,160L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path>
-                    </svg>
-                </div>
+    const activePromo = promoBanners[currentPromoIndex];
 
-                {/* Hero Content */}
-                <div style={{ position: 'relative', zIndex: 5, padding: '35px 24px' }}>
-                    <h1 style={{
-                        fontFamily: "'Outfit', sans-serif", fontSize: '2.4rem', fontWeight: 900,
-                        color: 'white', margin: 0, lineHeight: 1.1, letterSpacing: '-1px',
-                        textShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                    }}>Sahabat Bunda</h1>
-                    <p style={{
-                        fontFamily: "'Outfit', sans-serif", fontSize: '0.9rem', color: 'rgba(255,255,255,1)',
-                        marginTop: '8px', lineHeight: 1.4, fontWeight: 700,
-                        textShadow: '0 1px 4px rgba(0,0,0,0.2)'
-                    }}>
-                        Layanan inovatif untuk pasien melahirkan di <span style={{ fontWeight: 900 }}>RSUD Bendan</span>
-                    </p>
+    return (
+        <div style={{ minHeight: '100vh', background: '#f8fafc', paddingBottom: '30px' }} className="animate-slide-up">
+            {/* ══════════════════════════════════════════════════════════
+                1. STYLISH HEADER BACKDROP (Deep Royal Purple Gradient)
+            ══════════════════════════════════════════════════════════ */}
+            <div style={{
+                background: 'linear-gradient(170deg, #3b0764 0%, #581c87 30%, #6b21a8 60%, #7e22ce 100%)',
+                padding: '24px 20px 84px',
+                position: 'relative',
+                overflow: 'hidden',
+                color: 'white'
+            }}>
+                {/* Decorative Landmark & Mosque / Hospital Skyline Silhouette */}
+                <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0, height: '100%',
+                    opacity: 0.12,
+                    pointerEvents: 'none',
+                    backgroundImage: `radial-gradient(circle at 80% 20%, rgba(255,255,255,0.4) 0%, transparent 40%),
+                                      radial-gradient(circle at 20% 80%, rgba(216,180,254,0.3) 0%, transparent 50%)`
+                }}></div>
+
+                {/* Subtle City / Building Skyline vector overlay */}
+                <svg viewBox="0 0 500 150" preserveAspectRatio="none" style={{
+                    position: 'absolute', bottom: 0, left: 0, width: '100%', height: '80px',
+                    opacity: 0.15, pointerEvents: 'none'
+                }}>
+                    <path fill="#ffffff" d="M0,150 L0,90 L25,90 L25,70 L35,70 L35,50 L45,30 L55,50 L55,70 L65,70 L65,90 L90,90 L90,110 L120,110 L120,60 L140,60 L140,80 L160,80 L160,110 L200,110 L200,45 L220,45 L220,70 L240,70 L240,110 L270,110 L270,85 L300,85 L300,110 L340,110 L340,55 L360,55 L360,75 L380,75 L380,110 L410,110 L410,70 L430,70 L430,95 L460,95 L460,110 L500,110 L500,150 Z"></path>
+                </svg>
+
+                {/* Top Status Bar: Greeting + Action Pills (Cart/Emergency, Mail/Chat, Flag) */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 10 }}>
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: '#e9d5ff', fontWeight: 800 }}>
+                                RSUD BENDAN
+                            </span>
+                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#a855f7' }}></span>
+                            <span style={{ fontSize: '0.72rem', color: '#c084fc', fontWeight: 600 }}>Pekalongan</span>
+                        </div>
+                        <h2 style={{
+                            margin: '2px 0 0', fontSize: '1.25rem', fontWeight: 800, color: 'white',
+                            fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.3px'
+                        }}>
+                            {getGreeting()}, Bunda
+                        </h2>
+                    </div>
+
+                    {/* Right Action Icons (like Access by KAI: cart, mail, flag pill) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {/* Emergency Hotline Button */}
+                        <div
+                            onClick={() => {
+                                const message = encodeURIComponent('Halo BEMBI RSUD Bendan, saya membutuhkan layanan ambulance darurat:');
+                                window.open(`https://wa.me/628152321122?text=${message}`, '_blank');
+                            }}
+                            title="Emergency Call Center"
+                            style={{
+                                width: '38px', height: '38px', borderRadius: '50%',
+                                background: 'rgba(255, 255, 255, 0.18)',
+                                backdropFilter: 'blur(8px)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer', border: '1px solid rgba(255, 255, 255, 0.25)',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <Ambulance size={18} color="white" />
+                        </div>
+
+                        {/* WhatsApp Admin Button */}
+                        <div
+                            onClick={() => window.open('https://wa.me/6282324408910', '_blank')}
+                            title="Chat WhatsApp Petugas"
+                            style={{
+                                width: '38px', height: '38px', borderRadius: '50%',
+                                background: 'rgba(255, 255, 255, 0.18)',
+                                backdropFilter: 'blur(8px)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer', border: '1px solid rgba(255, 255, 255, 0.25)',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <MessageSquare size={18} color="white" />
+                        </div>
+
+                        {/* Language / Region Pill Badge */}
+                        <div style={{
+                            background: 'rgba(255, 255, 255, 0.18)',
+                            backdropFilter: 'blur(8px)',
+                            padding: '6px 12px',
+                            borderRadius: '20px',
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            border: '1px solid rgba(255, 255, 255, 0.25)',
+                            fontSize: '0.75rem', fontWeight: 700, color: 'white',
+                            cursor: 'pointer'
+                        }}>
+                            <span>🇮🇩</span>
+                            <span>ID</span>
+                            <ChevronDown size={12} />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div style={{ padding: '0 20px 40px', marginTop: '-30px', position: 'relative', zIndex: 10 }}>
-                {/* ═══ PRAYER TIMES ═══ */}
-                <div style={{ marginBottom: '24px' }}>
-                    <PrayerTimesWidget />
-                </div>
-
-                {/* ═══ MAIN SERVICES (REFINED) ═══ */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '28px' }}>
-                    <Link to="/ramah/submit" style={{ textDecoration: 'none' }}>
-                        <div className="grid-card-interactive" style={{
-                            background: 'white', borderRadius: '24px', padding: '24px 16px 20px',
-                            textAlign: 'center', boxShadow: '0 10px 25px rgba(37, 99, 235, 0.08)',
-                            border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center',
-                            position: 'relative', overflow: 'hidden'
-                        }}>
-                            <div style={{
-                                width: '64px', height: '64px', borderRadius: '18px',
-                                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                marginBottom: '16px', position: 'relative',
-                                boxShadow: '0 10px 20px rgba(37, 99, 235, 0.25)'
-                            }}>
-                                <FileText size={32} color="white" strokeWidth={2.5} />
-                            </div>
-                            <h3 style={{ fontSize: '1rem', fontWeight: 900, color: '#1e293b', margin: 0, fontFamily: "'Outfit', sans-serif" }}>RAMAH</h3>
-                        </div>
-                    </Link>
-
-                    <Link to="/santun/submit" style={{ textDecoration: 'none' }}>
-                        <div className="grid-card-interactive" style={{
-                            background: 'white', borderRadius: '24px', padding: '24px 16px 20px',
-                            textAlign: 'center', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.08)',
-                            border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center',
-                            position: 'relative', overflow: 'hidden'
-                        }}>
-                            <div style={{
-                                width: '64px', height: '64px', borderRadius: '18px',
-                                background: 'linear-gradient(135deg, #10b981, #059669)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                marginBottom: '16px', position: 'relative',
-                                boxShadow: '0 10px 20px rgba(16, 185, 129, 0.25)'
-                            }}>
-                                <Navigation size={32} color="white" strokeWidth={2.5} />
-                            </div>
-                            <h3 style={{ fontSize: '1rem', fontWeight: 900, color: '#1e293b', margin: 0, fontFamily: "'Outfit', sans-serif" }}>SANTUN</h3>
-                        </div>
-                    </Link>
-                </div>
-
-                {/* ═══ KESEHATAN & EDUKASI SECTION (SPLIT) ═══ */}
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#1e293b', fontFamily: "'Outfit', sans-serif", marginBottom: '16px' }}>
-                    Kesehatan & Edukasi
-                </h3>
-
-
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-                    {/* Left: Sub-menu Grid 2x2 */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        {[
-                            { to: '/empati', label: 'EMPATI', Icon: Heart, color: '#0ea5e9' },
-                            { to: '/sehati', label: 'SEHATI', Icon: Activity, color: '#f59e0b' },
-                            { to: '/sinergi', label: 'SINERGI', Icon: Video, color: '#10b981' },
-                            { to: '/bembi', label: 'BEMBI', Icon: Ambulance, color: '#ef4444' },
-                            { to: '/vaksinasi', label: 'VAKSIN', Icon: ShieldPlus, color: '#8b5cf6' },
-                            { to: '/quran', label: 'AL-QUR\'AN', Icon: BookOpen, color: '#6366f1' },
-                        ].map((m, i) => (
-                            <div key={i} onClick={() => {
-                                if (m.to === '/bembi') {
-                                    const message = encodeURIComponent('Halo BEMBI RSUD Bendan, saya membutuhkan layanan ambulance. Berikut lokasi saya:');
-                                    window.open(`https://wa.me/628152321122?text=${message}`, '_blank');
-                                } else {
-                                    navigate(m.to);
-                                }
-                            }} style={{ textDecoration: 'none', cursor: 'pointer' }}>
-                                <div className="grid-card-interactive" style={{
-                                    background: 'white', borderRadius: '20px', padding: '20px 12px',
-                                    textAlign: 'center', border: '1px solid #f1f5f9', height: '100%',
-                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                    boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
+            {/* ══════════════════════════════════════════════════════════
+                2. FLOATING "HUB" CARD (Equivalent to KAIPay card)
+            ══════════════════════════════════════════════════════════ */}
+            <div style={{ padding: '0 16px', marginTop: '-58px', position: 'relative', zIndex: 20 }}>
+                <div style={{
+                    background: '#ffffff',
+                    borderRadius: '24px',
+                    padding: '18px 20px',
+                    boxShadow: '0 14px 35px -8px rgba(76, 29, 149, 0.18), 0 4px 12px rgba(0,0,0,0.04)',
+                    border: '1px solid rgba(243, 232, 255, 0.8)'
+                }}>
+                    {/* Top Row: Brand & Status on Left | Quick Action Badges on Right */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '14px' }}>
+                        {/* Brand info */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{
+                                    width: '28px', height: '28px', borderRadius: '8px',
+                                    background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: 'white', fontWeight: 900, fontSize: '0.75rem'
                                 }}>
-                                    <div style={{
-                                        width: '56px', height: '56px', borderRadius: '16px',
-                                        background: `linear-gradient(135deg, ${m.color}, ${m.color}dd)`,
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        marginBottom: '12px',
-                                        boxShadow: `0 8px 16px ${m.color}50`
-                                    }}>
-                                        <m.Icon size={28} color="white" strokeWidth={2.5} />
-                                    </div>
-                                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569', fontFamily: "'Outfit', sans-serif" }}>{m.label}</span>
+                                    SB
                                 </div>
+                                <span style={{ fontWeight: 900, fontSize: '1rem', color: '#1e1b4b', fontFamily: "'Outfit', sans-serif" }}>
+                                    SahabatBunda
+                                </span>
                             </div>
-                        ))}
+
+                            <button
+                                onClick={() => navigate('/lacak')}
+                                style={{
+                                    border: '1.5px solid #4f46e5',
+                                    background: '#eff6ff',
+                                    color: '#4338ca',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 800,
+                                    padding: '5px 12px',
+                                    borderRadius: '16px',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    width: 'fit-content',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <Search size={12} strokeWidth={2.5} /> Lacak Layanan
+                            </button>
+                        </div>
+
+                        {/* Quick action buttons (Scan/Lacak, Top Up/BEMBI, Riwayat/Sinergi) */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            {/* Action 1: Lacak */}
+                            <div
+                                onClick={() => navigate('/lacak')}
+                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                            >
+                                <div style={{
+                                    width: '42px', height: '42px', borderRadius: '14px',
+                                    background: '#f5f3ff', border: '1px solid #ede9fe',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: '#6d28d9', transition: 'all 0.2s ease'
+                                }}>
+                                    <QrCode size={20} strokeWidth={2.2} />
+                                </div>
+                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569' }}>Lacak</span>
+                            </div>
+
+                            {/* Action 2: Darurat BEMBI */}
+                            <div
+                                onClick={() => {
+                                    const message = encodeURIComponent('Halo BEMBI RSUD Bendan, saya membutuhkan layanan ambulance darurat:');
+                                    window.open(`https://wa.me/628152321122?text=${message}`, '_blank');
+                                }}
+                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                            >
+                                <div style={{
+                                    width: '42px', height: '42px', borderRadius: '14px',
+                                    background: '#fef2f2', border: '1px solid #fee2e2',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: '#ef4444', transition: 'all 0.2s ease'
+                                }}>
+                                    <Ambulance size={20} strokeWidth={2.2} />
+                                </div>
+                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569' }}>BEMBI</span>
+                            </div>
+
+                            {/* Action 3: Riwayat / Sinergi */}
+                            <div
+                                onClick={() => navigate('/sinergi')}
+                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                            >
+                                <div style={{
+                                    width: '42px', height: '42px', borderRadius: '14px',
+                                    background: '#ecfdf5', border: '1px solid #d1fae5',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: '#059669', transition: 'all 0.2s ease'
+                                }}>
+                                    <Calendar size={20} strokeWidth={2.2} />
+                                </div>
+                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569' }}>Jadwal</span>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Right: Info Card & FAQ */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {/* Divider Line */}
+                    <div style={{ height: '1px', background: '#f1f5f9', margin: '0 -20px 14px' }}></div>
 
-                        {/* ═══ MENU LACAK (NEW) ═══ */}
-                        <div
-                            onClick={() => navigate('/lacak')}
+                    {/* Bottom Row: Rating Badge on Left | Sinergi Pill Button on Right */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{
+                                width: '28px', height: '28px', borderRadius: '50%',
+                                background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                <Star size={15} fill="#f59e0b" color="#f59e0b" />
+                            </div>
+                            <div>
+                                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#1e293b', fontFamily: "'Outfit'" }}>
+                                    4.9/5 <span style={{ color: '#64748b', fontWeight: 600 }}>Rating Bunda</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => navigate('/sinergi')}
                             style={{
-                                background: 'white', borderRadius: '24px', padding: '20px',
-                                border: '1px solid #f1f5f9', boxShadow: '0 10px 20px rgba(0,0,0,0.02)',
-                                cursor: 'pointer', transition: 'all 0.2s ease'
+                                border: '1.5px solid #2563eb',
+                                background: 'white',
+                                color: '#1d4ed8',
+                                padding: '6px 14px',
+                                borderRadius: '20px',
+                                fontSize: '0.75rem',
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontFamily: "'Outfit', sans-serif",
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <span>Konsultasi Online</span>
+                            <div style={{
+                                width: '18px', height: '18px', borderRadius: '50%', background: '#2563eb',
+                                color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                <ChevronRight size={12} strokeWidth={3} />
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* ══════════════════════════════════════════════════════════
+                3. SERVICE ICONS GRID (Access by KAI Layout: 2 Rows)
+                   Row 1: Vibrant Colorful Circles (Train Style)
+                   Row 2: Soft Pastel Circles (Quick Services)
+            ══════════════════════════════════════════════════════════ */}
+            <div style={{ padding: '24px 16px 12px' }}>
+                {/* ROW 1: 5 Primary Colorful Circular Badges */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(5, 1fr)',
+                    gap: '10px',
+                    textAlign: 'center',
+                    marginBottom: '20px'
+                }}>
+                    {[
+                        {
+                            label: 'RAMAH',
+                            desc: 'Akta Lahir',
+                            icon: FileText,
+                            to: '/ramah/submit',
+                            gradient: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                            shadow: '0 8px 18px rgba(37, 99, 235, 0.35)'
+                        },
+                        {
+                            label: 'SANTUN',
+                            desc: 'Antar Pulang',
+                            icon: Truck,
+                            to: '/santun/submit',
+                            gradient: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+                            shadow: '0 8px 18px rgba(249, 115, 22, 0.35)'
+                        },
+                        {
+                            label: 'SINERGI',
+                            desc: 'Konsultasi',
+                            icon: Video,
+                            to: '/sinergi',
+                            gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                            shadow: '0 8px 18px rgba(239, 68, 68, 0.35)'
+                        },
+                        {
+                            label: 'BEMBI',
+                            desc: 'Ambulance',
+                            icon: Ambulance,
+                            to: '/bembi',
+                            gradient: 'linear-gradient(135deg, #d946ef 0%, #c026d3 100%)',
+                            shadow: '0 8px 18px rgba(217, 70, 239, 0.35)'
+                        },
+                        {
+                            label: 'EMPATI',
+                            desc: 'Edukasi Nifas',
+                            icon: Heart,
+                            to: '/empati',
+                            gradient: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
+                            shadow: '0 8px 18px rgba(14, 165, 233, 0.35)'
+                        }
+                    ].map((item, idx) => (
+                        <div
+                            key={idx}
+                            onClick={() => {
+                                if (item.to === '/bembi') {
+                                    const msg = encodeURIComponent('Halo BEMBI RSUD Bendan, saya membutuhkan layanan ambulance darurat:');
+                                    window.open(`https://wa.me/628152321122?text=${msg}`, '_blank');
+                                } else {
+                                    navigate(item.to);
+                                }
                             }}
                             className="grid-card-interactive"
+                            style={{
+                                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                cursor: 'pointer', textDecoration: 'none'
+                            }}
                         >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(79, 70, 229, 0.3)' }}>
-                                        <Search size={20} color="white" strokeWidth={2.5} />
-                                    </div>
-                                    <div>
-                                        <h4 style={{ fontSize: '0.95rem', fontWeight: 900, color: '#1e293b', margin: 0, fontFamily: "'Outfit', sans-serif" }}>Lacak Status Layanan</h4>
-                                        <p style={{ fontSize: '0.7rem', color: '#64748b', margin: '2px 0 0', fontWeight: 600 }}>Cek progres layanan Sahabat Bunda</p>
-                                    </div>
-                                </div>
-                                <div style={{ color: '#6366f1' }}>
-                                    <ChevronRight size={20} />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ═══ KONSULTASI ONLINE SINERGI (REPOSITIONED & COMPACT) ═══ */}
-                        <div style={{ background: 'white', borderRadius: '24px', padding: '20px', border: '1px solid #f1f5f9', boxShadow: '0 10px 20px rgba(0,0,0,0.02)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(16, 163, 74, 0.3)' }}>
-                                        <Video size={20} color="white" strokeWidth={2.5} />
-                                    </div>
-                                    <div>
-                                        <h4 style={{ fontSize: '0.95rem', fontWeight: 900, color: '#1e293b', margin: 0, fontFamily: "'Outfit', sans-serif" }}>Konsultasi Online SINERGI</h4>
-                                        <p style={{ fontSize: '0.7rem', color: '#64748b', margin: '2px 0 0', fontWeight: 600 }}>Video Call Eksklusif</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        setTargetSession(null);
-                                        setShowVideoIdModal(true);
-                                    }}
-                                    style={{
-                                        fontSize: '0.65rem', fontWeight: 800, color: '#059669', border: 'none',
-                                        background: '#ecfdf5', padding: '6px 12px', borderRadius: '10px', cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                    }}>
-                                    Akses Langsung
-                                </button>
-                            </div>
-
-                            {loadingSessions ? (
-                                <div style={{ padding: '16px', textAlign: 'center', background: '#f8fafc', borderRadius: '16px' }}>
-                                    <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>Memuat jadwal...</p>
-                                </div>
-                            ) : liveSessions.length > 0 ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    {liveSessions.map(session => (
-                                        <div
-                                            key={session.id}
-                                            onClick={() => {
-                                                const type = session.is_group ? 'group' : 'individual';
-                                                navigate(`/sinergi/video?sessionId=${session.id}&type=${type}`);
-                                            }}
-                                            style={{
-                                                background: '#f8fafc', borderRadius: '16px', padding: '12px 14px',
-                                                border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                cursor: 'pointer', transition: 'all 0.2s', position: 'relative'
-                                            }}
-                                            className="grid-card-interactive"
-                                        >
-                                            <div style={{ flex: 1, minWidth: 0, paddingRight: '12px' }}>
-                                                <p style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1e293b', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.title}</p>
-                                                <p style={{ fontSize: '0.7rem', color: '#64748b', margin: '4px 0 0', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></span> Live Konsultasi Gizi
-                                                </p>
-                                            </div>
-                                            <div style={{ background: '#dcfce7', color: '#16a34a', padding: '6px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 800, textAlign: 'center', minWidth: '70px', boxShadow: '0 2px 5px rgba(22, 163, 74, 0.1)' }}>
-                                                {new Date(session.scheduled_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div style={{
-                                    background: '#f8fafc', borderRadius: '16px', padding: '16px',
-                                    textAlign: 'center', border: '1px dashed #cbd5e1'
-                                }}>
-                                    <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0, fontWeight: 700 }}>Tidak ada sesi aktif saat ini</p>
-                                </div>
-                            )}
-                        </div>
-
-                        <div style={{
-                            background: 'white', borderRadius: '24px', padding: '20px',
-                            border: '1px solid #f1f5f9', boxShadow: '0 10px 20px rgba(0,0,0,0.02)',
-                            display: 'flex', flexDirection: 'column', gap: '16px'
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <MessageSquare size={20} color="#0ea5e9" />
-                                <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>Informasi Layanan</h4>
-                            </div>
-                            <p style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.5, margin: 0 }}>
-                                <Clock size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-                                Layanan tersedia 24 jam. Dokumen diproses pada jam kerja.
-                            </p>
-
                             <div style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                background: '#f8fafc', borderRadius: '16px', padding: '12px',
-                                border: '1px solid #f1f5f9', cursor: 'pointer',
-                                transition: 'all 0.2s ease', position: 'relative', overflow: 'hidden'
-                            }} className="wa-hover-box" onClick={() => window.open('https://wa.me/6282324408910', '_blank')}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative', zIndex: 2 }}>
-                                    <div style={{
-                                        width: '44px', height: '44px', borderRadius: '12px',
-                                        background: 'transparent',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        overflow: 'hidden'
-                                    }}>
-                                        <img src="/admin-3d-transparent.png" alt="Petugas" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                    </div>
-                                    <div>
-                                        <p style={{ fontSize: '0.8rem', fontWeight: 800, color: '#16a34a', margin: 0 }}>Hubungi via WhatsApp</p>
-                                        <p style={{ fontSize: '0.65rem', color: '#64748b', margin: 0 }}>Klik untuk chat langsung</p>
-                                    </div>
-                                </div>
-                                <div style={{
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    color: '#22c55e', opacity: 0.1, position: 'absolute', right: '-5px'
-                                }}>
-                                    <MessageCircle size={60} fill="currentColor" />
-                                </div>
+                                width: '54px', height: '54px', borderRadius: '50%',
+                                background: item.gradient,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: 'white',
+                                boxShadow: item.shadow,
+                                marginBottom: '8px'
+                            }}>
+                                <item.icon size={25} strokeWidth={2.2} />
                             </div>
+                            <span style={{
+                                fontSize: '0.75rem', fontWeight: 800, color: '#1e293b',
+                                fontFamily: "'Outfit', sans-serif", lineHeight: 1.2
+                            }}>
+                                {item.label}
+                            </span>
                         </div>
-
-                        <FAQSection inlineMode />
-                    </div>
+                    ))}
                 </div>
 
-                <TestimonialSection />
+                {/* ROW 2: 5 Secondary Soft Blue Circular Badges */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(5, 1fr)',
+                    gap: '10px',
+                    textAlign: 'center',
+                    marginBottom: '10px'
+                }}>
+                    {[
+                        {
+                            label: 'SEHATI',
+                            icon: Activity,
+                            to: '/sehati',
+                            color: '#2563eb',
+                            bg: '#eff6ff'
+                        },
+                        {
+                            label: 'Vaksinasi',
+                            icon: ShieldPlus,
+                            to: '/vaksinasi',
+                            color: '#2563eb',
+                            bg: '#eff6ff'
+                        },
+                        {
+                            label: "Al-Qur'an",
+                            icon: BookOpen,
+                            to: '/quran',
+                            color: '#2563eb',
+                            bg: '#eff6ff'
+                        },
+                        {
+                            label: 'Lacak',
+                            icon: Search,
+                            to: '/lacak',
+                            color: '#2563eb',
+                            bg: '#eff6ff'
+                        },
+                        {
+                            label: 'Makanan',
+                            icon: UtensilsCrossed,
+                            to: '/makanan',
+                            color: '#ea580c',
+                            bg: '#fff7ed'
+                        }
+                    ].map((item, idx) => (
+                        <div
+                            key={idx}
+                            onClick={() => {
+                                if (item.action) item.action();
+                                else navigate(item.to);
+                            }}
+                            className="grid-card-interactive"
+                            style={{
+                                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                cursor: 'pointer', textDecoration: 'none'
+                            }}
+                        >
+                            <div style={{
+                                width: '50px', height: '50px', borderRadius: '50%',
+                                background: item.bg,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: item.color,
+                                border: '1px solid #dbeafe',
+                                boxShadow: '0 4px 10px rgba(37, 99, 235, 0.06)',
+                                marginBottom: '8px'
+                            }}>
+                                <item.icon size={22} strokeWidth={2.2} />
+                            </div>
+                            <span style={{
+                                fontSize: '0.72rem', fontWeight: 700, color: '#475569',
+                                fontFamily: "'Outfit', sans-serif", lineHeight: 1.2
+                            }}>
+                                {item.label}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
-                {/* Injected Global Styles for Animations */}
-                <style>{`
-                @keyframes float {
-                    0% { transform: translateY(0px); }
-                    50% { transform: translateY(-10px); }
-                    100% { transform: translateY(0px); }
-                }
-                @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-                .floating-animation {
-                    animation: float 4s ease-in-out infinite;
-                }
-                .grid-card-interactive {
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-                .grid-card-interactive:hover {
-                    transform: translateY(-8px) scale(1.02);
-                    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
-                }
-                .grid-card-interactive:active {
-                    transform: translateY(-4px) scale(0.98);
-                }
-            `}</style>
-
-                {/* Video ID Modal / Access Modal */}
-                {showVideoIdModal && (
+            {/* ══════════════════════════════════════════════════════════
+                4. HIGHLIGHT HERO BANNER: "Live Konsultasi" (Access by KAI Live Tracking style)
+            ══════════════════════════════════════════════════════════ */}
+            <div style={{ padding: '10px 16px 16px' }}>
+                <div style={{
+                    background: 'linear-gradient(135deg, #4338ca 0%, #6366f1 45%, #a855f7 100%)',
+                    borderRadius: '24px',
+                    padding: '22px 20px',
+                    color: 'white',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 12px 28px -6px rgba(79, 70, 229, 0.35)'
+                }}>
+                    {/* Wavy backdrop graphics */}
                     <div style={{
-                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                        background: 'rgba(2, 6, 23, 0.8)', backdropFilter: 'blur(8px)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 1000, padding: '20px'
-                    }}>
-                        <div style={{
-                            background: 'white', borderRadius: '28px', padding: '32px',
-                            width: '100%', maxWidth: '400px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                            animation: 'modalIn 0.3s ease-out'
+                        position: 'absolute', right: '-20px', bottom: '-20px', width: '200px', height: '200px',
+                        background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)',
+                        borderRadius: '50%', pointerEvents: 'none'
+                    }}></div>
+
+                    {/* Live Badge */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <span style={{
+                            background: 'white',
+                            color: '#4338ca',
+                            fontSize: '0.7rem',
+                            fontWeight: 900,
+                            padding: '3px 10px',
+                            borderRadius: '12px',
+                            fontFamily: "'Outfit', sans-serif",
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
                         }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                                <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
-                                    <Shield size={22} />
-                                </div>
-                                <div>
-                                    <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 900, color: '#1e293b' }}>
-                                        {targetSession ? 'Verifikasi Akses' : 'Masuk Sinergi'}
-                                    </h3>
-                                    <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>
-                                        {targetSession ? `Sesi: ${targetSession.title}` : 'Gunakan ID yang dikirim melalui WhatsApp'}
-                                    </p>
-                                </div>
-                            </div>
-                            <div style={{ marginBottom: '24px' }}>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#475569', marginBottom: '8px' }}>INPUT ID AKSES</label>
-                                <input
-                                    type="text"
-                                    value={inputVideoId}
-                                    onChange={(e) => setInputVideoId(e.target.value.toUpperCase())}
-                                    placeholder="CONTOH: ABC12"
-                                    maxLength={10}
-                                    style={{
-                                        width: '100%', padding: '16px', borderRadius: '16px',
-                                        background: '#f8fafc', border: '2px solid #e2e8f0',
-                                        fontSize: '1.2rem', fontWeight: 900, color: '#1e293b', outline: 'none',
-                                        textAlign: 'center', letterSpacing: '4px'
-                                    }}
-                                />
-                            </div>
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                <button
+                            Live Online <Sparkles size={11} fill="#f59e0b" color="#f59e0b" />
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: '#e0e7ff', fontWeight: 600 }}>
+                            SINERGI Video Call
+                        </span>
+                    </div>
+
+                    <h3 style={{
+                        fontSize: '1.25rem', fontWeight: 900, color: 'white',
+                        margin: '0 0 6px', fontFamily: "'Outfit', sans-serif"
+                    }}>
+                        Konsultasi Gizi Eksklusif
+                    </h3>
+
+                    <p style={{
+                        fontSize: '0.78rem', color: 'rgba(255, 255, 255, 0.9)',
+                        margin: '0 0 16px', lineHeight: 1.45, maxWidth: '85%'
+                    }}>
+                        Tatap muka video call langsung bersama Ahli Gizi RSUD Bendan secara real-time dan interaktif.
+                    </p>
+
+                    {/* Action button & Session count */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <button
+                            onClick={() => {
+                                setTargetSession(null);
+                                setShowVideoIdModal(true);
+                            }}
+                            style={{
+                                background: '#ffffff',
+                                color: '#4338ca',
+                                border: 'none',
+                                padding: '10px 20px',
+                                borderRadius: '24px',
+                                fontSize: '0.82rem',
+                                fontWeight: 800,
+                                fontFamily: "'Outfit', sans-serif",
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <span>Buka Live SINERGI</span>
+                            <ArrowRight size={14} />
+                        </button>
+
+                        <div style={{
+                            fontSize: '0.72rem', color: '#ffffff', background: 'rgba(255,255,255,0.2)',
+                            padding: '6px 12px', borderRadius: '14px', backdropFilter: 'blur(4px)', fontWeight: 600
+                        }}>
+                            {liveSessions.length > 0 ? `${liveSessions.length} Sesi Terjadwal` : 'Tersedia Sekarang'}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ══════════════════════════════════════════════════════════
+                5. SCHEDULED LIVE SESSIONS CHIPS (If any sessions active)
+            ══════════════════════════════════════════════════════════ */}
+            {liveSessions.length > 0 && (
+                <div style={{ padding: '0 16px 14px' }}>
+                    <div style={{
+                        background: '#ffffff', borderRadius: '20px', padding: '14px 16px',
+                        border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
+                                Jadwal Sesi Hari Ini
+                            </span>
+                            <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Ketuk untuk bergabung</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {liveSessions.slice(0, 3).map(session => (
+                                <div
+                                    key={session.id}
                                     onClick={() => {
+                                        const type = session.is_group ? 'group' : 'individual';
+                                        navigate(`/sinergi/video?sessionId=${session.id}&type=${type}`);
+                                    }}
+                                    style={{
+                                        background: '#f8fafc', borderRadius: '12px', padding: '10px 12px',
+                                        border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
+                                        <p style={{ fontSize: '0.8rem', fontWeight: 800, color: '#1e293b', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.title}</p>
+                                        <p style={{ fontSize: '0.68rem', color: '#64748b', margin: '2px 0 0', fontWeight: 600 }}>Tatap muka konsultasi gizi</p>
+                                    </div>
+                                    <div style={{ background: '#dcfce7', color: '#16a34a', padding: '4px 10px', borderRadius: '8px', fontSize: '0.72rem', fontWeight: 800 }}>
+                                        {new Date(session.scheduled_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ══════════════════════════════════════════════════════════
+                6. CAROUSEL PROMO BANNER (KAI Promo style)
+            ══════════════════════════════════════════════════════════ */}
+            <div style={{ padding: '0 16px 16px' }}>
+                <div style={{
+                    background: activePromo.color,
+                    borderRadius: '20px',
+                    padding: '18px 20px',
+                    color: 'white',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.08)'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div style={{ flex: 1, paddingRight: '12px' }}>
+                            <span style={{
+                                background: 'rgba(255,255,255,0.2)', fontSize: '0.65rem', fontWeight: 800,
+                                padding: '3px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.5px'
+                            }}>
+                                {activePromo.tag}
+                            </span>
+                            <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: '8px 0 4px', color: 'white', fontFamily: "'Outfit'" }}>
+                                {activePromo.title}
+                            </h4>
+                            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.88)', margin: '0 0 12px', lineHeight: 1.4 }}>
+                                {activePromo.desc}
+                            </p>
+                            <button
+                                onClick={() => {
+                                    if (activePromo.to === '/bembi') {
+                                        const msg = encodeURIComponent('Halo BEMBI RSUD Bendan, saya membutuhkan layanan ambulance darurat:');
+                                        window.open(`https://wa.me/628152321122?text=${msg}`, '_blank');
+                                    } else {
+                                        navigate(activePromo.to);
+                                    }
+                                }}
+                                style={{
+                                    background: 'white', color: '#1e293b', border: 'none', padding: '6px 14px',
+                                    borderRadius: '16px', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer',
+                                    display: 'inline-flex', alignItems: 'center', gap: '4px'
+                                }}
+                            >
+                                {activePromo.action} <ChevronRight size={12} strokeWidth={3} />
+                            </button>
+                        </div>
+                        <div style={{
+                            width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(255,255,255,0.15)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <activePromo.icon size={26} color="white" />
+                        </div>
+                    </div>
+
+                    {/* Dots indicator */}
+                    <div style={{ display: 'flex', gap: '4px', marginTop: '12px', justifyContent: 'center' }}>
+                        {promoBanners.map((_, i) => (
+                            <div
+                                key={i}
+                                onClick={() => setCurrentPromoIndex(i)}
+                                style={{
+                                    width: i === currentPromoIndex ? '16px' : '6px',
+                                    height: '6px',
+                                    borderRadius: '3px',
+                                    background: i === currentPromoIndex ? 'white' : 'rgba(255,255,255,0.4)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s'
+                                }}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* ══════════════════════════════════════════════════════════
+                7. PRAYER TIMES WIDGET
+            ══════════════════════════════════════════════════════════ */}
+            <div style={{ padding: '0 16px 16px' }}>
+                <PrayerTimesWidget />
+            </div>
+
+            {/* ══════════════════════════════════════════════════════════
+                8. WHATSAPP PETUGAS & INFORMASI LAYANAN
+            ══════════════════════════════════════════════════════════ */}
+            <div style={{ padding: '0 16px 16px' }}>
+                <div style={{
+                    background: '#ffffff', borderRadius: '22px', padding: '18px 20px',
+                    border: '1px solid #f1f5f9', boxShadow: '0 6px 18px rgba(0,0,0,0.03)'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16a34a' }}>
+                                <Phone size={16} />
+                            </div>
+                            <div>
+                                <h4 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#1e293b', margin: 0, fontFamily: "'Outfit'" }}>
+                                    Pusat Bantuan & Layanan
+                                </h4>
+                                <p style={{ fontSize: '0.7rem', color: '#64748b', margin: 0 }}>
+                                    Layanan tersedia 24 jam di RSUD Bendan
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        onClick={() => window.open('https://wa.me/6282324408910', '_blank')}
+                        style={{
+                            background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '16px',
+                            padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <MessageCircle size={24} color="#16a34a" />
+                            <div>
+                                <p style={{ fontSize: '0.82rem', fontWeight: 800, color: '#166534', margin: 0 }}>
+                                    Chat WhatsApp Petugas
+                                </p>
+                                <p style={{ fontSize: '0.7rem', color: '#15803d', margin: 0 }}>
+                                    Respons cepat untuk pertanyaan dan panduan
+                                </p>
+                            </div>
+                        </div>
+                        <ChevronRight size={18} color="#16a34a" />
+                    </div>
+                </div>
+            </div>
+
+            {/* ══════════════════════════════════════════════════════════
+                9. TESTIMONIALS & FAQ CONTAINER
+            ══════════════════════════════════════════════════════════ */}
+            <div id="faq-container" style={{ padding: '0 16px' }}>
+                <FAQSection />
+                <TestimonialSection />
+            </div>
+
+            {/* ══════════════════════════════════════════════════════════
+                10. VIDEO ACCESS MODAL (for SINERGI direct access)
+            ══════════════════════════════════════════════════════════ */}
+            {showVideoIdModal && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(2, 6, 23, 0.8)', backdropFilter: 'blur(8px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 1000, padding: '20px'
+                }}>
+                    <div style={{
+                        background: 'white', borderRadius: '28px', padding: '32px',
+                        width: '100%', maxWidth: '400px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                        animation: 'modalIn 0.3s ease-out'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                            <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb' }}>
+                                <Shield size={22} />
+                            </div>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 900, color: '#1e293b' }}>
+                                    {targetSession ? 'Verifikasi Akses' : 'Masuk Sinergi'}
+                                </h3>
+                                <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>
+                                    {targetSession ? `Sesi: ${targetSession.title}` : 'Gunakan ID yang dikirim melalui WhatsApp'}
+                                </p>
+                            </div>
+                        </div>
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#475569', marginBottom: '8px' }}>INPUT ID AKSES</label>
+                            <input
+                                type="text"
+                                value={inputVideoId}
+                                onChange={(e) => setInputVideoId(e.target.value.toUpperCase())}
+                                placeholder="CONTOH: ABC12"
+                                maxLength={10}
+                                style={{
+                                    width: '100%', padding: '16px', borderRadius: '16px',
+                                    background: '#f8fafc', border: '2px solid #e2e8f0',
+                                    fontSize: '1.2rem', fontWeight: 900, color: '#1e293b', outline: 'none',
+                                    textAlign: 'center', letterSpacing: '4px'
+                                }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                onClick={() => {
+                                    setShowVideoIdModal(false);
+                                    setTargetSession(null);
+                                    setInputVideoId('');
+                                }}
+                                style={{ flex: 1, padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', fontWeight: 700, cursor: 'pointer' }}
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    if (!inputVideoId) return;
+
+                                    const inputCode = inputVideoId.trim().toUpperCase();
+
+                                    let found = targetSession ?
+                                        ((targetSession.access_id && targetSession.access_id.trim().toUpperCase() === inputCode) ? targetSession : null) :
+                                        liveSessions.find(s => s.access_id && s.access_id.trim().toUpperCase() === inputCode);
+
+                                    if (inputCode === 'ADMIN' && targetSession) found = targetSession;
+
+                                    if (found) {
+                                        const type = found.is_group ? 'group' : 'individual';
+                                        navigate(`/sinergi/video?sessionId=${found.id}&type=${type}`);
                                         setShowVideoIdModal(false);
                                         setTargetSession(null);
                                         setInputVideoId('');
-                                    }}
-                                    style={{ flex: 1, padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', fontWeight: 700, cursor: 'pointer' }}
-                                >Batal</button>
-                                <button
-                                    onClick={async () => {
-                                        if (!inputVideoId) return;
+                                        return;
+                                    }
 
-                                        const inputCode = inputVideoId.trim().toUpperCase();
+                                    try {
+                                        const { data, error } = await supabase
+                                            .from('sinergi_requests')
+                                            .select('*')
+                                            .eq('tracking_code', inputCode)
+                                            .eq('status', 'Scheduled')
+                                            .single();
 
-                                        // 1. Try finding in loaded liveSessions (optimistic)
-                                        let found = targetSession ?
-                                            ((targetSession.access_id && targetSession.access_id.trim().toUpperCase() === inputCode) ? targetSession : null) :
-                                            liveSessions.find(s => s.access_id && s.access_id.trim().toUpperCase() === inputCode);
-
-                                        // Admin override for testing
-                                        if (inputCode === 'ADMIN' && targetSession) found = targetSession;
-
-                                        if (found) {
-                                            const type = found.is_group ? 'group' : 'individual';
-                                            navigate(`/sinergi/video?sessionId=${found.id}&type=${type}`);
+                                        if (data && !error) {
+                                            const finalType = data.session_id ? 'group' : 'individual';
+                                            const finalId = data.session_id || data.id;
+                                            navigate(`/sinergi/video?sessionId=${finalId}&type=${finalType}`);
                                             setShowVideoIdModal(false);
                                             setTargetSession(null);
                                             setInputVideoId('');
-                                            return;
+                                        } else {
+                                            toast.error('ID Akses tidak valid atau sesi belum dimulai.');
                                         }
-
-                                        // 2. Fallback: Query database directly for individual request (in case it's not in liveSessions)
-                                        try {
-                                            const { data, error } = await supabase
-                                                .from('sinergi_requests')
-                                                .select('*')
-                                                .eq('tracking_code', inputCode)
-                                                .eq('status', 'Scheduled')
-                                                .single();
-
-                                            if (data && !error) {
-                                                // If it has a session_id, it's actually group-based
-                                                const finalType = data.session_id ? 'group' : 'individual';
-                                                const finalId = data.session_id || data.id;
-                                                navigate(`/sinergi/video?sessionId=${finalId}&type=${finalType}`);
-                                                setShowVideoIdModal(false);
-                                                setTargetSession(null);
-                                                setInputVideoId('');
-                                            } else {
-                                                alert('ID Akses tidak valid atau sesi belum dimulai.');
-                                            }
-                                        } catch (err) {
-                                            alert('Gagal memverifikasi ID Akses.');
-                                        }
-                                    }}
-                                    style={{ flex: 1, padding: '16px', borderRadius: '16px', border: 'none', background: '#10b981', color: 'white', fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)' }}
-                                >Bergabung</button>
-                            </div>
+                                    } catch (err) {
+                                        toast.error('Gagal memverifikasi ID Akses.');
+                                    }
+                                }}
+                                style={{
+                                    flex: 1, padding: '16px', borderRadius: '16px', border: 'none',
+                                    background: 'linear-gradient(135deg, #4f46e5, #4338ca)', color: 'white',
+                                    fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 20px rgba(79, 70, 229, 0.3)'
+                                }}
+                            >
+                                Bergabung
+                            </button>
                         </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

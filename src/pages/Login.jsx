@@ -74,7 +74,7 @@ export default function Login() {
                             type="email"
                             required
                             className="input"
-                            placeholder="admin@rsudbendan.id"
+                            placeholder="admin@bendanrs.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
