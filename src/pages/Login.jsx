@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { useAppLogo } from '../hooks/useAppLogo';
@@ -12,10 +12,20 @@ export default function Login() {
     const logoUrl = useAppLogo();
     const navigate = useNavigate();
 
-    // If already signed in, redirect to admin dashboard
+    // If already signed in, redirect smoothly inside useEffect to avoid bad setState during render
+    useEffect(() => {
+        if (user) {
+            navigate('/admin/dashboard', { replace: true });
+        }
+    }, [user, navigate]);
+
     if (user) {
-        navigate('/admin/dashboard', { replace: true });
-        return null;
+        return (
+            <div className="page-content animate-slide-up" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <div className="loading-spinner" style={{ marginBottom: '14px' }}></div>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600 }}>Menghubungkan ke Panel Admin RSUD Bendan...</p>
+            </div>
+        );
     }
 
     const handleLogin = async (e) => {
@@ -23,9 +33,9 @@ export default function Login() {
         setErrorMsg('');
         const { error } = await signIn(email, password);
         if (error) {
-            setErrorMsg(error.message);
+            setErrorMsg(error.message || 'Login gagal. Periksa kembali email dan kata sandi.');
         } else {
-            navigate('/admin/dashboard');
+            navigate('/admin/dashboard', { replace: true });
         }
     };
 

@@ -337,14 +337,14 @@ export default function DocumentationTab() {
 
     return (
         <div className="doc-wrapper animate-slide-up" style={{ color: '#1e293b' }}>
-            {/* Header Dokumentasi */}
+            {/* Header Dokumentasi (Solid Matte Bright) */}
             <div style={{
-                background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)',
+                background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 60%, #0ea5e9 100%)',
                 borderRadius: '24px',
                 padding: '28px 24px',
                 color: 'white',
                 marginBottom: '24px',
-                boxShadow: '0 12px 30px rgba(49, 46, 129, 0.2)',
+                boxShadow: '0 8px 24px rgba(2, 132, 199, 0.2)',
                 position: 'relative',
                 overflow: 'hidden'
             }}>
@@ -410,7 +410,7 @@ export default function DocumentationTab() {
                                     fontSize: '0.78rem', fontWeight: 700,
                                     border: 'none', cursor: 'pointer',
                                     background: isActive ? 'white' : 'rgba(255,255,255,0.12)',
-                                    color: isActive ? '#312e81' : 'white',
+                                    color: isActive ? '#0369a1' : 'white',
                                     boxShadow: isActive ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
                                     transition: 'all 0.2s'
                                 }}

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import {
-    Activity, FileText, Truck, Monitor, CheckCircle, Clock,
+    Activity, FileText, Truck, Monitor, CheckCircle, CheckCircle2, Clock,
     AlertCircle, Users, ArrowUpRight, TrendingUp, Calendar,
     ShieldCheck, Sparkles, ChevronRight, Award, Compass, Heart
 } from 'lucide-react';
@@ -194,56 +194,20 @@ export default function DashboardTab({
     }, [ramahDocs, santunReqs, sinergiCons]);
 
     return (
-        <div className="dashboard-tab-container animate-slide-up" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {/* ══════════════ 1. WELCOME HERO BANNER ══════════════ */}
-            <div style={{
-                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%)',
-                borderRadius: '24px',
-                padding: '28px 28px',
-                color: 'white',
-                position: 'relative',
-                overflow: 'hidden',
-                boxShadow: '0 12px 32px -4px rgba(15, 23, 42, 0.25)'
-            }}>
-                <div style={{
-                    position: 'absolute', right: '-40px', top: '-40px', width: '260px', height: '260px',
-                    borderRadius: '50%', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, transparent 70%)',
-                    pointerEvents: 'none'
-                }} />
-
-                <div style={{ position: 'relative', zIndex: 10 }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.12)', padding: '5px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 800, marginBottom: '12px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)' }}>
-                        <Sparkles size={14} color="#60a5fa" />
-                        <span>EXECUTIVE COMMAND CENTER • RSUD BENDAN KOTA PEKALONGAN</span>
-                    </div>
-
-                    <h1 style={{ fontSize: '1.85rem', fontWeight: 900, margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.5px' }}>
-                        Dashboard Eksekutif SAKPORE
-                    </h1>
-
-                    <p style={{ margin: 0, fontSize: '0.88rem', color: '#cbd5e1', lineHeight: 1.5, maxWidth: '800px' }}>
-                        Monitoring terpadu pelayanan pasca persalinan RSUD Bendan: status penerbitan akta lahir & KK (RAMAH), transportasi pulang nifas gratis (SANTUN), dan telekonsultasi gizi klinis (SINERGI) secara komprehensif dan realtime.
-                    </p>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '20px', flexWrap: 'wrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.76rem', color: '#93c5fd', background: 'rgba(30, 58, 138, 0.5)', padding: '6px 12px', borderRadius: '10px' }}>
-                            <Activity size={14} /> Server Status: <strong>Online & Stabil</strong>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.76rem', color: '#cbd5e1' }}>
-                            <Calendar size={14} /> {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* ══════════════ 2. STYLISH & ELEGANT SCORECARDS ══════════════ */}
+        <div className="dashboard-tab-container animate-slide-up" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* ══════════════ 2. STYLISH & ELEGANT SCORECARDS (SOLID MATTE) ══════════════ */}
             <div className="sc-grid">
                 {/* Scorecard 1: Total Layanan */}
                 <div className="sc-card sc-blue">
-                    <div className="sc-emoji">📊</div>
-                    <div className="sc-lbl">Total Seluruh Layanan</div>
+                    <div className="sc-badge-top">
+                        <span className="sc-pill sc-pill-blue">Total Layanan</span>
+                        <div className="sc-icon-wrapper sc-icon-blue">
+                            <Activity size={16} strokeWidth={2.2} />
+                        </div>
+                    </div>
                     <div className="sc-val">{grandTotal}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px', fontSize: '0.72rem', color: '#2563eb', fontWeight: 700 }}>
+                    <div className="sc-lbl">Total Seluruh Layanan</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px', fontSize: '0.72rem', color: '#0369a1', fontWeight: 700 }}>
                         <TrendingUp size={13} />
                         <span>Akumulasi RAMAH, SANTUN & SINERGI</span>
                     </div>
@@ -251,9 +215,14 @@ export default function DashboardTab({
 
                 {/* Scorecard 2: Selesai */}
                 <div className="sc-card sc-green">
-                    <div className="sc-emoji">✅</div>
-                    <div className="sc-lbl">Layanan Selesai (Tuntas)</div>
+                    <div className="sc-badge-top">
+                        <span className="sc-pill sc-pill-green">Tuntas</span>
+                        <div className="sc-icon-wrapper sc-icon-green">
+                            <CheckCircle2 size={16} strokeWidth={2.2} />
+                        </div>
+                    </div>
                     <div className="sc-val">{grandCompleted}</div>
+                    <div className="sc-lbl">Layanan Selesai (Tuntas)</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px', fontSize: '0.72rem', color: '#059669', fontWeight: 700 }}>
                         <ShieldCheck size={13} />
                         <span>{completionRate}% Tingkat Penyelesaian Sukses</span>
@@ -262,9 +231,14 @@ export default function DashboardTab({
 
                 {/* Scorecard 3: Dalam Proses */}
                 <div className="sc-card sc-amber">
-                    <div className="sc-emoji">⚡</div>
-                    <div className="sc-lbl">Sedang Ditindaklanjuti</div>
+                    <div className="sc-badge-top">
+                        <span className="sc-pill sc-pill-amber">Diproses</span>
+                        <div className="sc-icon-wrapper sc-icon-amber">
+                            <Clock size={16} strokeWidth={2.2} />
+                        </div>
+                    </div>
                     <div className="sc-val">{grandProcess}</div>
+                    <div className="sc-lbl">Sedang Ditindaklanjuti</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px', fontSize: '0.72rem', color: '#d97706', fontWeight: 700 }}>
                         <Clock size={13} />
                         <span>Verifikasi Dukcapil / Armada Bertugas</span>
@@ -273,9 +247,14 @@ export default function DashboardTab({
 
                 {/* Scorecard 4: Antrean Menunggu */}
                 <div className="sc-card sc-rose">
-                    <div className="sc-emoji">⏳</div>
-                    <div className="sc-lbl">Menunggu Verifikasi Baru</div>
+                    <div className="sc-badge-top">
+                        <span className="sc-pill sc-pill-rose">Antrean Baru</span>
+                        <div className="sc-icon-wrapper sc-icon-rose">
+                            <AlertCircle size={16} strokeWidth={2.2} />
+                        </div>
+                    </div>
                     <div className="sc-val">{grandPending}</div>
+                    <div className="sc-lbl">Menunggu Verifikasi Baru</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px', fontSize: '0.72rem', color: '#e11d48', fontWeight: 700 }}>
                         <AlertCircle size={13} />
                         <span>Perlu Respon Tim Petugas</span>

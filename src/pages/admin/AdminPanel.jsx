@@ -3,10 +3,11 @@ import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import {
-    LogOut, FileText, Truck, CheckCircle, PackageCheck, Navigation,
+    LogOut, FileText, Truck, CheckCircle, CheckCircle2, PackageCheck, Navigation,
     Eye, ClipboardList, Download, Square, Archive, Search, Bell, X, MessageCircle,
-    Monitor, Smartphone, Video, Calendar, Clock, MessageSquare,
-    Users, ChevronDown, ChevronUp, Trash2, UserPlus, Edit, BookOpen, Settings
+    Monitor, Smartphone, Video, Calendar, Clock, MessageSquare, Ambulance,
+    Users, ChevronDown, ChevronUp, Trash2, UserPlus, Edit, BookOpen, Settings,
+    AlertCircle, AlertTriangle, ChefHat, Activity, TrendingUp
 } from 'lucide-react';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
@@ -193,44 +194,45 @@ async function downloadAllFilesAsZip(files, zipName) {
 
 /* ──────────────────── STYLES ──────────────────── */
 const styles = `
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Outfit:wght@500;600;700;800;900&display=swap');
 
 .admin-hero-header {
-    background: linear-gradient(135deg, #0c4a6e 0%, #1e3a8a 35%, #7f1d1d 70%, #be123c 100%);
-    color: white; padding: 28px 20px 28px; position: relative; overflow: hidden; font-family: 'Outfit', sans-serif;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0ea5e9 100%);
+    color: white; padding: 26px 24px; position: relative; overflow: hidden; font-family: 'Plus Jakarta Sans', sans-serif;
+    box-shadow: 0 4px 18px rgba(2, 132, 199, 0.15);
 }
 .admin-hero-header::before {
     content: ''; position: absolute; top: -60px; right: -40px; width: 260px; height: 260px; border-radius: 50%;
-    background: rgba(225,29,72,0.25); border: 3px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.2);
 }
 .admin-hero-header::after {
     content: ''; position: absolute; bottom: -80px; left: -50px; width: 220px; height: 220px; border-radius: 50%;
-    background: rgba(56,189,248,0.15); border: 2px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15);
 }
 .admin-hero-curve { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; overflow: hidden; }
 .admin-hero-curve svg { position: absolute; bottom: 0; left: 0; width: 100%; }
 .sahabatbunda-floating {
-    font-family: 'Playfair Display', serif; font-style: italic; font-weight: 700; font-size: 2.6rem;
-    letter-spacing: 3px; color: rgba(255,255,255,0.08); position: absolute; top: 8px; right: 16px; z-index: 1;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.15); animation: sahabatbundaFloat 4s ease-in-out infinite; user-select: none;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-style: italic; font-weight: 800; font-size: 2.2rem;
+    letter-spacing: 2px; color: rgba(255,255,255,0.18); position: absolute; top: 12px; right: 24px; z-index: 1;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.08); animation: sahabatbundaFloat 4s ease-in-out infinite; user-select: none;
 }
-@keyframes sahabatbundaFloat { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(0deg); } }
+@keyframes sahabatbundaFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
 .admin-tabs-modern { display: flex; gap: 0; background: #f1f5f9; border-radius: 14px; padding: 4px; margin-bottom: 20px; }
 .admin-tab-modern {
     flex: 1; padding: 10px 6px; border: none; background: transparent; border-radius: 10px;
-    font-size: 0.82rem; font-weight: 600; color: #64748b; cursor: pointer;
+    font-size: 0.82rem; font-weight: 700; color: #475569; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 4px;
-    transition: all 0.25s ease; font-family: 'Outfit', sans-serif;
+    transition: all 0.25s ease; font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.admin-tab-modern.active { background: white; color: #0284c7; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.admin-tab-modern.active { background: white; color: #0284c7; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 
-/* ─── FRESH ENTERPRISE SCORECARDS ─── */
+/* ─── FRESH ENTERPRISE SCORECARDS (SOLID MATTE BRIGHT COMPACT) ─── */
 .sc-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
 }
 @media (min-width: 1024px) {
     .sc-grid {
@@ -239,88 +241,91 @@ const styles = `
 }
 .sc-card {
     position: relative;
-    padding: 22px 20px;
-    border-radius: 20px;
+    padding: 12px 14px;
+    border-radius: 14px;
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1.5px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justifyContent: space-between;
 }
 .sc-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 14px 28px -4px rgba(15, 23, 42, 0.09), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
-    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px -2px rgba(15, 23, 42, 0.07);
 }
-.sc-card .sc-emoji {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+
+.sc-badge-top {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 1.3rem;
-    transition: transform 0.3s ease;
+    justifyContent: space-between;
+    margin-bottom: 6px;
 }
-.sc-card:hover .sc-emoji {
-    transform: scale(1.08) rotate(4deg);
+
+.sc-pill {
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 10px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
+.sc-pill-blue { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.sc-pill-green { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.sc-pill-amber { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.sc-pill-rose { background: #fee2e2; color: #be123c; border: 1px solid #fecdd3; }
+
+.sc-icon-wrapper {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justifyContent: center;
+    transition: transform 0.2s ease;
+}
+.sc-card:hover .sc-icon-wrapper {
+    transform: scale(1.06);
+}
+.sc-icon-blue { background: #e0f2fe; color: #0284c7; }
+.sc-icon-green { background: #dcfce7; color: #059669; }
+.sc-icon-amber { background: #fef3c7; color: #d97706; }
+.sc-icon-rose { background: #fee2e2; color: #e11d48; }
+
 .sc-val {
-    font-size: 2.35rem;
+    font-size: 1.45rem;
     font-weight: 900;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    line-height: 1.1;
-    margin-top: 4px;
-    margin-bottom: 4px;
-    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-top: 1px;
+    margin-bottom: 2px;
+    letter-spacing: -0.02em;
     color: #0f172a;
 }
 .sc-lbl {
-    font-size: 0.72rem;
+    font-size: 0.67rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #64748b;
+    letter-spacing: 0.04em;
+    color: #475569;
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
-/* Color accents for cards: crisp borders and soft icon badges */
+
+/* Color accents for cards: solid matte borders */
 .sc-blue {
-    border-top: 4px solid #3b82f6;
-}
-.sc-blue .sc-emoji {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    color: #2563eb;
+    border-top: 3px solid #0284c7;
 }
 .sc-green {
-    border-top: 4px solid #10b981;
-}
-.sc-green .sc-emoji {
-    background: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    color: #059669;
+    border-top: 3px solid #059669;
 }
 .sc-amber {
-    border-top: 4px solid #f59e0b;
-}
-.sc-amber .sc-emoji {
-    background: #fffbeb;
-    border: 1px solid #fde68a;
-    color: #d97706;
+    border-top: 3px solid #d97706;
 }
 .sc-rose {
-    border-top: 4px solid #f43f5e;
-}
-.sc-rose .sc-emoji {
-    background: #fff1f2;
-    border: 1px solid #fecdd3;
-    color: #e11d48;
+    border-top: 3px solid #e11d48;
 }
 
 /* ─── FILTER ─── */
@@ -542,57 +547,99 @@ export default function AdminPanel() {
     useEffect(() => {
         const fetchProfile = async () => {
             if (!user) return;
-            const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-            if (data) {
-                setUserProfile(data);
-                // If nutritionist, only allow sinergi tab
-                if (data.role === 'narasumber') {
-                    setActiveTab('sinergi');
+            try {
+                const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
+                if (data && !error) {
+                    setUserProfile(data);
+                    if (data.role === 'narasumber') {
+                        setActiveTab('sinergi');
+                    }
+                } else {
+                    // Fallback profile dari user auth jika baris profiles belum tersedia (mencegah error 406)
+                    const fallback = {
+                        id: user.id,
+                        full_name: user.user_metadata?.full_name || 'Super Admin Bendan',
+                        email: user.email || 'admin@bendanrs.com',
+                        role: user.user_metadata?.role || 'admin',
+                        created_at: new Date().toISOString()
+                    };
+                    setUserProfile(fallback);
                 }
+            } catch (err) {
+                console.warn('Profile fetch note:', err);
+                setUserProfile({
+                    id: user.id,
+                    full_name: user.user_metadata?.full_name || 'Super Admin Bendan',
+                    email: user.email || 'admin@bendanrs.com',
+                    role: 'admin',
+                    created_at: new Date().toISOString()
+                });
             }
         };
         fetchProfile();
 
         fetchData();
 
-        const ramahSub = supabase.channel('public:ramah_documents')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ramah_documents' }, payload => {
-                setNotifications(prev => [...prev, {
-                    id: 'r_' + payload.new.id,
-                    type: 'ramah',
-                    title: 'Pengajuan RAMAH Baru',
-                    name: payload.new.applicant_name,
-                    phone: payload.new.phone_number
-                }]);
-                fetchData();
-            })
-            .subscribe();
+        let ramahSub = null;
+        let santunSub = null;
+        let foodSub = null;
 
-        const santunSub = supabase.channel('public:santun_requests')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'santun_requests' }, payload => {
-                setNotifications(prev => [...prev, {
-                    id: 's_' + payload.new.id,
-                    type: 'santun',
-                    title: 'Permohonan SANTUN Baru',
-                    name: payload.new.patient_name,
-                    phone: payload.new.phone_number
-                }]);
-                fetchData();
-            })
-            .subscribe();
+        try {
+            ramahSub = supabase.channel('public:ramah_documents')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ramah_documents' }, payload => {
+                    if (payload?.new) {
+                        setNotifications(prev => [...prev, {
+                            id: 'r_' + payload.new.id,
+                            type: 'ramah',
+                            title: 'Pengajuan RAMAH Baru',
+                            name: payload.new.applicant_name,
+                            phone: payload.new.phone_number
+                        }]);
+                        fetchData();
+                    }
+                })
+                .subscribe();
+        } catch (e) {
+            console.warn('RAMAH realtime skipped:', e);
+        }
 
-        const foodSub = supabase.channel('public:food_orders')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'food_orders' }, payload => {
-                setNotifications(prev => [...prev, {
-                    id: 'f_' + payload.new.id,
-                    type: 'gizi',
-                    title: `Pesanan Makanan Baru (${payload.new.room_name})`,
-                    name: payload.new.customer_name,
-                    phone: payload.new.phone_number
-                }]);
-                fetchData();
-            })
-            .subscribe();
+        try {
+            santunSub = supabase.channel('public:santun_requests')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'santun_requests' }, payload => {
+                    if (payload?.new) {
+                        setNotifications(prev => [...prev, {
+                            id: 's_' + payload.new.id,
+                            type: 'santun',
+                            title: 'Permohonan SANTUN Baru',
+                            name: payload.new.patient_name,
+                            phone: payload.new.phone_number
+                        }]);
+                        fetchData();
+                    }
+                })
+                .subscribe();
+        } catch (e) {
+            console.warn('SANTUN realtime skipped:', e);
+        }
+
+        try {
+            foodSub = supabase.channel('public:food_orders')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'food_orders' }, payload => {
+                    if (payload?.new) {
+                        setNotifications(prev => [...prev, {
+                            id: 'f_' + payload.new.id,
+                            type: 'gizi',
+                            title: `Pesanan Makanan Baru (${payload.new.room_name})`,
+                            name: payload.new.customer_name,
+                            phone: payload.new.phone_number
+                        }]);
+                        fetchData();
+                    }
+                })
+                .subscribe();
+        } catch (e) {
+            console.warn('Food orders realtime skipped:', e);
+        }
 
         const localFoodHandler = (e) => {
             if (e?.detail) {
@@ -609,9 +656,9 @@ export default function AdminPanel() {
         window.addEventListener('food_order_created', localFoodHandler);
 
         return () => {
-            supabase.removeChannel(ramahSub);
-            supabase.removeChannel(santunSub);
-            supabase.removeChannel(foodSub);
+            if (ramahSub) supabase.removeChannel(ramahSub);
+            if (santunSub) supabase.removeChannel(santunSub);
+            if (foodSub) supabase.removeChannel(foodSub);
             window.removeEventListener('food_order_created', localFoodHandler);
         };
     }, []);
@@ -619,23 +666,38 @@ export default function AdminPanel() {
     const fetchData = async () => {
         setLoading(true);
         try {
+            const safeQuery = async (table) => {
+                try {
+                    const res = await supabase.from(table).select('*').order('created_at', { ascending: false });
+                    return res || { data: [] };
+                } catch {
+                    return { data: [] };
+                }
+            };
+
             const [ramahRes, santunRes, sinergiRes, foodRes] = await Promise.all([
-                supabase.from('ramah_documents').select('*').order('created_at', { ascending: false }),
-                supabase.from('santun_requests').select('*').order('created_at', { ascending: false }),
-                supabase.from('sinergi_requests').select('*').order('created_at', { ascending: false }),
-                supabase.from('food_orders').select('*').order('created_at', { ascending: false })
+                safeQuery('ramah_documents'),
+                safeQuery('santun_requests'),
+                safeQuery('sinergi_requests'),
+                safeQuery('food_orders')
             ]);
-            const sinergiSessionsRes = await supabase.from('sinergi_sessions').select('*').order('created_at', { ascending: false });
-            const sinergiNutRes = await supabase.from('sinergi_nutritionists').select('*').order('name', { ascending: true });
+            let sinergiSessionsRes = { data: [] };
+            let sinergiNutRes = { data: [] };
+            try {
+                sinergiSessionsRes = await supabase.from('sinergi_sessions').select('*').order('created_at', { ascending: false });
+            } catch {}
+            try {
+                sinergiNutRes = await supabase.from('sinergi_nutritionists').select('*').order('name', { ascending: true });
+            } catch {}
 
-            setRamahDocs(ramahRes.data || []);
-            setSantunReqs(santunRes.data || []);
-            setSinergiCons(sinergiRes.data || []);
-            setSinergiSessions(sinergiSessionsRes.data || []);
-            setSinergiNutritionists(sinergiNutRes.data || []);
+            setRamahDocs(ramahRes?.data || []);
+            setSantunReqs(santunRes?.data || []);
+            setSinergiCons(sinergiRes?.data || []);
+            setSinergiSessions(sinergiSessionsRes?.data || []);
+            setSinergiNutritionists(sinergiNutRes?.data || []);
 
-            // Ambil dari Supabase, jika kosong padukan dengan localStorage
-            let orders = foodRes.data || [];
+            // Ambil dari Supabase (jika tabel ada), dan padukan dengan data lokal
+            let orders = foodRes?.data || [];
             try {
                 const local = JSON.parse(localStorage.getItem('sahabatbunda_food_orders') || '[]');
                 if (local.length > 0) {
@@ -647,33 +709,58 @@ export default function AdminPanel() {
                 console.error(e);
             }
             setFoodOrders(orders);
-        } catch (err) { console.error(err); }
-        finally { setLoading(false); }
+        } catch (err) {
+            console.warn('fetchData notice:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const updateFoodOrderStatus = async (id, status, order) => {
         const statusLabels = {
+            dipesan: 'Dipesan (Dalam Penanganan)',
             diproses: 'Sedang Dimasak',
             diantar: 'Sedang Diantar ke Kamar',
-            diterima: 'Sudah Diterima Pasien'
+            selesai: 'Selesai (Diantar & Diserahkan)',
+            diterima: 'Selesai Diterima Pasien'
         };
         const label = statusLabels[status] || status;
         if (!window.confirm(`Update status pesanan ${order?.order_code || ''} ke "${label}"?`)) return;
 
+        const isCompleted = status === 'selesai' || status === 'diterima';
+        const nowIso = new Date().toISOString();
+
         try {
             // Update Supabase
             if (typeof id === 'string' && !id.startsWith('local_')) {
-                const { error } = await supabase.from('food_orders').update({
+                const updatePayload = {
                     order_status: status,
-                    updated_at: new Date().toISOString()
-                }).eq('id', id);
-                if (error) console.error(error);
+                    updated_at: nowIso
+                };
+                if (isCompleted) {
+                    updatePayload.completed_at = nowIso;
+                }
+                try {
+                    await supabase.from('food_orders').update(updatePayload).eq('id', id);
+                } catch {
+                    // ignore if table not present in supabase
+                }
             }
 
             // Update localStorage
             try {
                 const local = JSON.parse(localStorage.getItem('sahabatbunda_food_orders') || '[]');
-                const updated = local.map(o => o.id === id || o.order_code === order?.order_code ? { ...o, order_status: status } : o);
+                const updated = local.map(o => {
+                    if (o.id === id || o.order_code === order?.order_code) {
+                        return {
+                            ...o,
+                            order_status: status,
+                            updated_at: nowIso,
+                            ...(isCompleted ? { completed_at: nowIso } : {})
+                        };
+                    }
+                    return o;
+                });
                 localStorage.setItem('sahabatbunda_food_orders', JSON.stringify(updated));
             } catch (e) {
                 console.error(e);
@@ -688,8 +775,8 @@ export default function AdminPanel() {
                     msg = `Halo ${order.customer_name}, pesanan makanan Anda (${order.order_code}) sedang disiapkan oleh Dapur Gizi RSUD Bendan.`;
                 } else if (status === 'diantar') {
                     msg = `Halo ${order.customer_name}, pesanan makanan Anda (${order.order_code}) saat ini SEDANG DIANTAR oleh petugas gizi menuju kamar: *${order.room_name}*. Mohon bersiap ya Bunda/Bpk.`;
-                } else if (status === 'diterima') {
-                    msg = `Halo ${order.customer_name}, pesanan makanan Anda (${order.order_code}) telah BERHASIL DITERIMA di ${order.room_name}. Selamat menikmati hidangan bergizi RSUD Bendan! Jika berkenan, silakan hubungi kami kembali jika membutuhkan layanan lainnya.`;
+                } else if (status === 'selesai' || status === 'diterima') {
+                    msg = `Halo ${order.customer_name}, pesanan makanan Anda (${order.order_code}) telah SELESAI diantar & diserahkan di *${order.room_name}*. Selamat menikmati hidangan bergizi RSUD Bendan! Terima kasih.`;
                 }
                 if (msg) openWhatsApp(order.phone_number, msg);
             }
@@ -1203,10 +1290,38 @@ export default function AdminPanel() {
                     {/* ═══════ RAMAH ═══════ */}
                     {activeTab === 'ramah' && (<div>
                         <div className="sc-grid">
-                            <div className="sc-card sc-blue"><div className="sc-emoji">📋</div><div className="sc-val">{ramahFiltered.length}</div><div className="sc-lbl">Total Pengajuan</div></div>
-                            <div className="sc-card sc-green"><div className="sc-emoji">✅</div><div className="sc-val">{ramahFiltered.filter(d => d.status === 'completed').length}</div><div className="sc-lbl">Selesai</div></div>
-                            <div className="sc-card sc-amber"><div className="sc-emoji">⚡</div><div className="sc-val">{ramahFiltered.filter(d => d.status === 'verified' || d.status === 'delivering').length}</div><div className="sc-lbl">Diproses</div></div>
-                            <div className="sc-card sc-rose"><div className="sc-emoji">⏳</div><div className="sc-val">{ramahFiltered.filter(d => d.status === 'pending').length}</div><div className="sc-lbl">Menunggu</div></div>
+                            <div className="sc-card sc-blue">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-blue">RAMAH</span>
+                                    <div className="sc-icon-wrapper sc-icon-blue"><FileText size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{ramahFiltered.length}</div>
+                                <div className="sc-lbl">Total Pengajuan</div>
+                            </div>
+                            <div className="sc-card sc-green">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-green">Tuntas</span>
+                                    <div className="sc-icon-wrapper sc-icon-green"><CheckCircle2 size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{ramahFiltered.filter(d => d.status === 'completed').length}</div>
+                                <div className="sc-lbl">Selesai</div>
+                            </div>
+                            <div className="sc-card sc-amber">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-amber">Proses</span>
+                                    <div className="sc-icon-wrapper sc-icon-amber"><Clock size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{ramahFiltered.filter(d => d.status === 'verified' || d.status === 'delivering').length}</div>
+                                <div className="sc-lbl">Diproses</div>
+                            </div>
+                            <div className="sc-card sc-rose">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-rose">Antrean</span>
+                                    <div className="sc-icon-wrapper sc-icon-rose"><AlertCircle size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{ramahFiltered.filter(d => d.status === 'pending').length}</div>
+                                <div className="sc-lbl">Menunggu</div>
+                            </div>
                         </div>
                         <FilterBar year={rYear} setYear={setRYear} period={rPeriod} setPeriod={setRPeriod} sub={rSub} setSub={setRSub} />
                         <ChartBlock chartData={ramahChart} color="#2563eb" label="RAMAH" chartRef={ramahChartRef} />
@@ -1253,10 +1368,38 @@ export default function AdminPanel() {
                     {/* ═══════ SANTUN ═══════ */}
                     {activeTab === 'santun' && (<div>
                         <div className="sc-grid">
-                            <div className="sc-card sc-blue"><div className="sc-emoji">🚑</div><div className="sc-val">{santunFiltered.length}</div><div className="sc-lbl">Total Permohonan</div></div>
-                            <div className="sc-card sc-green"><div className="sc-emoji">✅</div><div className="sc-val">{santunFiltered.filter(r => r.status === 'completed').length}</div><div className="sc-lbl">Selesai</div></div>
-                            <div className="sc-card sc-amber"><div className="sc-emoji">🚗</div><div className="sc-val">{santunFiltered.filter(r => r.status === 'assigned' || r.status === 'in_progress').length}</div><div className="sc-lbl">Diproses</div></div>
-                            <div className="sc-card sc-rose"><div className="sc-emoji">📨</div><div className="sc-val">{santunFiltered.filter(r => r.status === 'requested').length}</div><div className="sc-lbl">Menunggu</div></div>
+                            <div className="sc-card sc-blue">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-blue">SANTUN</span>
+                                    <div className="sc-icon-wrapper sc-icon-blue"><Ambulance size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{santunFiltered.length}</div>
+                                <div className="sc-lbl">Total Permohonan</div>
+                            </div>
+                            <div className="sc-card sc-green">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-green">Tuntas</span>
+                                    <div className="sc-icon-wrapper sc-icon-green"><CheckCircle2 size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{santunFiltered.filter(r => r.status === 'completed').length}</div>
+                                <div className="sc-lbl">Selesai</div>
+                            </div>
+                            <div className="sc-card sc-amber">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-amber">Armada</span>
+                                    <div className="sc-icon-wrapper sc-icon-amber"><Truck size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{santunFiltered.filter(r => r.status === 'assigned' || r.status === 'in_progress').length}</div>
+                                <div className="sc-lbl">Diproses</div>
+                            </div>
+                            <div className="sc-card sc-rose">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-rose">Antrean</span>
+                                    <div className="sc-icon-wrapper sc-icon-rose"><Clock size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{santunFiltered.filter(r => r.status === 'requested').length}</div>
+                                <div className="sc-lbl">Menunggu</div>
+                            </div>
                         </div>
                         <FilterBar year={sYear} setYear={setSYear} period={sPeriod} setPeriod={setSPeriod} sub={sSub} setSub={setSSub} />
                         <ChartBlock chartData={santunChart} color="#16a34a" label="SANTUN" chartRef={santunChartRef} />
@@ -1303,10 +1446,38 @@ export default function AdminPanel() {
                     {/* ═══════ SINERGI ═══════ */}
                     {activeTab === 'sinergi' && (<div>
                         <div className="sc-grid">
-                            <div className="sc-card sc-blue"><div className="sc-emoji">🎥</div><div className="sc-val">{sinergiCons.length}</div><div className="sc-lbl">Total Konsultasi</div></div>
-                            <div className="sc-card sc-green"><div className="sc-emoji">✅</div><div className="sc-val">{sinergiCons.filter(c => c.status === 'Completed').length}</div><div className="sc-lbl">Selesai</div></div>
-                            <div className="sc-card sc-amber"><div className="sc-emoji">📅</div><div className="sc-val">{sinergiCons.filter(c => c.status === 'Scheduled').length}</div><div className="sc-lbl">Terjadwal</div></div>
-                            <div className="sc-card sc-rose"><div className="sc-emoji">⏳</div><div className="sc-val">{sinergiCons.filter(c => c.status === 'Pending').length}</div><div className="sc-lbl">Menunggu</div></div>
+                            <div className="sc-card sc-blue">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-blue">SINERGI</span>
+                                    <div className="sc-icon-wrapper sc-icon-blue"><Video size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{sinergiCons.length}</div>
+                                <div className="sc-lbl">Total Konsultasi</div>
+                            </div>
+                            <div className="sc-card sc-green">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-green">Tuntas</span>
+                                    <div className="sc-icon-wrapper sc-icon-green"><CheckCircle2 size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{sinergiCons.filter(c => c.status === 'Completed').length}</div>
+                                <div className="sc-lbl">Selesai</div>
+                            </div>
+                            <div className="sc-card sc-amber">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-amber">Jadwal</span>
+                                    <div className="sc-icon-wrapper sc-icon-amber"><Calendar size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{sinergiCons.filter(c => c.status === 'Scheduled').length}</div>
+                                <div className="sc-lbl">Terjadwal</div>
+                            </div>
+                            <div className="sc-card sc-rose">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-rose">Antrean</span>
+                                    <div className="sc-icon-wrapper sc-icon-rose"><Clock size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{sinergiCons.filter(c => c.status === 'Pending').length}</div>
+                                <div className="sc-lbl">Menunggu</div>
+                            </div>
                         </div>
 
                         <div className="section-sep"></div>
@@ -1857,10 +2028,38 @@ export default function AdminPanel() {
                     {/* ═══════ ARSIP ═══════ */}
                     {activeTab === 'arsip' && (<div>
                         <div className="sc-grid">
-                            <div className="sc-card sc-blue"><div className="sc-emoji">📚</div><div className="sc-val">{arsipRamah.length + arsipSantun.length + arsipSinergi.length}</div><div className="sc-lbl">Total Arsip Selesai</div></div>
-                            <div className="sc-card sc-green"><div className="sc-emoji">📄</div><div className="sc-val">{arsipRamah.length}</div><div className="sc-lbl">Arsip RAMAH</div></div>
-                            <div className="sc-card sc-amber"><div className="sc-emoji">🚑</div><div className="sc-val">{arsipSantun.length}</div><div className="sc-lbl">Arsip SANTUN</div></div>
-                            <div className="sc-card sc-rose"><div className="sc-emoji">🎥</div><div className="sc-val">{arsipSinergi.length}</div><div className="sc-lbl">Arsip SINERGI</div></div>
+                            <div className="sc-card sc-blue">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-blue">Digital</span>
+                                    <div className="sc-icon-wrapper sc-icon-blue"><Archive size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{arsipRamah.length + arsipSantun.length + arsipSinergi.length}</div>
+                                <div className="sc-lbl">Total Arsip Selesai</div>
+                            </div>
+                            <div className="sc-card sc-green">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-green">RAMAH</span>
+                                    <div className="sc-icon-wrapper sc-icon-green"><FileText size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{arsipRamah.length}</div>
+                                <div className="sc-lbl">Arsip RAMAH</div>
+                            </div>
+                            <div className="sc-card sc-amber">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-amber">SANTUN</span>
+                                    <div className="sc-icon-wrapper sc-icon-amber"><Ambulance size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{arsipSantun.length}</div>
+                                <div className="sc-lbl">Arsip SANTUN</div>
+                            </div>
+                            <div className="sc-card sc-rose">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-rose">SINERGI</span>
+                                    <div className="sc-icon-wrapper sc-icon-rose"><Video size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{arsipSinergi.length}</div>
+                                <div className="sc-lbl">Arsip SINERGI</div>
+                            </div>
                         </div>
                         <div className="search-box" style={{ marginBottom: '20px' }}><Search size={16} color="#94a3b8" /><input placeholder="Cari arsip nama atau NIK..." value={aSearch} onChange={e => setASearch(e.target.value)} /></div>
 
@@ -1904,10 +2103,38 @@ export default function AdminPanel() {
                     {/* ═══════ SPJ ═══════ */}
                     {activeTab === 'spj' && (<div>
                         <div className="sc-grid">
-                            <div className="sc-card sc-blue"><div className="sc-emoji">📄</div><div className="sc-val">{completedRamah.length}</div><div className="sc-lbl">RAMAH Selesai</div></div>
-                            <div className="sc-card sc-green"><div className="sc-emoji">🚑</div><div className="sc-val">{completedSantun.length}</div><div className="sc-lbl">SANTUN Selesai</div></div>
-                            <div className="sc-card sc-amber"><div className="sc-emoji">✍️</div><div className="sc-val">{completedRamah.filter(d => d.is_spj_claimed).length + completedSantun.filter(r => r.is_spj_claimed).length}</div><div className="sc-lbl">Total Diklaim</div></div>
-                            <div className="sc-card sc-rose"><div className="sc-emoji">📝</div><div className="sc-val">{completedRamah.filter(d => !d.is_spj_claimed).length + completedSantun.filter(r => !r.is_spj_claimed).length}</div><div className="sc-lbl">Sisa Belum Diklaim</div></div>
+                            <div className="sc-card sc-blue">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-blue">RAMAH</span>
+                                    <div className="sc-icon-wrapper sc-icon-blue"><FileText size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{completedRamah.length}</div>
+                                <div className="sc-lbl">RAMAH Selesai</div>
+                            </div>
+                            <div className="sc-card sc-green">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-green">SANTUN</span>
+                                    <div className="sc-icon-wrapper sc-icon-green"><Ambulance size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{completedSantun.length}</div>
+                                <div className="sc-lbl">SANTUN Selesai</div>
+                            </div>
+                            <div className="sc-card sc-amber">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-amber">Klaim SPJ</span>
+                                    <div className="sc-icon-wrapper sc-icon-amber"><ClipboardList size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{completedRamah.filter(d => d.is_spj_claimed).length + completedSantun.filter(r => r.is_spj_claimed).length}</div>
+                                <div className="sc-lbl">Total Diklaim</div>
+                            </div>
+                            <div className="sc-card sc-rose">
+                                <div className="sc-badge-top">
+                                    <span className="sc-pill sc-pill-rose">Sisa</span>
+                                    <div className="sc-icon-wrapper sc-icon-rose"><Clock size={18} strokeWidth={2.2} /></div>
+                                </div>
+                                <div className="sc-val">{completedRamah.filter(d => !d.is_spj_claimed).length + completedSantun.filter(r => !r.is_spj_claimed).length}</div>
+                                <div className="sc-lbl">Sisa Belum Diklaim</div>
+                            </div>
                         </div>
                         <FilterBar year={spjYear} setYear={setSpjYear} period={spjPeriod} setPeriod={setSpjPeriod} sub={spjSub} setSub={setSpjSub} />
 

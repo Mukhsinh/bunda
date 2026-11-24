@@ -242,28 +242,29 @@ export default function SettingsTab({ currentAdminUser }) {
 
     return (
         <div className="animate-slide-up" style={{ color: '#1e293b' }}>
-            {/* Header Pengaturan */}
+            {/* Header Pengaturan (Solid Matte Bright) */}
             <div style={{
-                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%)',
+                background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 60%, #0ea5e9 100%)',
                 borderRadius: '24px',
                 padding: '28px 24px',
                 color: 'white',
                 marginBottom: '24px',
-                boxShadow: '0 12px 28px rgba(15, 23, 42, 0.25)',
+                boxShadow: '0 8px 24px rgba(2, 132, 199, 0.2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 flexWrap: 'wrap',
-                gap: '16px'
+                gap: '16px',
+                fontFamily: "'Plus Jakarta Sans', sans-serif"
             }}>
                 <div>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', padding: '5px 12px', borderRadius: '16px', fontSize: '0.75rem', fontWeight: 700, marginBottom: '8px' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '5px 12px', borderRadius: '16px', fontSize: '0.75rem', fontWeight: 800, marginBottom: '8px' }}>
                         <Settings size={14} /> PUSAT KONFIGURASI SISTEM
                     </div>
-                    <h1 style={{ fontSize: '1.6rem', fontWeight: 900, margin: 0, fontFamily: "'Outfit', sans-serif" }}>
+                    <h1 style={{ fontSize: '1.6rem', fontWeight: 900, margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#ffffff' }}>
                         Pengaturan & Manajemen Akses
                     </h1>
-                    <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+                    <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#e0f2fe', fontWeight: 500 }}>
                         Kustomisasi identitas aplikasi, berkas cetak, logo, footer, dan otoritas pengguna.
                     </p>
                 </div>

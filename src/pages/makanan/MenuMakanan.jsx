@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
     ArrowLeft, MapPin, Navigation, ShoppingBag, Plus, Minus,
@@ -37,114 +37,11 @@ function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
     return Math.round(R * c);
 }
 
-// Daftar Menu Makanan & Tarif Resmi (GoFood Style - Menampilkan Menu & Tarif Saja)
-const MENU_ITEMS = [
-    {
-        id: 1,
-        category: 'makanan',
-        name: 'Geprek Juara',
-        price: 12000,
-        image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 2,
-        category: 'makanan',
-        name: 'Nasi Rasa Rumah',
-        price: 12000,
-        image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 3,
-        category: 'makanan',
-        name: 'Nasi Goreng Nagih',
-        price: 12000,
-        image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 4,
-        category: 'mie_sup',
-        name: 'Mie Hangat Bahagia',
-        price: 12000,
-        image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 5,
-        category: 'mie_sup',
-        name: 'Kwietiau Mantul',
-        price: 12000,
-        image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 6,
-        category: 'mie_sup',
-        name: 'Soto Gurih Penuh Rasa',
-        price: 12000,
-        image: 'https://images.unsplash.com/photo-1572656631137-7935297eff55?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 7,
-        category: 'mie_sup',
-        name: 'Sop Ayam Dapur Ibu',
-        price: 12000,
-        image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 8,
-        category: 'makanan',
-        name: 'Nasi Wangi Daun Jeruk',
-        price: 12000,
-        image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 9,
-        category: 'makanan',
-        name: 'Nasi Balado Pedas Manja',
-        price: 12000,
-        image: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 10,
-        category: 'makanan',
-        name: 'Teriyaki Sakura Bowl',
-        price: 12000,
-        image: 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 11,
-        category: 'makanan',
-        name: 'Pecak Panggang Sayur Asem',
-        price: 15000,
-        image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 12,
-        category: 'makanan',
-        name: 'Nasi Ikan Goreng Sambal Mantul',
-        price: 15000,
-        image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 13,
-        category: 'minuman',
-        name: 'Aneka Jus Buah',
-        price: 7000,
-        image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 14,
-        category: 'minuman',
-        name: 'Jus Buah Apokat',
-        price: 8000,
-        image: 'https://images.unsplash.com/photo-1628557044797-f21a177c37ec?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-        id: 15,
-        category: 'minuman',
-        name: 'Jus Campur Rame Rasa',
-        price: 10000,
-        image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=600&q=80'
-    }
-];
+import {
+    DEFAULT_MENU_ITEMS as MENU_ITEMS,
+    getAvailableMenuIds,
+    MENU_AVAILABILITY_EVENT
+} from '../../lib/foodMenuData';
 
 export default function MenuMakanan() {
     const navigate = useNavigate();
@@ -161,6 +58,25 @@ export default function MenuMakanan() {
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
     const [orderSuccess, setOrderSuccess] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Ketersediaan Menu (Sinkronisasi Realtime dengan /admin/gizi)
+    const [availableMenuIds, setAvailableMenuIds] = useState(getAvailableMenuIds);
+
+    useEffect(() => {
+        const handleSync = (e) => {
+            if (e?.detail && Array.isArray(e.detail)) {
+                setAvailableMenuIds(e.detail);
+            } else {
+                setAvailableMenuIds(getAvailableMenuIds());
+            }
+        };
+        window.addEventListener(MENU_AVAILABILITY_EVENT, handleSync);
+        window.addEventListener('storage', handleSync);
+        return () => {
+            window.removeEventListener(MENU_AVAILABILITY_EVENT, handleSync);
+            window.removeEventListener('storage', handleSync);
+        };
+    }, []);
 
     // Form Checkout
     const [orderForm, setOrderForm] = useState({
@@ -287,18 +203,19 @@ export default function MenuMakanan() {
             notes: orderForm.notes || '',
             payment_method: orderForm.paymentMethod,
             payment_status: paymentStatus,
-            order_status: 'pending',
+            order_status: 'dipesan',
             items: orderItems,
-            total_price: totalPrice
+            total_price: totalPrice,
+            created_at: new Date().toISOString()
         };
 
         try {
             const { error } = await supabase.from('food_orders').insert([orderData]);
             if (error) {
-                console.error('Supabase error inserting food order:', error);
+                console.warn('Supabase note: pesanan disimpan lokal & realtime:', error.message);
             }
         } catch (err) {
-            console.error('Failed to save order to Supabase:', err);
+            console.warn('Catatan sinkronisasi Supabase pesanan:', err);
         }
 
         // Simpan juga ke localStorage agar sinkron lokal & backup
@@ -335,9 +252,14 @@ export default function MenuMakanan() {
         toast.success('Pemesanan & Pembayaran Berhasil Dikonfirmasi!');
     };
 
+    // Filter menu hanya menampilkan yang dicentang / ready dari /admin/gizi
+    const readyMenuItems = useMemo(() => {
+        return MENU_ITEMS.filter(m => availableMenuIds.includes(m.id));
+    }, [availableMenuIds]);
+
     const filteredMenu = activeCategory === 'all'
-        ? MENU_ITEMS
-        : MENU_ITEMS.filter(m => m.category === activeCategory);
+        ? readyMenuItems
+        : readyMenuItems.filter(m => m.category === activeCategory);
 
     return (
         <div style={{ minHeight: '100vh', background: '#f8fafc', paddingBottom: totalItems > 0 ? '110px' : '40px' }} className="animate-slide-up">
@@ -459,7 +381,37 @@ export default function MenuMakanan() {
 
             {/* ── LIST MENU MAKANAN (GoFood Card Layout) ── */}
             <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {filteredMenu.map(item => {
+                {filteredMenu.length === 0 ? (
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '20px',
+                        padding: '40px 20px',
+                        textAlign: 'center',
+                        border: '1px solid #f1f5f9',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+                    }}>
+                        <div style={{
+                            width: '54px',
+                            height: '54px',
+                            borderRadius: '16px',
+                            background: '#ffedd5',
+                            color: '#ea580c',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 14px'
+                        }}>
+                            <Utensils size={26} />
+                        </div>
+                        <h4 style={{ margin: '0 0 6px', fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>
+                            Menu Belum Tersedia (Habis)
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748b', maxWidth: '320px', marginInline: 'auto' }}>
+                            Menu pada kategori ini sedang disiapkan atau belum diaktifkan oleh Instalasi Gizi RSUD Bendan.
+                        </p>
+                    </div>
+                ) : (
+                    filteredMenu.map(item => {
                     const qtyInCart = cart[item.id] || 0;
 
                     return (
@@ -543,7 +495,7 @@ export default function MenuMakanan() {
                             </div>
                         </div>
                     );
-                })}
+                }))}
             </div>
 
             {/* ── FLOATING CART BAR (GoFood Style) ── */}

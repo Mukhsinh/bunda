@@ -75,8 +75,8 @@ export default function AdminHeader({
                         <span style={{ color: '#2563eb', fontWeight: 700, textTransform: 'capitalize' }}>{activeTab}</span>
                     </div>
                     <h2 style={{
-                        margin: '2px 0 0', fontSize: '1.15rem', fontWeight: 900, color: '#0f172a',
-                        fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.3px', lineHeight: 1.2
+                        margin: '2px 0 0', fontSize: '1.12rem', fontWeight: 900, color: '#0f172a',
+                        fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.3px', lineHeight: 1.2
                     }}>
                         {currentTabInfo.title}
                     </h2>

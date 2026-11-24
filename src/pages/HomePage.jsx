@@ -351,7 +351,7 @@ export default function HomePage() {
     return (
         <div style={{ minHeight: '100vh', background: '#f8fafc', paddingBottom: '30px' }} className="animate-slide-up">
             {/* ══════════════════════════════════════════════════════════
-                1. STYLISH HEADER BACKDROP (Foto Cerah RSUD Bendan Murni)
+                1. STYLISH HEADER BACKDROP (Foto RSUD Bendan Elegan & Kontras Tinggi)
             ══════════════════════════════════════════════════════════ */}
             <div style={{
                 position: 'relative',
@@ -360,43 +360,45 @@ export default function HomePage() {
                 color: 'white',
                 borderBottomLeftRadius: '32px',
                 borderBottomRightRadius: '32px',
-                boxShadow: '0 16px 36px rgba(15, 23, 42, 0.15)'
+                boxShadow: '0 16px 36px rgba(15, 23, 42, 0.2)'
             }}>
-                {/* Background Image Murni RSUD Bendan - Dibuat Lebih Terang, Segar, dan Jernih */}
+                {/* Background Image RSUD Bendan dengan saturasi & kontras seimbang */}
                 <div style={{
                     position: 'absolute', inset: 0,
                     backgroundImage: `url('/Gambar%20rsud%20bendan.jpg')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
-                    filter: 'brightness(1.18) contrast(1.08)'
+                    filter: 'brightness(0.95) contrast(1.1)'
                 }} />
 
-                {/* Minimalist Soft Vignette di bagian atas & bawah agar teks tetap terbaca tajam */}
+                {/* Gradient Overlay Solid Elegan: Deep Medical Sapphire & Slate untuk kontras maksimal */}
                 <div style={{
                     position: 'absolute', inset: 0,
-                    background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.05) 40%, rgba(15, 23, 42, 0.45) 100%)'
+                    background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(2, 132, 199, 0.65) 50%, rgba(15, 23, 42, 0.82) 100%)'
                 }} />
 
-                {/* Top Status Bar: Bersih & Clean (Tanpa icon BEMBI, chat, ID) */}
+                {/* Top Status Bar: Frameless, Elegan, Bersih & Kontras Tinggi */}
                 <div style={{ position: 'relative', zIndex: 10 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{
-                            fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1.4px',
-                            color: '#ffffff', fontWeight: 900, textShadow: '0 2px 6px rgba(0,0,0,0.9)'
+                            fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '1.5px',
+                            color: '#38bdf8', fontWeight: 900, textShadow: '0 2px 8px rgba(0,0,0,0.8)'
                         }}>
                             RSUD BENDAN
                         </span>
-                        <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#38bdf8' }}></span>
-                        <span style={{ fontSize: '0.78rem', color: '#f1f5f9', fontWeight: 700, textShadow: '0 2px 6px rgba(0,0,0,0.9)' }}>Kota Pekalongan</span>
+                        <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 6px #38bdf8' }}></span>
+                        <span style={{ fontSize: '0.8rem', color: '#f8fafc', fontWeight: 700, textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
+                            Kota Pekalongan
+                        </span>
                     </div>
-                    <h2 style={{
-                        margin: '4px 0 0', fontSize: '1.45rem', fontWeight: 900, color: '#ffffff',
-                        fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.3px',
-                        textShadow: '0 2px 8px rgba(0,0,0,0.9)'
+                    <h1 style={{
+                        margin: '6px 0 0', fontSize: '1.65rem', fontWeight: 900, color: '#ffffff',
+                        fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.4px',
+                        textShadow: '0 2px 10px rgba(0,0,0,0.8)'
                     }}>
                         {getGreeting()}, Bunda
-                    </h2>
+                    </h1>
                 </div>
             </div>
 
