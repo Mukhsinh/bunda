@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3006;
 const HOST = process.env.HOST || '0.0.0.0';
 const DIST_DIR = path.join(__dirname, 'dist');
 
