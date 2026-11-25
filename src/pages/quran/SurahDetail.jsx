@@ -2,6 +2,16 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronRight, Play, Pause, Eye, EyeOff, SkipForward, Square, Volume2 } from 'lucide-react';
 
+// Reliable Quran audio sources (EveryAyah Alafasy 128kbps primary, Quran.com CDN fallback)
+const getAyahAudioUrl = (surahNumber, ayahNumber, useFallback = false) => {
+    const sPad = String(surahNumber).padStart(3, '0');
+    const aPad = String(ayahNumber).padStart(3, '0');
+    if (useFallback) {
+        return `https://verses.quran.com/Alafasy/mp3/${sPad}${aPad}.mp3`;
+    }
+    return `https://everyayah.com/data/Alafasy_128kbps/${sPad}${aPad}.mp3`;
+};
+
 const SurahDetail = () => {
     const { id } = useParams();
     const [surah, setSurah] = useState(null);
@@ -14,6 +24,24 @@ const SurahDetail = () => {
     const audioRef = useRef(null);
     const playAllRef = useRef(false);
 
+    const cleanupAudio = () => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.onended = null;
+            audioRef.current.onerror = null;
+            audioRef.current.oncanplay = null;
+        }
+    };
+
+    const stopAllAudio = useCallback(() => {
+        playAllRef.current = false;
+        setIsPlayingAll(false);
+        setCurrentPlayAllIndex(-1);
+        setActiveAudio(null);
+        setIsPlaying(false);
+        cleanupAudio();
+    }, []);
+
     useEffect(() => {
         const fetchSurahDetail = async () => {
             try {
@@ -21,7 +49,7 @@ const SurahDetail = () => {
                 const metaData = await metaRes.json();
                 if (metaData.status) {
                     const metadata = metaData.data;
-                    const totalVerses = parseInt(metadata.number_of_verses);
+                    const totalVerses = parseInt(metadata.number_of_verses, 10);
                     const CHUNK_SIZE = 30;
                     const allAyahs = [];
 
@@ -32,89 +60,180 @@ const SurahDetail = () => {
                         if (data.data) {
                             allAyahs.push(...data.data);
                         }
-                        // Add a tiny delay to avoid rate limiting
                         if (totalVerses > CHUNK_SIZE) {
-                            await new Promise(r => setTimeout(r, 100));
+                            await new Promise(r => setTimeout(r, 80));
                         }
                     }
 
                     if (allAyahs.length > 0) {
-                        setSurah({ ...metadata, ayahs: allAyahs });
+                        const surahNum = parseInt(id, 10);
+                        const mappedAyahs = allAyahs.map(a => {
+                            const ayahNum = parseInt(a.ayah, 10);
+                            return {
+                                ...a,
+                                audio: getAyahAudioUrl(surahNum, ayahNum, false),
+                                audioFallback: getAyahAudioUrl(surahNum, ayahNum, true)
+                            };
+                        });
+                        setSurah({ ...metadata, ayahs: mappedAyahs });
                     }
                 }
-            } catch (error) { console.error('Error:', error); }
-            finally { setLoading(false); }
+            } catch (error) {
+                console.error('Error fetching surah:', error);
+            } finally {
+                setLoading(false);
+            }
         };
+
         fetchSurahDetail();
-        return () => { playAllRef.current = false; if (audioRef.current) audioRef.current.pause(); };
+        return () => {
+            playAllRef.current = false;
+            cleanupAudio();
+        };
     }, [id]);
 
-    const handlePlayAudio = useCallback((url, index) => {
-        if (activeAudio === index && isPlaying) {
-            audioRef.current?.pause();
-            setIsPlaying(false);
+    const playAyahAt = useCallback((idx, ayahs, useFallback = false) => {
+        if (!playAllRef.current || !ayahs || idx >= ayahs.length) {
+            stopAllAudio();
             return;
         }
-        if (audioRef.current) audioRef.current.pause();
-        const audio = new Audio(url);
-        audioRef.current = audio;
-        audio.play().catch(() => { });
-        setActiveAudio(index);
-        setIsPlaying(true);
-        audio.onended = () => { setIsPlaying(false); setActiveAudio(null); };
-    }, [activeAudio, isPlaying]);
 
-    const playChain = useCallback((idx, ayahs) => {
-        if (!playAllRef.current || idx >= ayahs.length) {
-            playAllRef.current = false;
-            setIsPlayingAll(false);
-            setCurrentPlayAllIndex(-1);
-            setActiveAudio(null);
-            setIsPlaying(false);
-            return;
-        }
         const ayah = ayahs[idx];
-        if (!ayah.audio) { playChain(idx + 1, ayahs); return; }
+        const surahNum = parseInt(id, 10);
+        const ayahNum = parseInt(ayah.ayah, 10);
+        const audioUrl = useFallback
+            ? (ayah.audioFallback || getAyahAudioUrl(surahNum, ayahNum, true))
+            : (ayah.audio || getAyahAudioUrl(surahNum, ayahNum, false));
 
         setCurrentPlayAllIndex(idx);
         setActiveAudio(idx);
         setIsPlaying(true);
 
-        if (audioRef.current) audioRef.current.pause();
-        const audio = new Audio(ayah.audio);
-        audioRef.current = audio;
-        audio.play().catch(() => playChain(idx + 1, ayahs));
-        audio.onended = () => playChain(idx + 1, ayahs);
-        audio.onerror = () => playChain(idx + 1, ayahs);
+        cleanupAudio();
+        if (!audioRef.current) {
+            audioRef.current = new Audio();
+        }
+        const audio = audioRef.current;
 
+        let hasHandledEnd = false;
+        const advanceNext = () => {
+            if (hasHandledEnd) return;
+            hasHandledEnd = true;
+            if (playAllRef.current) {
+                playAyahAt(idx + 1, ayahs, false);
+            }
+        };
+
+        audio.src = audioUrl;
+        audio.onended = advanceNext;
+        audio.onerror = () => {
+            console.warn(`Audio error ayah ${ayahNum}, trying fallback:`, useFallback);
+            if (!useFallback && playAllRef.current) {
+                playAyahAt(idx, ayahs, true);
+            } else {
+                setTimeout(advanceNext, 500);
+            }
+        };
+
+        audio.play().catch((err) => {
+            console.warn(`Play failed ayah ${ayahNum}:`, err);
+            if (playAllRef.current && !hasHandledEnd) {
+                if (!useFallback) {
+                    playAyahAt(idx, ayahs, true);
+                } else {
+                    setTimeout(advanceNext, 500);
+                }
+            }
+        });
+
+        // Gentle scroll to prevent viewport jumping
         const el = document.getElementById(`ayah-${idx}`);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, []);
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            const isInView = rect.top >= 100 && rect.bottom <= (window.innerHeight - 80);
+            if (!isInView) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+    }, [id, stopAllAudio]);
+
+    const handlePlayAudio = useCallback((arg1, arg2) => {
+        if (!surah?.ayahs) return;
+        const index = typeof arg1 === 'number' ? arg1 : arg2;
+        if (typeof index !== 'number' || index < 0 || index >= surah.ayahs.length) return;
+        const ayah = surah.ayahs[index];
+        if (!ayah) return;
+
+        // Toggle pause if clicking on currently playing single audio
+        if (activeAudio === index && isPlaying && !isPlayingAll) {
+            cleanupAudio();
+            setIsPlaying(false);
+            return;
+        }
+
+        // Stop play all mode if running
+        playAllRef.current = false;
+        setIsPlayingAll(false);
+        setCurrentPlayAllIndex(-1);
+
+        cleanupAudio();
+        if (!audioRef.current) {
+            audioRef.current = new Audio();
+        }
+        const audio = audioRef.current;
+
+        const surahNum = parseInt(id, 10);
+        const ayahNum = parseInt(ayah.ayah, 10);
+        const primaryUrl = ayah.audio || getAyahAudioUrl(surahNum, ayahNum, false);
+        const fallbackUrl = ayah.audioFallback || getAyahAudioUrl(surahNum, ayahNum, true);
+
+        setActiveAudio(index);
+        setIsPlaying(true);
+
+        audio.src = primaryUrl;
+        audio.onended = () => {
+            setIsPlaying(false);
+            setActiveAudio(null);
+        };
+        audio.onerror = () => {
+            console.warn('Single audio error, switching to fallback');
+            audio.src = fallbackUrl;
+            audio.play().catch(() => {
+                setIsPlaying(false);
+                setActiveAudio(null);
+            });
+        };
+
+        audio.play().catch(() => {
+            setIsPlaying(false);
+            setActiveAudio(null);
+        });
+    }, [surah, activeAudio, isPlaying, isPlayingAll, id]);
 
     const handlePlayAll = useCallback(() => {
         if (isPlayingAll) {
-            playAllRef.current = false;
-            setIsPlayingAll(false);
-            setCurrentPlayAllIndex(-1);
-            setActiveAudio(null);
-            setIsPlaying(false);
-            if (audioRef.current) audioRef.current.pause();
+            stopAllAudio();
             return;
         }
         if (!surah?.ayahs?.length) return;
         playAllRef.current = true;
         setIsPlayingAll(true);
-        playChain(0, surah.ayahs);
-    }, [isPlayingAll, surah, playChain]);
+        const startIdx = (activeAudio !== null && activeAudio >= 0 && activeAudio < surah.ayahs.length)
+            ? activeAudio
+            : 0;
+        playAyahAt(startIdx, surah.ayahs, false);
+    }, [isPlayingAll, stopAllAudio, surah, activeAudio, playAyahAt]);
 
     const handleSkipNext = useCallback(() => {
         if (!isPlayingAll || !surah?.ayahs) return;
         const nextIdx = currentPlayAllIndex + 1;
         if (nextIdx < surah.ayahs.length) {
-            if (audioRef.current) audioRef.current.pause();
-            playChain(nextIdx, surah.ayahs);
+            cleanupAudio();
+            playAyahAt(nextIdx, surah.ayahs, false);
+        } else {
+            stopAllAudio();
         }
-    }, [isPlayingAll, currentPlayAllIndex, surah, playChain]);
+    }, [isPlayingAll, currentPlayAllIndex, surah, playAyahAt, stopAllAudio]);
 
     // Styles
     const s = {
@@ -236,16 +355,27 @@ const SurahDetail = () => {
 
             {/* Controls Bar */}
             <div style={s.controlBar}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', maxWidth: '640px', margin: '0 auto' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', maxWidth: '640px', margin: '0 auto', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <button onClick={handlePlayAll} style={s.playAllBtn(isPlayingAll)}>
                             {isPlayingAll ? <Square size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" />}
                             {isPlayingAll ? 'Berhenti' : 'Putar Semua'}
                         </button>
                         {isPlayingAll && (
-                            <button onClick={handleSkipNext} style={s.skipBtn}>
+                            <button onClick={handleSkipNext} style={s.skipBtn} title="Lanjut ke ayat berikutnya">
                                 <SkipForward size={14} />
                             </button>
+                        )}
+                        {isPlayingAll && currentPlayAllIndex >= 0 && surah?.ayahs && (
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: '5px',
+                                background: '#f5f3ff', border: '1px solid #ddd6fe',
+                                padding: '4px 9px', borderRadius: '10px',
+                                fontSize: '11px', fontWeight: 700, color: '#7c3aed'
+                            }}>
+                                <Volume2 size={12} />
+                                <span>Ayat {surah.ayahs[currentPlayAllIndex]?.ayah} / {surah.number_of_verses}</span>
+                            </div>
                         )}
                     </div>
                     <button onClick={() => setShowTranslation(!showTranslation)} style={s.toggleBtn(showTranslation)}>
@@ -282,7 +412,7 @@ const SurahDetail = () => {
                         <div key={index} id={`ayah-${index}`} style={s.verseCard(isCurrent)}>
                             <div style={s.verseTopBar}>
                                 <div style={s.verseBadge(isCurrent)}>{ayah.ayah}</div>
-                                <button onClick={() => handlePlayAudio(ayah.audio, index)} style={s.audioBtn(isCurrent)}>
+                                <button onClick={() => handlePlayAudio(index)} style={s.audioBtn(isCurrent)} title={isCurrent ? "Jeda" : "Dengarkan ayat"}>
                                     {isCurrent ? <Pause size={13} fill="currentColor" /> : <Volume2 size={13} />}
                                 </button>
                             </div>
